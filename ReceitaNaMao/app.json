@@ -4,7 +4,7 @@
     "slug": "ReceitaNaMao",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "@/src/assets/logo.png",
     "scheme": "receitanamao",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
