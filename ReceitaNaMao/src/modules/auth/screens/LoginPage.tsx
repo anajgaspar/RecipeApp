@@ -32,10 +32,7 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                     />
                     <FontAwesome6 name="eye" size={16} color="#9ca3af" className="absolute right-3 top-3"/>
                 </View>
-                <Pressable>
-                    <Text className="text-sm text-[#f97316] self-end">Esqueceu sua senha?</Text>
-                </Pressable>
-                <Pressable className="w-full bg-[#f97316] py-3 rounded-md">
+                <Pressable onPress={() => navigation.replace('Feed')} className="w-full bg-[#f97316] py-3 rounded-md">
                     <Text className="text-center text-white font-semibold">Entrar</Text>
                 </Pressable>
                 <View className="w-full flex-row items-center gap-3">
@@ -45,14 +42,14 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                 </View>
                 <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
                     <FontAwesome6 name="chrome" size={20} color="black" />
-                    <Text className="">Continue com Google</Text>
+                    <Text className="">Faça login com Google</Text>
                 </Pressable>
                 <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
                     <FontAwesome6 name="fingerprint" size={20} color="black" />
                     <Text className="text-center">Use login biométrico</Text>
                 </Pressable>
                 <Pressable onPress={() => navigation.replace('Signup')}>
-                    <Text className="self-center">Não tem uma conta? <Text className="text-[#f97316]">Cadastre-se</Text></Text>
+                    <Text className="self-center">Não tem uma conta? <Text className="text-[#f97316]">Registre-se</Text></Text>
                 </Pressable>
             </View>
         </LinearGradient>
