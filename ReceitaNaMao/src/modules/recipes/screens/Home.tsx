@@ -5,13 +5,23 @@ import RecipeCard from "../components/RecipeCard";
 export default function Home() {
     return (
         <ScrollView className="h-full flex bg-white">
-            <TopBar/>
-            <View className="p-4">
-                <View>
-                    <Pressable></Pressable>
+            <TopBar />
+            <View className="flex flex-col gap-6 p-4">
+                <View className="flex flex-row items-center gap-2">
+                    <Pressable>
+                        <Text className="text-white bg-[#f97316] p-2 rounded-full">Todas as receitas</Text>
+                    </Pressable>
+                    <Pressable>
+                        <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Minha despensa</Text>
+                    </Pressable>
+                    <Pressable>
+                        <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Sazonais</Text>
+                    </Pressable>
                 </View>
-                <Text className="text-2xl font-bold mb-4">Sugerido para você</Text>
-                <RecipeCard></RecipeCard>
+                <View className="flex flex-col">
+                    <Text className="text-2xl font-bold mb-4">Sugerido para você</Text>
+                    <RecipeCard></RecipeCard>
+                </View>
             </View>
         </ScrollView>
     )
