@@ -5,6 +5,7 @@ import LoginPage from "../src/modules/auth/screens/LoginPage";
 import SignupPage from "@/src/modules/auth/screens/SignupPage";
 import ConfirmEmail from "@/src/modules/auth/screens/ConfirmEmail";
 import Feed from "@/src/modules/Tab";
+import RecipeDetails from "@/src/modules/recipes/screens/RecipeDetails";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -18,6 +19,7 @@ export default function App() {
         <Stack.Screen name="Signup" component={SignupPage} options={{ headerShown: false }}/>
         <Stack.Screen name="ConfirmEmail" component={ConfirmEmail} options={{ headerShown: false }}/>
         <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }}/>
+        <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </>
   );

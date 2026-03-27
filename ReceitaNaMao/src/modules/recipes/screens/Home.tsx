@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable } from "react-native";
 import TopBar from "../components/TopBar";
 import RecipeCard from "../components/RecipeCard";
 
-export default function Home() {
+export default function Home({ navigation }: { navigation: any }) {
     return (
         <ScrollView className="h-full flex bg-white">
             <TopBar />
@@ -20,7 +20,9 @@ export default function Home() {
                 </View>
                 <View className="flex flex-col">
                     <Text className="text-2xl font-bold mb-4">Sugerido para você</Text>
-                    <RecipeCard></RecipeCard>
+                    <Pressable onPress={() => navigation.replace('RecipeDetails')}>
+                        <RecipeCard></RecipeCard>
+                    </Pressable>
                 </View>
             </View>
         </ScrollView>

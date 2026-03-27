@@ -20,7 +20,7 @@ export default function RecipeCard() {
                     <Text className="absolute bottom-2 left-2 bg-white py-1 px-2 rounded-full">Cetogênica</Text>
                 </View>
             </View>
-            <View className="w-full flex flex-col gap-2 rounded-b-xl border border-t-[0px] border-[#9ca3af] p-4">
+            <View className="w-full flex flex-col gap-2 rounded-b-xl border border-t-[0px] border-[#9ca3af]/80 p-4">
                 <Text className="font-semibold text-xl">Lasanha Bolonhesa</Text>
                 <View className="flex flex-row justify-between">
                     <View className="flex flex-row gap-4">
