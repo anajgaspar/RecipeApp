@@ -2,6 +2,7 @@
   "name": "auth-service",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "commonjs",
   "directories": {
     "test": "tests"
   },
@@ -26,5 +27,13 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.14",
+    "ts-jest": "^29.4.6"
   }
 }
