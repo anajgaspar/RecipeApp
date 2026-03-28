@@ -1,8 +1,43 @@
+import { useState } from "react";
 import { Image, View, Text, TextInput, Pressable } from "react-native";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "@/src/modules/auth/context/AuthContext";
 
 export default function SignupPage({ navigation }: { navigation: any }) {
+    const { signUp } = useAuth();
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    async function handleSignUp() {
+        if (!name.trim() || !email.trim() || !password.trim()) {
+            setErrorMessage("Preencha nome, e-mail e senha.");
+            return;
+        }
+
+        setErrorMessage("");
+        setIsLoading(true);
+
+        try {
+            await signUp({
+                name: name.trim(),
+                email: email.trim(),
+                password,
+            });
+
+            navigation.replace("ConfirmEmail", { email: email.trim() });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Falha ao registrar.";
+            setErrorMessage(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <LinearGradient
             colors={["#fff7ed", "#fdfbf7"]}
@@ -18,6 +53,8 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                         Nome completo
                     </Text>
                     <TextInput className="w-full text-sm py-1"
+                        value={name}
+                        onChangeText={setName}
                         placeholder="Jane Doe"
                         placeholderTextColor="#9ca3af"
                     />
@@ -27,6 +64,10 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                         Email
                     </Text>
                     <TextInput className="w-full text-sm py-1"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
                         placeholder="seu@email.com"
                         placeholderTextColor="#9ca3af"
                     />
@@ -37,15 +78,21 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                             Senha
                         </Text>
                         <TextInput className="w-full text-sm py-1"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!showPassword}
                             placeholder="Crie uma senha forte"
                             placeholderTextColor="#9ca3af"
                         />
-                        <FontAwesome6 name="eye" size={16} color="#9ca3af" className="absolute right-3 top-3" />
+                        <Pressable onPress={() => setShowPassword((current) => !current)} className="absolute right-3 top-3">
+                            <FontAwesome6 name={showPassword ? "eye-slash" : "eye"} size={16} color="#9ca3af" />
+                        </Pressable>
                     </View>
                     <Text className="text-xs text-[#9ca3af]">* Pelo menos 8 caracteres</Text>
                 </View>
-                <Pressable onPress={() => navigation.replace('ConfirmEmail')} className="w-full bg-[#f97316] py-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">Registrar</Text>
+                {errorMessage ? <Text className="text-red-500 text-sm">{errorMessage}</Text> : null}
+                <Pressable onPress={handleSignUp} disabled={isLoading} className="w-full bg-[#f97316] py-3 rounded-md">
+                    <Text className="text-center text-white font-semibold">{isLoading ? "Registrando..." : "Registrar"}</Text>
                 </Pressable>
                 <View className="w-full flex-row items-center gap-3">
                     <View className="flex-1 h-px bg-gray-200" />

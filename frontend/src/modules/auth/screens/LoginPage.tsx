@@ -1,8 +1,47 @@
-import { Image, View, Text, TextInput, Pressable} from "react-native";
+import { useState } from "react";
+import { Image, View, Text, TextInput, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { useAuth } from "@/src/modules/auth/context/AuthContext";
 
 export default function LoginPage({ navigation }: { navigation: any }) {
+    const { signIn } = useAuth();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    async function handleSignIn() {
+        if (!email.trim() || !password.trim()) {
+            setErrorMessage("Preencha e-mail e senha.");
+            return;
+        }
+
+        setErrorMessage("");
+        setIsLoading(true);
+
+        try {
+            await signIn({
+                email: email.trim(),
+                password,
+            });
+
+            navigation.replace("Feed");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Falha ao entrar.";
+
+            if (message === "Email não verificado") {
+                navigation.replace("ConfirmEmail", { email: email.trim() });
+                return;
+            }
+
+            setErrorMessage(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <LinearGradient
             colors={["#fff7ed", "#fdfbf7"]}
@@ -17,7 +56,12 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                     <Text className="absolute -top-2 left-2 bg-white px-1 text-xs">
                         Email
                     </Text>
-                    <TextInput className="w-full text-sm py-1"
+                    <TextInput
+                    className="w-full text-sm py-1"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
                     placeholder="seu@email.com"
                     placeholderTextColor="#9ca3af"
                     />
@@ -26,14 +70,21 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                     <Text className="absolute -top-2 left-2 bg-white px-1 text-xs">
                         Senha
                     </Text>
-                    <TextInput className="w-full text-sm py-1"
+                    <TextInput
+                    className="w-full text-sm py-1"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
                     placeholder="Insira sua senha"
                     placeholderTextColor="#9ca3af"
                     />
-                    <FontAwesome6 name="eye" size={16} color="#9ca3af" className="absolute right-3 top-3"/>
+                    <Pressable onPress={() => setShowPassword((current) => !current)} className="absolute right-3 top-3">
+                        <FontAwesome6 name={showPassword ? "eye-slash" : "eye"} size={16} color="#9ca3af" />
+                    </Pressable>
                 </View>
-                <Pressable onPress={() => navigation.replace('Feed')} className="w-full bg-[#f97316] py-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">Entrar</Text>
+                {errorMessage ? <Text className="text-red-500 text-sm">{errorMessage}</Text> : null}
+                <Pressable onPress={handleSignIn} disabled={isLoading} className="w-full bg-[#f97316] py-3 rounded-md">
+                    <Text className="text-center text-white font-semibold">{isLoading ? "Entrando..." : "Entrar"}</Text>
                 </Pressable>
                 <View className="w-full flex-row items-center gap-3">
                     <View className="flex-1 h-px bg-gray-200" />

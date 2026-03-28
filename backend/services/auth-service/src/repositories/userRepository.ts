@@ -7,7 +7,12 @@ type CreateUserParams = {
     name: string;
     email: string;
     passwordHash: string;
+    emailVerified?: boolean;
+    emailVerificationTokenHash?: string | null;
+    emailVerificationExpiresAt?: string | null;
 };
+
+type UpdateUserParams = Partial<Omit<z.infer<typeof UserSchema>, "id">>;
 
 const users_collection = "users";
 
@@ -38,11 +43,18 @@ export const UserRepository = {
             name: params.name,
             email: params.email,
             passwordHash: params.passwordHash,
+            emailVerified: params.emailVerified ?? false,
+            emailVerificationTokenHash: params.emailVerificationTokenHash ?? null,
+            emailVerificationExpiresAt: params.emailVerificationExpiresAt ?? null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
 
         await db.collection(users_collection).doc(document.id).set(document);
         return document;
+    },
+
+    async updateById(id: string, params: UpdateUserParams): Promise<void> {
+        await db.collection(users_collection).doc(id).set(params, { merge: true });
     }
 };
