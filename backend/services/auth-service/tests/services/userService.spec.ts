@@ -3,6 +3,7 @@ jest.mock("../../src/repositories/userRepository", () => ({
     findById: jest.fn(),
     findByEmail: jest.fn(),
     create: jest.fn(),
+    updateById: jest.fn(),
   }
 }));
 
@@ -18,6 +19,9 @@ describe("UserService", () => {
       name: "Ana",
       email: "ana@mail.com",
       passwordHash: "hashed",
+      emailVerified: true,
+      emailVerificationTokenHash: null,
+      emailVerificationExpiresAt: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });

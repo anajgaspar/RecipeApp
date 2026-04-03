@@ -7,11 +7,26 @@ jest.mock("../../src/repositories/userRepository", () => ({
     findById: jest.fn(),
     findByEmail: jest.fn(),
     create: jest.fn(),
+    updateById: jest.fn(),
   }
+}));
+
+jest.mock("../../src/services/emailService", () => ({
+  EmailService: {
+    sendEmailVerification: jest.fn(),
+  },
+}));
+
+jest.mock("../../src/repositories/tokenBlacklistRepository", () => ({
+  TokenBlacklistRepository: {
+    isTokenRevoked: jest.fn(),
+    revokeToken: jest.fn(),
+  },
 }));
 
 import { AuthService } from "../../src/services/authService";
 import { UserRepository } from "../../src/repositories/userRepository";
+import { EmailService } from "../../src/services/emailService";
 
 describe("AuthService", () => {
   const mockedUserRepository = UserRepository as jest.Mocked<typeof UserRepository>;
@@ -21,9 +36,14 @@ describe("AuthService", () => {
     name: "Ana",
     email: "ana@mail.com",
     passwordHash: "hashed-password",
+    emailVerified: true,
+    emailVerificationTokenHash: null,
+    emailVerificationExpiresAt: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z"
   };
+
+  const mockedEmailService = EmailService as jest.Mocked<typeof EmailService>;
 
   test("register deve criar usuario e retornar dados publicos", async () => {
     mockedUserRepository.findByEmail.mockResolvedValue(null);
@@ -33,8 +53,12 @@ describe("AuthService", () => {
       .mockReturnValue("123e4567-e89b-12d3-a456-426614174000");
     mockedUserRepository.create.mockResolvedValue({
       ...baseUser,
-      id: "123e4567-e89b-12d3-a456-426614174000"
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      emailVerified: false,
+      emailVerificationTokenHash: "hashed-token",
+      emailVerificationExpiresAt: "2026-01-01T01:00:00.000Z",
     });
+    mockedEmailService.sendEmailVerification.mockResolvedValue(true);
 
     const result = await AuthService.register({
       name: "Ana",
@@ -48,12 +72,17 @@ describe("AuthService", () => {
       id: "123e4567-e89b-12d3-a456-426614174000",
       name: "Ana",
       email: "ana@mail.com",
-      passwordHash: "hashed-password"
+      passwordHash: "hashed-password",
+      emailVerified: false,
+      emailVerificationTokenHash: expect.any(String),
+      emailVerificationExpiresAt: expect.any(String),
     });
     expect(result).toEqual({
       id: "123e4567-e89b-12d3-a456-426614174000",
       name: "Ana",
       email: "ana@mail.com",
+      emailVerified: false,
+      emailVerificationSent: true,
       createdAt: baseUser.createdAt,
       updatedAt: baseUser.updatedAt
     });
@@ -101,6 +130,7 @@ describe("AuthService", () => {
         id: "user-1",
         name: "Ana",
         email: "ana@mail.com",
+        emailVerified: true,
         createdAt: baseUser.createdAt,
         updatedAt: baseUser.updatedAt
       }

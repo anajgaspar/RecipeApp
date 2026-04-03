@@ -43,6 +43,8 @@ describe("AuthController", () => {
       id: "user-1",
       name: "Ana",
       email: "ana@mail.com",
+      emailVerified: false,
+      emailVerificationSent: true,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });
@@ -93,6 +95,7 @@ describe("AuthController", () => {
         id: "user-1",
         name: "Ana",
         email: "ana@mail.com",
+        emailVerified: true,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z"
       }
