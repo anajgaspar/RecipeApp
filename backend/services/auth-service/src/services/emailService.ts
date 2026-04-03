@@ -1,95 +1,46 @@
 import nodemailer from "nodemailer";
 
-type SendEmailVerificationParams = {
-    to: string;
-    name: string;
-    verificationToken: string;
-};
-
 const gmailUser = process.env.GMAIL_USER;
 const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
-const fromEmail = process.env.EMAIL_FROM ?? (gmailUser ? `Receita Na Mão <${gmailUser}>` : "Receita Na Mão <no-reply@recipeapp.local>");
 
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = Number(process.env.SMTP_PORT ?? "0");
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const smtpSecure = process.env.SMTP_SECURE === "true";
+if (!gmailUser) throw new Error("GMAIL_USER não definido.");
+if (!gmailAppPassword) throw new Error("GMAIL_APP_PASSWORD não definido.");
 
-async function trySendWithGmail(params: SendEmailVerificationParams): Promise<boolean> {
-    if (!gmailUser || !gmailAppPassword) {
-        return false;
-    }
-
-    try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: gmailUser,
-                pass: gmailAppPassword,
-            },
-        });
-
-        await transporter.sendMail({
-            from: fromEmail,
-            to: params.to,
-            subject: "Seu token de confirmação",
-            text: `Olá, ${params.name}.\n\nSeu token de confirmação é: ${params.verificationToken}\n\nDigite esse código na tela de confirmação do app.\n\nSe você não criou esta conta, ignore esta mensagem.`,
-            html: `<p>Olá, ${params.name}.</p><p>Seu token de confirmação é:</p><p style="font-size:22px;font-weight:700;letter-spacing:2px;">${params.verificationToken}</p><p>Digite esse código na tela de confirmação do app.</p><p>Se você não criou esta conta, ignore esta mensagem.</p>`,
-        });
-
-        return true;
-    } catch (error) {
-        console.warn("[email] Falha no Gmail.", error);
-        return false;
-    }
-}
-
-async function trySendWithSmtp(params: SendEmailVerificationParams): Promise<boolean> {
-    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
-        return false;
-    }
-
-    try {
-        const transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpSecure,
-            auth: {
-                user: smtpUser,
-                pass: smtpPass,
-            },
-        });
-
-        await transporter.sendMail({
-            from: fromEmail,
-            to: params.to,
-            subject: "Seu token de confirmação",
-            text: `Olá, ${params.name}.\n\nSeu token de confirmação é: ${params.verificationToken}\n\nDigite esse código na tela de confirmação do app.\n\nSe você não criou esta conta, ignore esta mensagem.`,
-            html: `<p>Olá, ${params.name}.</p><p>Seu token de confirmação é:</p><p style="font-size:22px;font-weight:700;letter-spacing:2px;">${params.verificationToken}</p><p>Digite esse código na tela de confirmação do app.</p><p>Se você não criou esta conta, ignore esta mensagem.</p>`,
-        });
-
-        return true;
-    } catch (error) {
-        console.warn("[email] Falha no SMTP.", error);
-        return false;
-    }
-}
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+    },
+});
 
 export const EmailService = {
-    async sendEmailVerification(params: SendEmailVerificationParams): Promise<void> {
-        const gmailSent = await trySendWithGmail(params);
-        if (gmailSent) {
-            return;
-        }
+    async sendEmailVerification({ to, name, verificationToken }: { to: string; name: string; verificationToken: string }) {
+        try {
+            console.log(`Enviando email de confirmação para: ${to}`);
+            
+            await transporter.sendMail({
+                from: `"Receita Na Mão" <${gmailUser}>`,
+                to,
+                subject: "Receita Na Mão - Confirmação de e-mail",
+                html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+                    <h2>Confirmação de e-mail</h2>
+                    <p>Olá, <strong>${name}</strong>!</p>
+                    <p>Seu token de confirmação é:</p>
+                    <p style="font-size:22px;font-weight:700;letter-spacing:2px; text-align: center; background: #f0f0f0; padding: 16px; border-radius: 8px;">${verificationToken}</p>
+                    <p>Digite esse código na tela de confirmação do app.</p>
+                    <p style="color: #9CA3AF; font-size: 13px;">
+                        Se você não criou esta conta, ignore este e-mail.
+                    </p>
+                </div>`,
+                text: `Olá, ${name}.\n\nSeu token de confirmação é: ${verificationToken}\n\nDigite esse código na tela de confirmação do app.\n\nSe você não criou esta conta, ignore esta mensagem.`,
+            });
 
-        const smtpSent = await trySendWithSmtp(params);
-        if (smtpSent) {
-            return;
+            console.log(`Email de confirmação enviado com sucesso para: ${to}`);
+            return true;
+        } catch (error) {
+            console.error("Erro ao enviar email de confirmação:", error);
+            throw error;
         }
-
-        throw new Error(
-            "Falha no envio de e-mail. Configure Gmail (GMAIL_USER, GMAIL_APP_PASSWORD) ou SMTP (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS)."
-        );
-    },
-};
+    }
+}

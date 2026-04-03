@@ -109,7 +109,7 @@ export const AuthController = {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       return res.status(503).json({
-        error: "Falha ao enviar e-mail de confirmação. Verifique Gmail ou SMTP/Brevo.",
+        error: "Falha ao enviar e-mail de confirmação. Verifique Gmail.",
         details: message,
       });
     }
