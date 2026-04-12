@@ -39,7 +39,7 @@ export default function MyFavoritesList({ navigation }: { navigation: any }) {
             setFavorites((current) => current.filter((item) => item.recipe?.id !== recipeId));
         } catch (error) {
             const message = error instanceof Error ? error.message : "Não foi possível atualizar o favorito.";
-            Alert.alert("Erro", message);
+            Alert.alert("Falha ao atualizar favorito", message);
         }
     }
 

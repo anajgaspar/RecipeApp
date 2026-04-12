@@ -1,5 +1,5 @@
-import { isAxiosError } from "axios";
 import api from "@/src/services/api";
+import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
 
 export type AuthUser = {
   id: string;
@@ -87,25 +87,7 @@ type GetPublicProfileResponse = {
 };
 
 function getErrorMessage(error: unknown): string {
-  if (isAxiosError(error)) {
-    const responseMessage =
-      (error.response?.data as { error?: string } | undefined)?.error ??
-      (error.response?.data as { message?: string } | undefined)?.message;
-
-    if (responseMessage) {
-      return responseMessage;
-    }
-
-    if (error.message) {
-      return error.message;
-    }
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Não foi possível completar a operação.";
+  return getFriendlyHttpErrorMessage(error, "Não foi possível completar a operação de autenticação.");
 }
 
 export async function register(payload: RegisterPayload): Promise<AuthUser> {

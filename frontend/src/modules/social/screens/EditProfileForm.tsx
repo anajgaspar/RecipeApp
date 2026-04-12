@@ -94,7 +94,12 @@ export default function EditProfileForm({ navigation }: { navigation: any }) {
             setAvatarDataUrl(compressedDataUrl);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Não foi possível processar a imagem selecionada.";
-            Alert.alert("Erro", message === "Imagem muito grande" ? "Escolha uma imagem menor." : message);
+            Alert.alert(
+                "Não foi possível usar esta foto",
+                message === "Imagem muito grande"
+                    ? "A imagem escolhida ultrapassa o tamanho permitido. Selecione uma imagem menor."
+                    : message
+            );
         }
     }
 

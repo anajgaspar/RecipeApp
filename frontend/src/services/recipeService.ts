@@ -1,5 +1,5 @@
-import { isAxiosError } from "axios";
 import api from "@/src/services/api";
+import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
 
 const AUTH_API_URL = process.env.EXPO_PUBLIC_API_AUTH_URL;
 const RECIPE_API_URL =
@@ -66,29 +66,7 @@ export type Recipe = {
 };
 
 function getErrorMessage(error: unknown): string {
-  if (isAxiosError(error)) {
-    if (!error.response) {
-      return "Não foi possível conectar ao recipe-service. Verifique se ele está rodando e se EXPO_PUBLIC_API_RECIPE_URL está correto.";
-    }
-
-    const responseMessage =
-      (error.response?.data as { error?: string } | undefined)?.error ??
-      (error.response?.data as { message?: string } | undefined)?.message;
-
-    if (responseMessage) {
-      return responseMessage;
-    }
-
-    if (error.message) {
-      return error.message;
-    }
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Não foi possível criar a receita.";
+  return getFriendlyHttpErrorMessage(error, "Não foi possível concluir a operação com receitas.");
 }
 
 type CreateRecipeResponse = {

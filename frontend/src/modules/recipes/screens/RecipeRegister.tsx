@@ -116,6 +116,16 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
         );
     };
 
+    const buildSaveErrorMessage = (message: string): string => {
+        const normalized = message.toLowerCase();
+
+        if (normalized.includes("413") || normalized.includes("muito grande") || normalized.includes("payload") || normalized.includes("limite")) {
+            return "A imagem da receita ou o avatar vinculado estão maiores que o limite permitido. Tente uma imagem menor/comprimida e salve novamente.";
+        }
+
+        return message;
+    };
+
     const handleSubmit = async () => {
         if (!token) {
             Alert.alert("Sessão expirada", "Faça login novamente para salvar a receita.");
@@ -212,7 +222,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
             navigation.goBack();
         } catch (error) {
             const message = error instanceof Error ? error.message : "Não foi possível salvar a receita.";
-            Alert.alert("Erro ao salvar", message);
+            Alert.alert("Não foi possível salvar a receita", buildSaveErrorMessage(message));
         } finally {
             setIsSaving(false);
         }
