@@ -3,6 +3,8 @@ import { Image, View, Text, TextInput, Pressable } from "react-native";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
+import ActionButton from "@/src/components/ActionButton";
+import InlineError from "@/src/components/InlineError";
 
 export default function SignupPage({ navigation }: { navigation: any }) {
     const { signUp } = useAuth();
@@ -90,10 +92,13 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                     </View>
                     <Text className="text-xs text-[#9ca3af]">* Pelo menos 8 caracteres</Text>
                 </View>
-                {errorMessage ? <Text className="text-red-500 text-sm">{errorMessage}</Text> : null}
-                <Pressable onPress={handleSignUp} disabled={isLoading} className="w-full bg-[#f97316] py-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">{isLoading ? "Registrando..." : "Registrar"}</Text>
-                </Pressable>
+                {errorMessage ? <InlineError message={errorMessage} title="Falha ao criar conta" /> : null}
+                <ActionButton
+                    label="Registrar"
+                    loadingLabel="Registrando..."
+                    loading={isLoading}
+                    onPress={() => void handleSignUp()}
+                />
                 <View className="w-full flex-row items-center gap-3">
                     <View className="flex-1 h-px bg-gray-200" />
                     <Text className="text-xs text-gray-400">OU</Text>

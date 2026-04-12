@@ -10,6 +10,8 @@ type SearchRecipesParams = {
     query?: string;
     category?: string;
     difficulty?: RecipeDocument["difficulty"];
+    servingsMin?: number;
+    servingsMax?: number;
     limit?: number;
 };
 
@@ -20,6 +22,7 @@ function normalizeText(value: string): string {
 function buildSearchableText(recipe: RecipeDocument): string {
     return [
         recipe.title,
+        recipe.authorName ?? "",
         ...recipe.category,
         ...recipe.ingredients.map((ingredient) => ingredient.name),
         ...recipe.steps.map((step) => step.instruction),
@@ -123,11 +126,24 @@ export const RecipeService = {
                 return false;
             }
 
+            if (params.servingsMin !== undefined) {
+                if (recipe.servings === undefined || recipe.servings < params.servingsMin) {
+                    return false;
+                }
+            }
+
+            if (params.servingsMax !== undefined) {
+                if (recipe.servings === undefined || recipe.servings > params.servingsMax) {
+                    return false;
+                }
+            }
+
             if (params.query) {
                 const query = normalizeText(params.query);
                 const searchableText = buildSearchableText(recipe);
 
-                if (!searchableText.includes(query)) {
+                const queryTokens = query.split(/\s+/).filter(Boolean);
+                if (queryTokens.some((token) => !searchableText.includes(token))) {
                     return false;
                 }
             }

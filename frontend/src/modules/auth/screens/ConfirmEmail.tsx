@@ -3,6 +3,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useState } from 'react';
 import { Pressable, View, Text, TextInput } from 'react-native';
 import { resendVerification, verifyEmail } from '@/src/services/authService';
+import ActionButton from '@/src/components/ActionButton';
+import InlineError from '@/src/components/InlineError';
 
 export default function ConfirmEmail({ navigation, route }: { navigation: any; route?: { params?: { email?: string; token?: string } } }) {
     const [email, setEmail] = useState(route?.params?.email ?? '');
@@ -93,16 +95,22 @@ export default function ConfirmEmail({ navigation, route }: { navigation: any; r
                     />
                 </View>
 
-                {errorMessage ? <Text className="text-red-500 text-sm text-center">{errorMessage}</Text> : null}
+                {errorMessage ? <InlineError message={errorMessage} title="Falha na confirmação de e-mail" /> : null}
                 {infoMessage ? <Text className="text-green-700 text-sm text-center">{infoMessage}</Text> : null}
 
-                <Pressable disabled={isSubmitting} onPress={handleVerifyEmail} className="w-full bg-[#f97316] p-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">{isSubmitting ? 'Validando...' : 'Validar e-mail'}</Text>
-                </Pressable>
+                <ActionButton
+                    label="Validar e-mail"
+                    loadingLabel="Validando..."
+                    loading={isSubmitting}
+                    onPress={() => void handleVerifyEmail()}
+                />
 
-                <Pressable disabled={isSubmitting} onPress={handleResendVerification} className="w-full bg-white border border-[#f97316] p-3 rounded-md">
-                    <Text className="text-center text-[#f97316] font-semibold">Reenviar e-mail de confirmação</Text>
-                </Pressable>
+                <ActionButton
+                    label="Reenviar e-mail de confirmação"
+                    variant="outline"
+                    disabled={isSubmitting}
+                    onPress={() => void handleResendVerification()}
+                />
 
                 <Pressable onPress={() => navigation.replace('Login')} className="w-full p-3 rounded-md">
                     <Text className="text-center text-black font-semibold">Ir para login</Text>

@@ -12,6 +12,8 @@ const searchQuerySchema = z.object({
     q: z.string().trim().optional(),
     category: z.string().trim().optional(),
     difficulty: z.enum(RecipeDifficultyOptions).optional(),
+    servingsMin: z.coerce.number().int().nonnegative().optional(),
+    servingsMax: z.coerce.number().int().nonnegative().optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
 });
 
@@ -199,6 +201,8 @@ export const RecipeController = {
                 query: validated.data.q,
                 category: validated.data.category,
                 difficulty: validated.data.difficulty,
+                servingsMin: validated.data.servingsMin,
+                servingsMax: validated.data.servingsMax,
                 limit: validated.data.limit,
             });
 

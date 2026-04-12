@@ -11,9 +11,11 @@ type CreateRecipeParams = z.infer<typeof CreateRecipeSchema> & {
 type UpdateRecipeParams = Partial<Omit<RecipeDocument, "id" | "authorId" | "createdAt">>;
 
 type SearchRecipeFilters = {
+    query?: string;
     category?: string;
     difficulty?: RecipeDocument["difficulty"];
-    query?: string;
+    servingsMin?: number;
+    servingsMax?: number;
     limit?: number;
 };
 
@@ -137,10 +139,22 @@ export const RecipeRepository = {
                 return false;
             }
 
+            if (filters.servingsMin !== undefined) {
+                if (recipe.servings === undefined || recipe.servings < filters.servingsMin) {
+                    return false;
+                }
+            }
+
+            if (filters.servingsMax !== undefined) {
+                if (recipe.servings === undefined || recipe.servings > filters.servingsMax) {
+                    return false;
+                }
+            }
+
             if (filters.query) {
-                const query = filters.query.toLowerCase();
                 const searchableText = [
                     recipe.title,
+                    recipe.authorName ?? "",
                     ...recipe.category,
                     ...recipe.ingredients.map((ingredient) => ingredient.name),
                     ...recipe.steps.map((step) => step.instruction),
@@ -148,7 +162,13 @@ export const RecipeRepository = {
                     .join(" ")
                     .toLowerCase();
 
-                if (!searchableText.includes(query)) {
+                const normalizedTokens = filters.query
+                    .toLowerCase()
+                    .split(/\s+/)
+                    .map((token) => token.trim())
+                    .filter(Boolean);
+
+                if (normalizedTokens.some((token) => !searchableText.includes(token))) {
                     return false;
                 }
             }

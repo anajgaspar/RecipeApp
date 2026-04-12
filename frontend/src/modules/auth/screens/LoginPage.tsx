@@ -3,6 +3,8 @@ import { Image, View, Text, TextInput, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
+import ActionButton from "@/src/components/ActionButton";
+import InlineError from "@/src/components/InlineError";
 
 export default function LoginPage({ navigation }: { navigation: any }) {
     const { signIn } = useAuth();
@@ -80,10 +82,13 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                         <FontAwesome6 name={showPassword ? "eye-slash" : "eye"} size={16} color="#9ca3af" />
                     </Pressable>
                 </View>
-                {errorMessage ? <Text className="text-red-500 text-sm">{errorMessage}</Text> : null}
-                <Pressable onPress={handleSignIn} disabled={isLoading} className="w-full bg-[#f97316] py-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">{isLoading ? "Entrando..." : "Entrar"}</Text>
-                </Pressable>
+                {errorMessage ? <InlineError message={errorMessage} title="Falha ao entrar" /> : null}
+                <ActionButton
+                    label="Entrar"
+                    loadingLabel="Entrando..."
+                    loading={isLoading}
+                    onPress={() => void handleSignIn()}
+                />
                 <View className="w-full flex-row items-center gap-3">
                     <View className="flex-1 h-px bg-gray-200" />
                     <Text className="text-xs text-gray-400">OU</Text>

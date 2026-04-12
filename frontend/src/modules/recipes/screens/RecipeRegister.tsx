@@ -4,6 +4,7 @@ import { Modal, FlatList, View, Pressable, Text, TextInput, ScrollView, Alert, K
 import UploadImage from "../components/UploadImage";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import { createRecipe, Recipe, RecipeCategory, RecipeDifficulty, updateRecipe } from "@/src/services/recipeService";
+import ActionButton from "@/src/components/ActionButton";
 
 const difficultyOptions = ["Fácil", "Médio", "Difícil"] as const;
 const categoryOptions = [
@@ -402,11 +403,12 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
                         </View>
                     ))}
                 </View>
-                <Pressable onPress={handleSubmit} className="w-full bg-[#f97316] py-3 rounded-md">
-                    <Text className="text-center text-white font-semibold">
-                        {isSaving ? "Salvando..." : isEditMode ? "Atualizar" : "Salvar"}
-                    </Text>
-                </Pressable>
+                <ActionButton
+                    label={isEditMode ? "Atualizar" : "Salvar"}
+                    loadingLabel="Salvando..."
+                    loading={isSaving}
+                    onPress={() => void handleSubmit()}
+                />
             </ScrollView>
             <Modal visible={isDifficultyOpen} transparent animationType="fade" onRequestClose={() => setIsDifficultyOpen(false)}>
                 <Pressable onPress={() => setIsDifficultyOpen(false)} className="flex-1 bg-black/40 items-center justify-center px-6">

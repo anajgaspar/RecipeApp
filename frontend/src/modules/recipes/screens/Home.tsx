@@ -4,6 +4,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import TopBar from "../components/TopBar";
 import RecipeCard from "../components/RecipeCard";
 import { getSuggestedRecipes, Recipe } from "@/src/services/recipeService";
+import LoadingState from "@/src/components/LoadingState";
+import InlineError from "@/src/components/InlineError";
 
 export default function Home({ navigation }: { navigation: any }) {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -62,8 +64,8 @@ export default function Home({ navigation }: { navigation: any }) {
                     </View>
                     <View className="flex flex-col">
                         <Text className="text-2xl font-bold mb-4">Sugerido para você</Text>
-                        {isLoading ? <Text>Carregando receitas...</Text> : null}
-                        {errorMessage ? <Text className="text-red-500">{errorMessage}</Text> : null}
+                        {isLoading ? <LoadingState label="Carregando receitas..." compact /> : null}
+                        {errorMessage ? <InlineError message={errorMessage} title="Não conseguimos carregar o feed" /> : null}
                         {!isLoading && !errorMessage && recipes.length === 0 ? <Text>Nenhuma receita encontrada.</Text> : null}
                         <View className="gap-4">
                             {recipes.map((recipe, index) => (

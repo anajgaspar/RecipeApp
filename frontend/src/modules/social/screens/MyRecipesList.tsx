@@ -5,6 +5,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { deleteRecipe, getMyRecipes, getSuggestedRecipes, Recipe } from "@/src/services/recipeService";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import MyRecipesCard from "../components/MyRecipesCard";
+import LoadingState from "@/src/components/LoadingState";
+import InlineError from "@/src/components/InlineError";
 
 export default function MyRecipesList({ navigation }: { navigation: any }) {
     const { user } = useAuth();
@@ -95,8 +97,8 @@ export default function MyRecipesList({ navigation }: { navigation: any }) {
             </View>
 
             <ScrollView className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-                {isLoading ? <Text>Carregando receitas...</Text> : null}
-                {errorMessage ? <Text className="text-red-500">{errorMessage}</Text> : null}
+                {isLoading ? <LoadingState label="Carregando receitas..." compact /> : null}
+                {errorMessage ? <InlineError message={errorMessage} title="Falha ao carregar suas receitas" /> : null}
                 {!isLoading && !errorMessage && recipes.length === 0 ? (
                     <Text>Você ainda não cadastrou nenhuma receita.</Text>
                 ) : null}

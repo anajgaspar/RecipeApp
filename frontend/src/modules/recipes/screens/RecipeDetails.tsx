@@ -7,6 +7,8 @@ import RecipeComments from "../components/RecipeComments";
 import { getRecipeById, Recipe } from "@/src/services/recipeService";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import { getPublicUserProfile } from "@/src/services/authService";
+import LoadingState from "@/src/components/LoadingState";
+import InlineError from "@/src/components/InlineError";
 
 export default function RecipeDetails({ navigation, route }: { navigation: any; route: any }) {
     const { user } = useAuth();
@@ -91,7 +93,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
 
                 setAuthorProfileName(publicProfile.name ?? null);
                 setAuthorProfileAvatar(publicProfile.avatarDataUrl ?? null);
-            } catch (_error) {
+            } catch {
                 if (!isMounted) {
                     return;
                 }
@@ -127,7 +129,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     if (isLoading) {
         return (
             <View className="flex-1 bg-white items-center justify-center">
-                <Text>Carregando receita...</Text>
+                <LoadingState label="Carregando receita..." />
             </View>
         );
     }
@@ -135,7 +137,10 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     if (errorMessage || !recipe) {
         return (
             <View className="flex-1 bg-white items-center justify-center px-4 gap-4">
-                <Text className="text-red-500 text-center">{errorMessage ?? "Receita não encontrada."}</Text>
+                <InlineError
+                    message={errorMessage ?? "Receita não encontrada. Tente voltar e abrir novamente."}
+                    title="Não foi possível abrir esta receita"
+                />
                 <Pressable onPress={() => navigation.goBack()} className="bg-[#f97316] px-4 py-2 rounded-md">
                     <Text className="text-white font-semibold">Voltar</Text>
                 </Pressable>

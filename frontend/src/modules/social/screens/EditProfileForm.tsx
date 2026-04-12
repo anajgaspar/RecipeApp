@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
+import ActionButton from "@/src/components/ActionButton";
+import InlineError from "@/src/components/InlineError";
 
 const MAX_AVATAR_BYTES = 850 * 1024;
 const MAX_DIMENSION = 1024;
@@ -256,12 +258,14 @@ export default function EditProfileForm({ navigation }: { navigation: any }) {
                     </View>
                     <Text className="text-xs text-[#9ca3af]">* Pelo menos 8 caracteres</Text>
                 </View>
-                {errorMessage ? (
-                    <Text className="text-sm text-red-500">{errorMessage}</Text>
-                ) : null}
-                <Pressable onPress={handleSaveProfile} disabled={isSaving} className="w-full bg-[#f97316] py-3 my-4 rounded-md">
-                    <Text className="text-center text-white font-semibold">{isSaving ? "Salvando..." : "Salvar Alterações"}</Text>
-                </Pressable>
+                {errorMessage ? <InlineError message={errorMessage} title="Não foi possível salvar seu perfil" /> : null}
+                <ActionButton
+                    label="Salvar Alterações"
+                    loadingLabel="Salvando..."
+                    loading={isSaving}
+                    onPress={() => void handleSaveProfile()}
+                    className="my-4"
+                />
             </View>
         </View>
 
