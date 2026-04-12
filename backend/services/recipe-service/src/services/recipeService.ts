@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { FavoritesRepository } from "../repositories/favoriteRepository";
 import { z } from "zod";
 import { RecipeRepository } from "../repositories/recipeRepository";
 import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
@@ -29,6 +30,47 @@ function buildSearchableText(recipe: RecipeDocument): string {
     ]
         .join(" ")
         .toLowerCase();
+}
+
+type RecommendationProfile = {
+    categoryWeights: Map<string, number>;
+    ingredientWeights: Map<string, number>;
+};
+
+function buildRecommendationProfile(recipes: RecipeDocument[]): RecommendationProfile {
+    const categoryWeights = new Map<string, number>();
+    const ingredientWeights = new Map<string, number>();
+
+    recipes.forEach((recipe) => {
+        recipe.category.forEach((category) => {
+            const normalizedCategory = normalizeText(category);
+            categoryWeights.set(normalizedCategory, (categoryWeights.get(normalizedCategory) ?? 0) + 1);
+        });
+
+        recipe.ingredients.forEach((ingredient) => {
+            const normalizedIngredient = normalizeText(ingredient.name);
+            ingredientWeights.set(normalizedIngredient, (ingredientWeights.get(normalizedIngredient) ?? 0) + 1);
+        });
+    });
+
+    return {
+        categoryWeights,
+        ingredientWeights,
+    };
+}
+
+function scoreRecipeForRecommendation(recipe: RecipeDocument, profile: RecommendationProfile): number {
+    const categoryScore = recipe.category.reduce((sum, category) => {
+        const normalizedCategory = normalizeText(category);
+        return sum + (profile.categoryWeights.get(normalizedCategory) ?? 0) * 3;
+    }, 0);
+
+    const ingredientScore = recipe.ingredients.reduce((sum, ingredient) => {
+        const normalizedIngredient = normalizeText(ingredient.name);
+        return sum + (profile.ingredientWeights.get(normalizedIngredient) ?? 0);
+    }, 0);
+
+    return categoryScore + ingredientScore;
 }
 
 export const RecipeService = {
@@ -110,8 +152,55 @@ export const RecipeService = {
     },
 
     async getSuggestedFeed(userId?: string, limit = 20): Promise<RecipeDocument[]> {
-        const _userId = userId;
-        return RecipeRepository.findAll(limit);
+        const fetchLimit = Math.max(limit * 6, 120);
+        const allRecipes = await RecipeRepository.findAll(fetchLimit);
+
+        if (!userId) {
+            return allRecipes.slice(0, limit);
+        }
+
+        const favorites = await FavoritesRepository.listByUserId(userId);
+        if (favorites.length === 0) {
+            return allRecipes.slice(0, limit);
+        }
+
+        const favoriteRecipes = await Promise.all(
+            favorites.map((favorite) => RecipeRepository.findById(favorite.recipeId))
+        );
+
+        const validFavoriteRecipes = favoriteRecipes.filter((recipe): recipe is RecipeDocument => recipe !== null);
+        if (validFavoriteRecipes.length === 0) {
+            return allRecipes.slice(0, limit);
+        }
+
+        const profile = buildRecommendationProfile(validFavoriteRecipes);
+
+        const rankedRecipes = allRecipes
+            .map((recipe) => ({
+                recipe,
+                score: scoreRecipeForRecommendation(recipe, profile),
+            }))
+            .sort((left, right) => {
+                if (right.score !== left.score) {
+                    return right.score - left.score;
+                }
+
+                return right.recipe.createdAt.localeCompare(left.recipe.createdAt);
+            });
+
+        const recommendations = rankedRecipes
+            .filter((item) => item.score > 0)
+            .map((item) => item.recipe);
+
+        if (recommendations.length >= limit) {
+            return recommendations.slice(0, limit);
+        }
+
+        const fallbackRecipes = rankedRecipes
+            .filter((item) => item.score === 0)
+            .map((item) => item.recipe);
+
+        return [...recommendations, ...fallbackRecipes].slice(0, limit);
     },
 
     async searchRecipes(params: SearchRecipesParams): Promise<RecipeDocument[]> {

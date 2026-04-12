@@ -10,6 +10,7 @@ import RecipeRegister from "@/src/modules/recipes/screens/RecipeRegister";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import EditProfileForm from "@/src/modules/social/screens/EditProfileForm";
 import MyRecipesList from "@/src/modules/social/screens/MyRecipesList";
+import MyFavoritesList from "@/src/modules/social/screens/MyFavoritesList";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -34,6 +35,7 @@ export default function App() {
             <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }} />
             <Stack.Screen name="RecipeRegister" component={RecipeRegister} options={{ headerShown: false }} />
             <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
+            <Stack.Screen name="MyFavorites" component={MyFavoritesList} options={{ headerShown: false }} />
             <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
           </>
         ) : (

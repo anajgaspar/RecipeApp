@@ -1,12 +1,15 @@
-import { View, Image, Text } from "react-native";
+import { View, Image, Text, Pressable } from "react-native";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Recipe } from "@/src/services/recipeService";
 
 type RecipeCardProps = {
     recipe: Recipe;
+    isFavorited?: boolean;
+    onFavorite?: () => void;
 };
 
-export default function RecipeCard({ recipe }: RecipeCardProps) {
+export default function RecipeCard({ recipe, isFavorited = false, onFavorite }: RecipeCardProps) {
     const firstCategory = recipe.category[0] ?? "Sem categoria";
 
     return (
@@ -18,9 +21,15 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                         className="w-full h-56 rounded-t-xl"
                         resizeMode="cover"
                     />
-                    <View className="absolute top-2 right-2 bg-white rounded-full p-2">
-                        <FontAwesome6 name="heart" size={24} color="black" />
-                    </View>
+                    {onFavorite ? (
+                        <Pressable onPress={onFavorite} className="absolute top-2 right-2 bg-white rounded-full p-2">
+                            <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "#ef4444" : "black"} />
+                        </Pressable>
+                    ) : (
+                        <View className="absolute top-2 right-2 bg-white rounded-full p-2">
+                            <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "#ef4444" : "black"} />
+                        </View>
+                    )}
                 </View>
                 <View className="flex flex-row">
                     <Text className="absolute bottom-2 left-2 bg-white py-1 px-2 rounded-full">{firstCategory}</Text>

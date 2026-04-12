@@ -9,8 +9,8 @@ export default function CardOption() {
     const options = [
         {
             icon: "heart",
-            title: "Favoritos",
-            route: "UserFavorites"
+            title: "Meus Favoritos",
+            route: "MyFavorites"
         },
         {
             icon: "book-open",

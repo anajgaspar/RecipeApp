@@ -1,10 +1,10 @@
-import { ScrollView, View, Image, Text, Pressable } from "react-native";
+import { ScrollView, View, Image, Text, Pressable, Alert } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import RecipeList from "../components/RecipeList";
 import RecipeComments from "../components/RecipeComments";
-import { getRecipeById, Recipe } from "@/src/services/recipeService";
+import { getRecipeById, listFavoriteRecipes, Recipe, toggleFavorite } from "@/src/services/recipeService";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import { getPublicUserProfile } from "@/src/services/authService";
 import LoadingState from "@/src/components/LoadingState";
@@ -19,6 +19,8 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [authorProfileName, setAuthorProfileName] = useState<string | null>(null);
     const [authorProfileAvatar, setAuthorProfileAvatar] = useState<string | null>(null);
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -110,6 +112,53 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
         };
     }, [recipe, user?.id]);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadFavoriteState() {
+            if (!recipe || !user?.id) {
+                setIsFavorited(false);
+                return;
+            }
+
+            try {
+                const favorites = await listFavoriteRecipes();
+                if (!isMounted) {
+                    return;
+                }
+
+                setIsFavorited(favorites.some((item) => item.recipe?.id === recipe.id));
+            } catch {
+                if (isMounted) {
+                    setIsFavorited(false);
+                }
+            }
+        }
+
+        loadFavoriteState();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [recipe, user?.id]);
+
+    async function handleToggleFavorite() {
+        if (!recipe) {
+            return;
+        }
+
+        try {
+            setIsFavoriteLoading(true);
+            const result = await toggleFavorite(recipe.id);
+            setIsFavorited(result.favorited);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Não foi possível atualizar os favoritos.";
+            Alert.alert("Favoritos", message);
+        } finally {
+            setIsFavoriteLoading(false);
+        }
+    }
+
     const recipeCost = useMemo(() => {
         if (!recipe) {
             return null;
@@ -165,9 +214,13 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                             className="w-full h-80 rounded-t-xl"
                             resizeMode="cover"
                         />
-                        <View className="absolute top-12 right-20 bg-white rounded-full p-2">
-                            <FontAwesome6 name="heart" size={24} color="black" />
-                        </View>
+                        <Pressable
+                            onPress={() => void handleToggleFavorite()}
+                            disabled={isFavoriteLoading}
+                            className="absolute top-12 right-20 bg-white rounded-full p-2"
+                        >
+                            <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "#ef4444" : "black"} />
+                        </Pressable>
                         <View className="absolute top-12 right-6 bg-white rounded-full p-2">
                             <Ionicons name="share-social-outline" size={24} color="black" />
                         </View>

@@ -113,6 +113,28 @@ type GetRecipeResponse = {
   recipe: Recipe;
 };
 
+export type FavoriteRecord = {
+  id: string;
+  userId: string;
+  recipeId: string;
+  createdAt: string;
+};
+
+export type FavoriteRecipeEntry = {
+  favorite: FavoriteRecord;
+  recipe: Recipe | null;
+};
+
+type ToggleFavoriteResponse = {
+  message: string;
+  favorited: boolean;
+  favorite?: FavoriteRecord;
+};
+
+type ListFavoritesResponse = {
+  favorites: FavoriteRecipeEntry[];
+};
+
 export type SearchRecipesParams = {
   query?: string;
   category?: RecipeCategory;
@@ -185,6 +207,24 @@ export async function updateRecipe(recipeId: string, payload: CreateRecipePayloa
 export async function deleteRecipe(recipeId: string): Promise<void> {
   try {
     await api.delete<DeleteRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function listFavoriteRecipes(): Promise<FavoriteRecipeEntry[]> {
+  try {
+    const { data } = await api.get<ListFavoritesResponse>(`${RECIPE_API_URL}/api/favorites`);
+    return data.favorites;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function toggleFavorite(recipeId: string): Promise<ToggleFavoriteResponse> {
+  try {
+    const { data } = await api.post<ToggleFavoriteResponse>(`${RECIPE_API_URL}/api/favorites/${recipeId}/toggle`);
+    return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
