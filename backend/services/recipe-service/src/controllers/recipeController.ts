@@ -68,6 +68,104 @@ export const RecipeController = {
         }
     },
 
+    async updateRecipe(req: Request, res: Response) {
+        try {
+            const validatedParams = recipeIdParamSchema.safeParse(req.params);
+            if (!validatedParams.success) {
+                return res.status(400).json({
+                    error: "Parâmetro inválido",
+                    details: validatedParams.error.issues,
+                });
+            }
+
+            const userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return res.status(401).json({ error: "Usuário não autenticado." });
+            }
+
+            const validatedBody = CreateRecipeSchema.safeParse(req.body);
+            if (!validatedBody.success) {
+                return res.status(400).json({
+                    error: "Dados inválidos",
+                    details: validatedBody.error.issues,
+                });
+            }
+
+            const recipe = await RecipeService.updateRecipe(userId, validatedParams.data.recipeId, validatedBody.data);
+            return res.status(200).json({
+                message: "Receita atualizada com sucesso.",
+                recipe,
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro desconhecido";
+
+            if (message === "Receita não encontrada") {
+                return res.status(404).json({ error: message });
+            }
+
+            if (message.includes("não tem permissão")) {
+                return res.status(403).json({ error: message });
+            }
+
+            return res.status(500).json({ error: message });
+        }
+    },
+
+    async deleteRecipe(req: Request, res: Response) {
+        try {
+            const validatedParams = recipeIdParamSchema.safeParse(req.params);
+            if (!validatedParams.success) {
+                return res.status(400).json({
+                    error: "Parâmetro inválido",
+                    details: validatedParams.error.issues,
+                });
+            }
+
+            const userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return res.status(401).json({ error: "Usuário não autenticado." });
+            }
+
+            await RecipeService.deleteRecipe(userId, validatedParams.data.recipeId);
+            return res.status(200).json({ message: "Receita excluída com sucesso." });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro desconhecido";
+
+            if (message === "Receita não encontrada") {
+                return res.status(404).json({ error: message });
+            }
+
+            if (message.includes("não tem permissão")) {
+                return res.status(403).json({ error: message });
+            }
+
+            return res.status(500).json({ error: message });
+        }
+    },
+
+    async getMyRecipes(req: Request, res: Response) {
+        try {
+            const validated = listQuerySchema.safeParse(req.query);
+            if (!validated.success) {
+                return res.status(400).json({
+                    error: "Query inválida",
+                    details: validated.error.issues,
+                });
+            }
+
+            const userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return res.status(401).json({ error: "Usuário não autenticado." });
+            }
+
+            const recipes = await RecipeService.getMyRecipes(userId, validated.data.limit ?? 50);
+            return res.status(200).json({ recipes });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro desconhecido";
+            return res.status(500).json({ error: message });
+        }
+    },
+
     async getSuggestedFeed(req: Request, res: Response) {
         try {
             const validated = listQuerySchema.safeParse(req.query);

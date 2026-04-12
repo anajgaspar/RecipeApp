@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import { z } from "zod";
 import { RecipeRepository } from "../repositories/recipeRepository";
-import { UserPreferencesRepository } from "../repositories/userPreferencesRepository";
 import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
 
 type RecipeDocument = z.infer<typeof RecipeDocumentSchema>;
@@ -53,56 +52,63 @@ export const RecipeService = {
         return recipe;
     },
 
+    async updateRecipe(authorId: string, recipeId: string, data: CreateRecipeInput): Promise<RecipeDocument> {
+        const existingRecipe = await RecipeRepository.findById(recipeId);
+
+        if (!existingRecipe) {
+            throw new Error("Receita não encontrada");
+        }
+
+        if (existingRecipe.authorId !== authorId) {
+            throw new Error("Você não tem permissão para editar esta receita.");
+        }
+
+        const nextRecipe: RecipeDocument = {
+            ...existingRecipe,
+            ...data,
+            authorId,
+            updatedAt: new Date().toISOString(),
+            ingredients: data.ingredients.map((ingredient, index) => ({
+                id: existingRecipe.ingredients[index]?.id ?? crypto.randomUUID(),
+                name: ingredient.name,
+                quantityValue: ingredient.quantityValue,
+                quantityUnit: ingredient.quantityUnit,
+                ...(ingredient.price !== undefined ? { price: ingredient.price } : {}),
+                position: ingredient.position ?? index + 1,
+            })),
+            steps: data.steps.map((step, index) => ({
+                id: existingRecipe.steps[index]?.id ?? crypto.randomUUID(),
+                stepNumber: step.stepNumber ?? index + 1,
+                instruction: step.instruction,
+                ...(step.timerSeconds !== undefined ? { timerSeconds: step.timerSeconds } : {}),
+            })),
+        };
+
+        await RecipeRepository.updateById(recipeId, nextRecipe);
+        return nextRecipe;
+    },
+
+    async deleteRecipe(authorId: string, recipeId: string): Promise<void> {
+        const existingRecipe = await RecipeRepository.findById(recipeId);
+
+        if (!existingRecipe) {
+            throw new Error("Receita não encontrada");
+        }
+
+        if (existingRecipe.authorId !== authorId) {
+            throw new Error("Você não tem permissão para excluir esta receita.");
+        }
+
+        await RecipeRepository.deleteById(recipeId);
+    },
+
+    async getMyRecipes(authorId: string, limit = 50): Promise<RecipeDocument[]> {
+        return RecipeRepository.findByAuthorId(authorId, limit);
+    },
+
     async getSuggestedFeed(userId?: string, limit = 20): Promise<RecipeDocument[]> {
-        const allRecipes = await RecipeRepository.findAll(Math.max(limit * 4, limit));
-
-        if (!userId) {
-            return allRecipes.slice(0, limit);
-        }
-
-        const preferences = await UserPreferencesRepository.findByUserId(userId);
-        if (!preferences) {
-            return allRecipes.slice(0, limit);
-        }
-
-        const preferredCategories = preferences.preferences.preferredCategories.map(normalizeText);
-        const preferredTags = preferences.preferences.preferredTags.map(normalizeText);
-
-        const scoredRecipes = allRecipes
-            .map((recipe) => {
-                let score = 0;
-                const searchableText = buildSearchableText(recipe);
-                const normalizedCategories = recipe.category.map(normalizeText);
-
-                if (normalizedCategories.some((category) => preferredCategories.includes(category))) {
-                    score += 3;
-                }
-
-                preferredTags.forEach((tag) => {
-                    if (searchableText.includes(tag)) {
-                        score += 1;
-                    }
-                });
-
-                return { recipe, score };
-            })
-            .sort((left, right) => {
-                if (right.score !== left.score) {
-                    return right.score - left.score;
-                }
-
-                return right.recipe.createdAt.localeCompare(left.recipe.createdAt);
-            });
-
-        const preferredRecipes = scoredRecipes
-            .filter((item) => item.score > 0)
-            .map((item) => item.recipe);
-
-        if (preferredRecipes.length > 0) {
-            return preferredRecipes.slice(0, limit);
-        }
-
-        return allRecipes.slice(0, limit);
+        const _userId = userId;
+        return RecipeRepository.findAll(limit);
     },
 
     async searchRecipes(params: SearchRecipesParams): Promise<RecipeDocument[]> {

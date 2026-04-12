@@ -1,15 +1,20 @@
 import { View, Pressable, Text, Image, ActivityIndicator } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 type UploadImageProps = {
     onChange?: (uri: string | null) => void;
+    value?: string | null;
 };
 
-export default function UploadImage({ onChange }: UploadImageProps) {
+export default function UploadImage({ onChange, value = null }: UploadImageProps) {
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setImageUri(value);
+    }, [value]);
 
     const updateImage = (uri: string | null) => {
         setImageUri(uri);
@@ -21,23 +26,6 @@ export default function UploadImage({ onChange }: UploadImageProps) {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.8,
-            });
-
-            if (!result.canceled) {
-                updateImage(result.assets[0].uri);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const takePhoto = async () => {
-        setLoading(true);
-        try {
-            const result = await ImagePicker.launchCameraAsync({
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,

@@ -1,10 +1,36 @@
+import { useEffect, useState } from "react";
 import { Image, Text, View } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useAuth } from "../../auth/context/AuthContext";
+import { getMyRecipes } from "@/src/services/recipeService";
 
 export default function ProfileInfo() {
     const { user } = useAuth();
     const avatarSource = user?.avatarDataUrl ? { uri: user.avatarDataUrl } : null;
+    const [recipeCount, setRecipeCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadCount() {
+            try {
+                const recipes = await getMyRecipes(100);
+                if (isMounted) {
+                    setRecipeCount(recipes.length);
+                }
+            } catch {
+                if (isMounted) {
+                    setRecipeCount(null);
+                }
+            }
+        }
+
+        loadCount();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return (
         <View className="w-full flex flex-col items-center gap-2 px-4 py-6">
@@ -23,7 +49,7 @@ export default function ProfileInfo() {
             </Text>
             <View className="w-full flex flex-row justify-between p-4">
                 <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-32 h-20 rounded-md">
-                    <Text className="font-semibold text-[#f97316] text-lg">24</Text>
+                    <Text className="font-semibold text-[#f97316] text-lg">{recipeCount ?? "-"}</Text>
                     <Text className="text-[#9ca3af] text-sm">Receitas</Text>
                 </View>
                 <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-32 h-20 rounded-md">

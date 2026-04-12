@@ -15,7 +15,7 @@ export default function CardOption() {
         {
             icon: "book-open",
             title: "Minhas Receitas",
-            route: null
+            route: "MyRecipes"
         },
         {
             icon: "users",
@@ -30,6 +30,10 @@ export default function CardOption() {
     ]
 
     function handleOptionPress(route: string | null) {
+        if (!route) {
+            return;
+        }
+
         navigation.navigate(route);
     }
 

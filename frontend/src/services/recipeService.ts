@@ -32,13 +32,41 @@ export type CreateRecipeStep = {
 };
 
 export type CreateRecipePayload = {
+  authorName?: string;
+  authorAvatarDataUrl?: string | null;
   title: string;
   imageUrl: string;
   prepTimeMinutes: number;
+  servings?: number;
   difficulty: RecipeDifficulty;
   category: RecipeCategory[];
   ingredients: CreateRecipeIngredient[];
   steps: CreateRecipeStep[];
+};
+
+export type Recipe = {
+  id: string;
+  authorId: string;
+  authorName?: string;
+  authorAvatarDataUrl?: string | null;
+  title: string;
+  imageUrl: string;
+  prepTimeMinutes: number;
+  servings?: number;
+  difficulty: RecipeDifficulty;
+  category: RecipeCategory[];
+  ingredients: Array<
+    CreateRecipeIngredient & {
+      id: string;
+    }
+  >;
+  steps: Array<
+    CreateRecipeStep & {
+      id: string;
+    }
+  >;
+  createdAt: string;
+  updatedAt: string;
 };
 
 function getErrorMessage(error: unknown): string {
@@ -72,9 +100,75 @@ type CreateRecipeResponse = {
   recipe: unknown;
 };
 
+type UpdateRecipeResponse = {
+  message: string;
+  recipe: unknown;
+};
+
+type DeleteRecipeResponse = {
+  message: string;
+};
+
+type ListRecipesResponse = {
+  recipes: Recipe[];
+};
+
+type GetRecipeResponse = {
+  recipe: Recipe;
+};
+
 export async function createRecipe(payload: CreateRecipePayload): Promise<void> {
   try {
     await api.post<CreateRecipeResponse>(`${RECIPE_API_URL}/api/recipes`, payload);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getSuggestedRecipes(limit = 20): Promise<Recipe[]> {
+  try {
+    const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/feed/suggested`, {
+      params: { limit },
+    });
+
+    return data.recipes;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getRecipeById(recipeId: string): Promise<Recipe> {
+  try {
+    const { data } = await api.get<GetRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`);
+    return data.recipe;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyRecipes(limit = 50): Promise<Recipe[]> {
+  try {
+    const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/me`, {
+      params: { limit },
+    });
+
+    return data.recipes;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function updateRecipe(recipeId: string, payload: CreateRecipePayload): Promise<void> {
+  try {
+    await api.put<UpdateRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`, payload);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function deleteRecipe(recipeId: string): Promise<void> {
+  try {
+    await api.delete<DeleteRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

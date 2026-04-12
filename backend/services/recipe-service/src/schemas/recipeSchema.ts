@@ -11,15 +11,37 @@ export const RecipeCategoryOptions = [
     "Sem Lactose",
 ] as const;
 
+const RecipeDifficultyReadSchema = z
+    .enum(["Fácil", "Médio", "Difícil", "fácil", "médio", "difícil"])
+    .transform((value) => {
+        const normalized = value.toLowerCase();
+
+        if (normalized === "fácil") return "Fácil" as const;
+        if (normalized === "médio") return "Médio" as const;
+        return "Difícil" as const;
+    });
+
+const RecipeCategoryReadSchema = z.union([
+    z.array(z.string().trim().min(1)),
+    z.string().trim().min(1),
+    z.null(),
+    z.undefined(),
+]).transform((value) => {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+});
+
 export const RecipeDocumentSchema = z.object({
     id: z.string(),
     authorId: z.string(),
+    authorName: z.string().trim().optional(),
+    authorAvatarDataUrl: z.string().nullable().optional(),
     title: z.string().trim().min(1),
     imageUrl: z.string().url(),
     prepTimeMinutes: z.number().int(),
     servings: z.number().int().optional(),
-    difficulty: z.enum(RecipeDifficultyOptions),
-    category: z.array(z.enum(RecipeCategoryOptions)).default([]),
+    difficulty: RecipeDifficultyReadSchema,
+    category: RecipeCategoryReadSchema,
     ingredients: z.array(
         z.object({
             id: z.string(),
@@ -43,12 +65,14 @@ export const RecipeDocumentSchema = z.object({
 })
 
 export const CreateRecipeSchema = z.object({
+    authorName: z.string().trim().optional(),
+    authorAvatarDataUrl: z.string().nullable().optional(),
     title: z.string().trim().min(1),
     imageUrl: z.string().url(),
     prepTimeMinutes: z.number().int(),
     servings: z.number().int().optional(),
     difficulty: z.enum(RecipeDifficultyOptions),
-    category: z.array(z.enum(RecipeCategoryOptions)).default([]),
+    category: z.array(z.string().trim().min(1)).default([]),
     ingredients: z.array(
         z.object({
             name: z.string().trim().min(1),

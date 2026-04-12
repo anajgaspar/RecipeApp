@@ -9,9 +9,12 @@ const router = Router();
 
 router.get("/recipes/feed/suggested", AuthMiddleware.authenticateUser, RecipeController.getSuggestedFeed);
 router.get("/recipes/search", RecipeController.searchRecipes);
+router.get("/recipes/me", AuthMiddleware.authenticateUser, RecipeController.getMyRecipes);
 router.get("/recipes/:recipeId", RecipeController.getRecipeById);
 
 router.post("/recipes", AuthMiddleware.authenticateUser, RecipeController.createRecipe);
+router.put("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.updateRecipe);
+router.delete("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.deleteRecipe);
 
 router.post("/favorites/:recipeId/toggle", AuthMiddleware.authenticateUser, FavoriteController.toggleFavorite);
 router.get("/favorites", AuthMiddleware.authenticateUser, FavoriteController.listFavorites);

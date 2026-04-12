@@ -17,6 +17,22 @@ type SearchRecipeFilters = {
     limit?: number;
 };
 
+function removeUndefinedDeep<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((item) => removeUndefinedDeep(item)) as T;
+    }
+
+    if (value !== null && typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>)
+            .filter(([, item]) => item !== undefined)
+            .map(([key, item]) => [key, removeUndefinedDeep(item)]);
+
+        return Object.fromEntries(entries) as T;
+    }
+
+    return value;
+}
+
 const recipesCollection = "recipes";
 
 export const RecipeRepository = {
@@ -43,20 +59,22 @@ export const RecipeRepository = {
         const documents = await db
             .collection(recipesCollection)
             .where("authorId", "==", authorId)
-            .orderBy("createdAt", "desc")
             .limit(limit)
             .get();
 
         return documents.docs
             .map((doc) => RecipeDocumentSchema.safeParse(doc.data()))
             .filter((result) => result.success)
-            .map((result) => result.data);
+            .map((result) => result.data)
+            .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
     },
 
     async create(params: CreateRecipeParams): Promise<RecipeDocument | null> {
         const document: RecipeDocument = {
             id: params.id,
             authorId: params.authorId,
+            ...(params.authorName ? { authorName: params.authorName } : {}),
+            ...(params.authorAvatarDataUrl ? { authorAvatarDataUrl: params.authorAvatarDataUrl } : {}),
             title: params.title,
             imageUrl: params.imageUrl,
             prepTimeMinutes: params.prepTimeMinutes,
@@ -86,13 +104,19 @@ export const RecipeRepository = {
     },
 
     async updateById(id: string, params: UpdateRecipeParams): Promise<void> {
+        const sanitizedParams = removeUndefinedDeep(params);
+
         await db.collection(recipesCollection).doc(id).set(
             {
-                ...params,
+                ...sanitizedParams,
                 updatedAt: new Date().toISOString(),
             },
             { merge: true }
         );
+    },
+
+    async deleteById(id: string): Promise<void> {
+        await db.collection(recipesCollection).doc(id).delete();
     },
 
     async findSuggested(filters: SearchRecipeFilters = {}): Promise<RecipeDocument[]> {

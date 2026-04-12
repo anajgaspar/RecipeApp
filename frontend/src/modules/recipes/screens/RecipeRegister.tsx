@@ -1,9 +1,9 @@
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal, FlatList, View, Pressable, Text, TextInput, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import UploadImage from "../components/UploadImage";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
-import { createRecipe, RecipeCategory, RecipeDifficulty } from "@/src/services/recipeService";
+import { createRecipe, Recipe, RecipeCategory, RecipeDifficulty, updateRecipe } from "@/src/services/recipeService";
 
 const difficultyOptions = ["Fácil", "Médio", "Difícil"] as const;
 const categoryOptions = [
@@ -16,8 +16,16 @@ const categoryOptions = [
     "Sem Lactose",
 ] as const;
 
-export default function RecipeRegister({ navigation }: { navigation: any }) {
-    const { token } = useAuth();
+type RecipeRegisterRouteParams = {
+    mode?: "create" | "edit";
+    recipe?: Recipe;
+};
+
+export default function RecipeRegister({ navigation, route }: { navigation: any; route?: { params?: RecipeRegisterRouteParams } }) {
+    const { token, user } = useAuth();
+    const mode = route?.params?.mode ?? "create";
+    const recipeToEdit = route?.params?.recipe;
+    const isEditMode = mode === "edit" && !!recipeToEdit?.id;
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [title, setTitle] = useState("");
     const [prepTimeMinutes, setPrepTimeMinutes] = useState("");
@@ -33,6 +41,33 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
         { instruction: "", timerMinutes: "" },
     ]);
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (!isEditMode || !recipeToEdit) {
+            return;
+        }
+
+        setImageUri(recipeToEdit.imageUrl);
+        setTitle(recipeToEdit.title);
+        setPrepTimeMinutes(String(recipeToEdit.prepTimeMinutes));
+        setServings(recipeToEdit.servings ? String(recipeToEdit.servings) : "");
+        setDifficulty(recipeToEdit.difficulty);
+        setCategories(recipeToEdit.category);
+        setIngredientRows(
+            recipeToEdit.ingredients.map((ingredient) => ({
+                name: ingredient.name,
+                quantityValue: ingredient.quantityValue,
+                quantityUnit: ingredient.quantityUnit,
+                price: ingredient.price !== undefined ? String(ingredient.price) : "",
+            }))
+        );
+        setInstructionRows(
+            recipeToEdit.steps.map((step) => ({
+                instruction: step.instruction,
+                timerMinutes: step.timerSeconds ? String(step.timerSeconds / 60) : "",
+            }))
+        );
+    }, [isEditMode, recipeToEdit]);
 
     const selectedCategoriesLabel = useMemo(() => {
         if (categories.length === 0) {
@@ -51,19 +86,6 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
             return [...current, value];
         });
     };
-
-    const selectedIngredientTotal = useMemo(() => {
-        return ingredientRows.reduce((total, row) => {
-            const normalizedPrice = row.price.replace(",", ".").trim();
-            const priceValue = Number.parseFloat(normalizedPrice);
-
-            if (Number.isNaN(priceValue)) {
-                return total;
-            }
-
-            return total + priceValue;
-        }, 0);
-    }, [ingredientRows]);
 
     const addIngredientRow = () => {
         setIngredientRows((current) => [...current, { name: "", quantityValue: "", quantityUnit: "", price: "" }]);
@@ -95,7 +117,7 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
 
     const handleSubmit = async () => {
         if (!token) {
-            Alert.alert("Sessão expirada", "Faça login novamente para criar uma receita.");
+            Alert.alert("Sessão expirada", "Faça login novamente para salvar a receita.");
             return;
         }
 
@@ -163,6 +185,7 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
         }
 
         const payload = {
+            authorName: user?.name,
             title: title.trim(),
             imageUrl: imageUri,
             prepTimeMinutes: parsedPrepTime,
@@ -175,8 +198,15 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
 
         try {
             setIsSaving(true);
-            await createRecipe(payload);
-            Alert.alert("Receita criada");
+
+            if (isEditMode && recipeToEdit?.id) {
+                await updateRecipe(recipeToEdit.id, payload);
+                Alert.alert("Receita atualizada");
+            } else {
+                await createRecipe(payload);
+                Alert.alert("Receita criada");
+            }
+
             navigation.goBack();
         } catch (error) {
             const message = error instanceof Error ? error.message : "Não foi possível salvar a receita.";
@@ -197,7 +227,7 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
                 <Pressable onPress={() => navigation.goBack()}>
                     <FontAwesome6 name="arrow-left" size={24} color="black" />
                 </Pressable>
-                <Text className="font-robotoSemibold text-xl">Nova Receita</Text>
+                <Text className="font-robotoSemibold text-xl">{isEditMode ? "Editar Receita" : "Nova Receita"}</Text>
             </View>
             <ScrollView
                 className="flex-1"
@@ -209,7 +239,7 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
                     <Text className="left-2 bottom-1 bg-white px-1 text-xs">
                         Imagem
                     </Text>
-                    <UploadImage onChange={setImageUri} />
+                    <UploadImage onChange={setImageUri} value={imageUri} />
                 </View>
                 <View className="relative bg-[#fdfbf7] rounded-md px-3 py-2">
                     <Text className="absolute -top-2 left-2 bg-white px-1 text-xs">
@@ -373,7 +403,7 @@ export default function RecipeRegister({ navigation }: { navigation: any }) {
                 </View>
                 <Pressable onPress={handleSubmit} className="w-full bg-[#f97316] py-3 rounded-md">
                     <Text className="text-center text-white font-semibold">
-                        {isSaving ? "Salvando..." : "Salvar"}
+                        {isSaving ? "Salvando..." : isEditMode ? "Atualizar" : "Salvar"}
                     </Text>
                 </Pressable>
             </ScrollView>
