@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { CreateRecipeSchema } from "../schemas/recipeSchema";
+import { CreateRecipeSchema, RecipeDifficultyOptions } from "../schemas/recipeSchema";
 import { RecipeService } from "../services/recipeService";
 import { getUserIdFromRequest } from "../utils/requestContext";
 
@@ -11,7 +11,7 @@ const listQuerySchema = z.object({
 const searchQuerySchema = z.object({
     q: z.string().trim().optional(),
     category: z.string().trim().optional(),
-    difficulty: z.enum(["fácil", "médio", "difícil"]).optional(),
+    difficulty: z.enum(RecipeDifficultyOptions).optional(),
     limit: z.coerce.number().int().positive().max(100).optional(),
 });
 

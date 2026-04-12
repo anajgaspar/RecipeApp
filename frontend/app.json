@@ -39,7 +39,14 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir acesso às suas fotos",
+          "cameraPermission": "Permitir acesso à câmera"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

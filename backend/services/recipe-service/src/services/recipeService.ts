@@ -21,7 +21,7 @@ function normalizeText(value: string): string {
 function buildSearchableText(recipe: RecipeDocument): string {
     return [
         recipe.title,
-        recipe.category,
+        ...recipe.category,
         ...recipe.ingredients.map((ingredient) => ingredient.name),
         ...recipe.steps.map((step) => step.instruction),
     ]
@@ -72,9 +72,9 @@ export const RecipeService = {
             .map((recipe) => {
                 let score = 0;
                 const searchableText = buildSearchableText(recipe);
-                const normalizedCategory = normalizeText(recipe.category);
+                const normalizedCategories = recipe.category.map(normalizeText);
 
-                if (preferredCategories.includes(normalizedCategory)) {
+                if (normalizedCategories.some((category) => preferredCategories.includes(category))) {
                     score += 3;
                 }
 
@@ -109,7 +109,7 @@ export const RecipeService = {
         const recipes = await RecipeRepository.findAll(params.limit ?? 50);
 
         return recipes.filter((recipe) => {
-            if (params.category && recipe.category !== params.category) {
+            if (params.category && !recipe.category.some((category) => normalizeText(category) === normalizeText(params.category!))) {
                 return false;
             }
 

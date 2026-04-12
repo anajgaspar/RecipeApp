@@ -67,16 +67,18 @@ export const RecipeRepository = {
                 name: ingredient.name,
                 quantityValue: ingredient.quantityValue,
                 quantityUnit: ingredient.quantityUnit,
+                ...(ingredient.price !== undefined ? { price: ingredient.price } : {}),
                 position: ingredient.position ?? index + 1,
             })),
             steps: params.steps.map((step, index) => ({
                 id: crypto.randomUUID(),
                 stepNumber: step.stepNumber ?? index + 1,
                 instruction: step.instruction,
-                timerSeconds: step.timerSeconds,
+                ...(step.timerSeconds !== undefined ? { timerSeconds: step.timerSeconds } : {}),
             })),
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            ...(params.servings !== undefined ? { servings: params.servings } : {}),
         };
 
         await db.collection(recipesCollection).doc(document.id).set(document);
@@ -103,7 +105,7 @@ export const RecipeRepository = {
             .map((result) => result.data);
 
         return parsedRecipes.filter((recipe) => {
-            if (filters.category && recipe.category !== filters.category) {
+            if (filters.category && !recipe.category.some((category) => category.toLowerCase() === filters.category!.toLowerCase())) {
                 return false;
             }
 
@@ -115,7 +117,7 @@ export const RecipeRepository = {
                 const query = filters.query.toLowerCase();
                 const searchableText = [
                     recipe.title,
-                    recipe.category,
+                    ...recipe.category,
                     ...recipe.ingredients.map((ingredient) => ingredient.name),
                     ...recipe.steps.map((step) => step.instruction),
                 ]

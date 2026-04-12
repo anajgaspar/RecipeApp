@@ -4,7 +4,7 @@ import cors from "cors";
 import recipeRoutes from "./routes/recipeRoutes";
 
 const api = express();
-const port = Number(process.env.PORT) || 3001;
+const port = Number(process.env.PORT) || 3002;
 
 api.use(express.json());
 api.use(cors());

@@ -23,3 +23,4 @@ const app =
 			});
 
 export const db = getFirestore(app);
+db.settings({ ignoreUndefinedProperties: true });

@@ -132,9 +132,12 @@ export default function EditProfileForm({ navigation}: { navigation: any }) {
 
     return (
         <View className="flex-1 relative w-full flex flex-col gap-4 bg-white">
-            <Pressable onPress={() => navigation.goBack()} className="absolute top-16 left-8 z-10">
-                <FontAwesome6 name="arrow-left" size={24} color="black" />
-            </Pressable>
+            <View className="absolute top-16 left-8 flex flex-row items-center gap-6">
+                <Pressable onPress={() => navigation.goBack()}>
+                    <FontAwesome6 name="arrow-left" size={24} color="black" />
+                </Pressable>
+                <Text className="font-robotoSemibold text-xl">Editar Perfil</Text>
+            </View>
             <View className="flex flex-col p-4 gap-4 bg-white rounded-md mx-4 my-24">
                 <View className="relative my-6">
                     {avatarDataUrl ? (
