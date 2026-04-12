@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const RegisterSchema = z.object({
     name: z.string(),
     email: z.string().email(),
-    password: z.string().min(6)
+    password: z.string().min(8)
 })
 
 export const LoginSchema = z.object({
@@ -25,7 +25,7 @@ export const UpdateProfileSchema = z.object({
     email: z.string().email().optional(),
     avatarDataUrl: z.string().nullable().optional(),
     currentPassword: z.string().min(6).optional(),
-    newPassword: z.string().min(6).optional(),
+    newPassword: z.string().min(8).optional(),
 }).refine(
     (data) => Boolean(data.name || data.email || data.newPassword || data.avatarDataUrl !== undefined),
     { message: "Informe pelo menos um campo para atualizar." }

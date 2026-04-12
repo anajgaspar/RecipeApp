@@ -15,9 +15,16 @@ export default function SignupPage({ navigation }: { navigation: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
+    const MIN_PASSWORD_LENGTH = 8;
+
     async function handleSignUp() {
         if (!name.trim() || !email.trim() || !password.trim()) {
             setErrorMessage("Preencha nome, e-mail e senha.");
+            return;
+        }
+
+        if (password.trim().length < MIN_PASSWORD_LENGTH) {
+            setErrorMessage(`A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`);
             return;
         }
 
@@ -90,7 +97,7 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                             <FontAwesome6 name={showPassword ? "eye-slash" : "eye"} size={16} color="#9ca3af" />
                         </Pressable>
                     </View>
-                    <Text className="text-xs text-[#9ca3af]">* Pelo menos 8 caracteres</Text>
+                    <Text className="text-xs text-[#9ca3af]">* Mínimo de {MIN_PASSWORD_LENGTH} caracteres</Text>
                 </View>
                 {errorMessage ? <InlineError message={errorMessage} title="Falha ao criar conta" /> : null}
                 <ActionButton
