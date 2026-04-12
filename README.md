@@ -1,15 +1,32 @@
 # Receita na Mão 👐🍲
 >⌛ Em desenvolvimento
 
-<img width="2560" height="650" alt="GitHub Banner" src="https://github.com/user-attachments/assets/12618612-98e8-4b42-af40-422d65e7f304" />
+O **Receita na Mão** é um aplicativo mobile desenvolvido com foco em simplificar a rotina de quem gosta de cozinhar, permitindo descobrir, organizar e executar receitas de forma prática. A proposta da plataforma é unir planejamento alimentar, gestão de ingredientes e apoio no preparo em uma experiência única e intuitiva.
 
-O **Receita Na Mão** é um aplicativo mobile, com o objetivo de auxiliar usuários na organização de receitas, planejamento de refeições e gerenciamento de ingredientes, oferecendo uma experiência prática e intuitiva para o preparo de pratos no dia a dia.
-O aplicativo permite armazenar receitas, gerenciar uma despensa virtual, gerar listas de compras e receber sugestões personalizadas.
+Com o aplicativo, o usuário pode cadastrar e gerenciar suas próprias receitas, explorar sugestões personalizadas em um feed, realizar buscas com filtros e consultar detalhes completos de cada preparo.
+
+Entre as funcionalidades principais do produto, destacam-se:
+
+- Cadastro e organização de receitas próprias.
+- Feed com sugestões de receitas baseadas em preferências.
+- Busca de receitas por palavras-chave e filtros.
+- Visualização detalhada de receitas, com informações de preparo.
+- Planejamento semanal e suporte a lista de compras.
 
 <div align=center>
-<a href ="#tecnologias"> Tecnologias </a> | 
+<a href ="#sprints"> Sprints </a> | <a href ="#tecnologias"> Tecnologias </a> | 
 <a href ="#backlog"> Backlog do Produto </a> | <a href ="#instalacao"> Manual de Instalação </a>
 </div>
+
+---
+<span id="sprints">
+
+## 📊 Sprints:
+Sprint | Previsão | Status | Documentação |
+|------|----------|--------|--------------|
+|01| 16/03/2026 - 12/04/2026 |✅ Concluído| [Ver Documento](./docs/sprint1.md) |
+|02|  13/04/2026 - 10/05/2026 |⏳ A iniciar| [Ver Documento]() |
+|03| 11/05/2026 - 07/06/2026 |⏳ A iniciar| [Ver Documento]() |
 
 ---
 <span id="tecnologias">
@@ -47,10 +64,5 @@ O aplicativo permite armazenar receitas, gerenciar uma despensa virtual, gerar l
 <span id="instalacao">
 
 ## 📋 Guia de Instalação:
-
-### Pré-requisitos
-* JDK 17+
-* Gradle
-* Dispositivo Android ou emulador
 
 ---
