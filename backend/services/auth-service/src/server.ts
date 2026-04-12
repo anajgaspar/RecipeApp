@@ -7,7 +7,7 @@ import userRoutes from "./routes/userRoutes";
 const api = express();
 const port = Number(process.env.PORT) || 3001;
 
-api.use(express.json());
+api.use(express.json({ limit: "5mb" }));
 api.use(cors());
 
 api.use("/auth", authRoutes);

@@ -6,6 +6,8 @@ import {
   login as loginRequest,
   logout as logoutRequest,
   register as registerRequest,
+  updateProfile as updateProfileRequest,
+  UpdateProfilePayload,
 } from "@/src/services/authService";
 import { setAuthToken } from "@/src/services/api";
 import {
@@ -24,6 +26,7 @@ type AuthContextValue = {
   signIn: (payload: LoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<AuthUser>;
   signOut: () => Promise<void>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -85,6 +88,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   }
 
+  async function updateProfile(payload: UpdateProfilePayload) {
+    const updatedUser = await updateProfileRequest(payload);
+
+    await saveStoredUser(updatedUser);
+    setUser(updatedUser);
+
+    return updatedUser;
+  }
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -94,8 +106,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       signIn,
       signUp,
       signOut,
+      updateProfile,
     }),
-    [isLoadingSession, token, user],
+    [isLoadingSession, token, user, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

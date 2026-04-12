@@ -5,6 +5,7 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  avatarDataUrl?: string | null;
   emailVerified?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -56,6 +57,19 @@ type ResendVerificationResponse = {
 
 type LogoutResponse = {
   message: string;
+};
+
+export type UpdateProfilePayload = {
+  name?: string;
+  email?: string;
+  avatarDataUrl?: string | null;
+  currentPassword?: string;
+  newPassword?: string;
+};
+
+type UpdateProfileResponse = {
+  message: string;
+  user: AuthUser;
 };
 
 function getErrorMessage(error: unknown): string {
@@ -123,6 +137,15 @@ export async function logout(): Promise<string> {
   try {
     const { data } = await api.post<LogoutResponse>("/auth/logout");
     return data.message;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+  try {
+    const { data } = await api.put<UpdateProfileResponse>("/user", payload);
+    return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

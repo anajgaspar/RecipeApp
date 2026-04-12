@@ -7,6 +7,7 @@ export type StoredUser = {
   id: string;
   name: string;
   email: string;
+  avatarDataUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };

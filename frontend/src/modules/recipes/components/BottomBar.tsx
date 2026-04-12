@@ -50,7 +50,7 @@ export default function BottomBar() {
             <Tab.Screen
                 name="Social"
                 component={Profile}
-                options={{ tabBarLabel: 'Social' }}
+                options={{ tabBarLabel: 'Perfil' }}
             />
         </Tab.Navigator>
     )

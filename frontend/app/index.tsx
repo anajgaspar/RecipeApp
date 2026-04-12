@@ -7,6 +7,8 @@ import ConfirmEmail from "@/src/modules/auth/screens/ConfirmEmail";
 import Feed from "@/src/modules/Tab";
 import RecipeDetails from "@/src/modules/recipes/screens/RecipeDetails";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
+import EditProfileForm from "@/src/modules/social/components/EditProfileForm";
+import FavoritesList from "@/src/modules/social/components/FavoritesList";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -29,6 +31,8 @@ export default function App() {
           <>
             <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />
             <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }} />
+            <Stack.Screen name="UserFavorites" component={FavoritesList} options={{ headerShown: false }} />
+            <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
           </>
         ) : (
           <>

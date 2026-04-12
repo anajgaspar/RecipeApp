@@ -1,0 +1,49 @@
+import Feather from "@expo/vector-icons/Feather";
+import { useNavigation } from "@react-navigation/native";
+import { View, Text, Pressable } from "react-native";
+
+
+export default function CardOption() {
+    const navigation = useNavigation<any>();
+
+    const options = [
+        {
+            icon: "heart",
+            title: "Favoritos",
+            route: "UserFavorites"
+        },
+        {
+            icon: "book-open",
+            title: "Minhas Receitas",
+            route: null
+        },
+        {
+            icon: "users",
+            title: "Membros da Família",
+            route: null
+        },
+        {
+            icon: "settings",
+            title: "Editar perfil",
+            route: "EditProfile"
+        }
+    ]
+
+    function handleOptionPress(route: string | null) {
+        navigation.navigate(route);
+    }
+
+    return (
+        <View className="w-full flex gap-1 px-4 py-6">
+            {options.map((option) => (
+                <Pressable onPress={() => handleOptionPress(option.route)} key={option.title} className="flex flex-row justify-between p-4 mx-2 border border-gray-200 rounded-md">
+                    <View className="flex flex-row items-center gap-2">
+                        <Feather name={option.icon as any} size={22} color="black" />
+                        <Text>{option.title}</Text>
+                    </View>
+                    <Feather name="chevron-right" size={22} color="#9ca3af" />
+                </Pressable>
+            ))}
+        </View>
+    )
+}

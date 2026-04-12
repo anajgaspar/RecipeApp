@@ -6,6 +6,7 @@ type CreateUserParams = {
     id: string;
     name: string;
     email: string;
+    avatarDataUrl?: string | null;
     passwordHash: string;
     emailVerified?: boolean;
     emailVerificationTokenHash?: string | null;
@@ -42,6 +43,7 @@ export const UserRepository = {
             id: params.id,
             name: params.name,
             email: params.email,
+            avatarDataUrl: params.avatarDataUrl ?? null,
             passwordHash: params.passwordHash,
             emailVerified: params.emailVerified ?? false,
             emailVerificationTokenHash: params.emailVerificationTokenHash ?? null,

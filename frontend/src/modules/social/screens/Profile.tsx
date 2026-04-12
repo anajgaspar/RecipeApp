@@ -1,11 +1,15 @@
 import { View, Text, ScrollView } from "react-native";
+import TopBar from "../components/TopBar";
+import ProfileInfo from "../components/ProfileInfo";
+import CardOption from "../components/CardOption";
 
 export default function Profile() {
     return (
         <ScrollView className="flex-1 bg-white">
-            <View className="p-4">
-                <Text className="text-2xl font-bold mb-4">Perfil</Text>
-            </View>
+            <TopBar />
+            <ProfileInfo />
+            <View className="flex-1 h-px bg-gray-200" />
+            <CardOption />
         </ScrollView>
     )
 }

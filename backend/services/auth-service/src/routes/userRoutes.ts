@@ -5,5 +5,6 @@ import { UserController } from '../controllers/userController';
 const router = Router()
 
 router.get("/", AuthMiddleware.authenticateUser, UserController.getProfile)
+router.put("/", AuthMiddleware.authenticateUser, UserController.updateProfile)
 
 export default router

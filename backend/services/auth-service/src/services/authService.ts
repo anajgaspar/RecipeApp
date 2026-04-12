@@ -52,6 +52,7 @@ export const AuthService = {
             id: crypto.randomUUID(),
             name: data.name,
             email: data.email,
+            avatarDataUrl: null,
             passwordHash,
             emailVerified: false,
             emailVerificationTokenHash: verification.tokenHash,
@@ -77,6 +78,7 @@ export const AuthService = {
             id: newUser.id,
             name: newUser.name,
             email: newUser.email,
+            avatarDataUrl: newUser.avatarDataUrl,
             emailVerified: newUser.emailVerified,
             emailVerificationSent,
             createdAt: newUser.createdAt,
@@ -111,6 +113,7 @@ export const AuthService = {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                avatarDataUrl: user.avatarDataUrl,
                 emailVerified: user.emailVerified,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt
