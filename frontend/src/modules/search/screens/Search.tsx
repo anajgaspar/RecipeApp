@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, Pressable } from "react-native";
+import { View, ScrollView, TextInput, Pressable } from "react-native";
 import TopBar from "../components/TopBar";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import HistoryCard from "../components/HistoryCard";

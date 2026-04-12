@@ -6,6 +6,7 @@ import RecipeList from "../components/RecipeList";
 import RecipeComments from "../components/RecipeComments";
 import { getRecipeById, Recipe } from "@/src/services/recipeService";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
+import { getPublicUserProfile } from "@/src/services/authService";
 
 export default function RecipeDetails({ navigation, route }: { navigation: any; route: any }) {
     const { user } = useAuth();
@@ -14,6 +15,8 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [recipe, setRecipe] = useState<Recipe | null>(null);
     const [isLoading, setIsLoading] = useState(!routeRecipe);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [authorProfileName, setAuthorProfileName] = useState<string | null>(null);
+    const [authorProfileAvatar, setAuthorProfileAvatar] = useState<string | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -57,6 +60,54 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
         };
     }, [recipeId, routeRecipe]);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadAuthorProfileFallback() {
+            if (!recipe) {
+                return;
+            }
+
+            if (recipe.authorId === user?.id) {
+                setAuthorProfileName(null);
+                setAuthorProfileAvatar(null);
+                return;
+            }
+
+            const needsNameFallback = !recipe.authorName;
+            const needsAvatarFallback = !recipe.authorAvatarDataUrl;
+
+            if (!needsNameFallback && !needsAvatarFallback) {
+                setAuthorProfileName(null);
+                setAuthorProfileAvatar(null);
+                return;
+            }
+
+            try {
+                const publicProfile = await getPublicUserProfile(recipe.authorId);
+                if (!isMounted) {
+                    return;
+                }
+
+                setAuthorProfileName(publicProfile.name ?? null);
+                setAuthorProfileAvatar(publicProfile.avatarDataUrl ?? null);
+            } catch (_error) {
+                if (!isMounted) {
+                    return;
+                }
+
+                setAuthorProfileName(null);
+                setAuthorProfileAvatar(null);
+            }
+        }
+
+        loadAuthorProfileFallback();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [recipe, user?.id]);
+
     const recipeCost = useMemo(() => {
         if (!recipe) {
             return null;
@@ -93,8 +144,11 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     }
 
     const firstCategory = recipe.category[0] ?? "Sem categoria";
-    const authorName = recipe.authorName ?? (recipe.authorId === user?.id ? user?.name : undefined) ?? "Autor da receita";
-    const authorAvatar = recipe.authorAvatarDataUrl ?? (recipe.authorId === user?.id ? user?.avatarDataUrl : null);
+    const authorName = recipe.authorName
+        ?? (recipe.authorId === user?.id ? user?.name : authorProfileName)
+        ?? "Autor da receita";
+    const authorAvatar = recipe.authorAvatarDataUrl
+        ?? (recipe.authorId === user?.id ? user?.avatarDataUrl : authorProfileAvatar);
 
     return (
         <View className="flex-1 bg-white">
@@ -150,10 +204,13 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                 </View>
                 <View className="flex flex-row justify-between items-center p-4">
                     <View className="flex flex-row gap-2">
-                        <Image
-                            source={authorAvatar ? { uri: authorAvatar } : { uri: 'https://icon-icons.com/download-file?file=https%3A%2F%2Fimages.icon-icons.com%2F3708%2FPNG%2F512%2Fgirl_female_woman_person_people_avatar_icon_230018.png&id=230018&pack_or_individual=pack' }}
-                            className="rounded-full w-14 h-14"
-                        />
+                        {authorAvatar ? (
+                            <Image source={{ uri: authorAvatar }} className="rounded-full w-14 h-14" />
+                        ) : (
+                            <View className="rounded-full w-14 h-14 bg-[#9ca3af]/20 items-center justify-center">
+                                <FontAwesome6 name="user" size={18} color="#6b7280" />
+                            </View>
+                        )}
                         <Text className="pt-2">{authorName}</Text>
                     </View>
                     {/* <Pressable className="flex justify-center border border-[#9ca3af]/80 rounded-md h-10 px-2">

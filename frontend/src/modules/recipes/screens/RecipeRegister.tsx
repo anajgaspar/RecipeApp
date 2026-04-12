@@ -186,6 +186,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
 
         const payload = {
             authorName: user?.name,
+            authorAvatarDataUrl: user?.avatarDataUrl ?? null,
             title: title.trim(),
             imageUrl: imageUri,
             prepTimeMinutes: parsedPrepTime,

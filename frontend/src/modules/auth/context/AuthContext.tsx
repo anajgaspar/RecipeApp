@@ -1,6 +1,7 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthUser,
+  getProfile as getProfileRequest,
   LoginPayload,
   RegisterPayload,
   login as loginRequest,
@@ -48,6 +49,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (storedToken) {
           setAuthToken(storedToken);
           setToken(storedToken);
+
+          if (storedUser) {
+            setUser(storedUser);
+          }
+
+          try {
+            const freshUser = await getProfileRequest();
+            setUser(freshUser);
+            await saveStoredUser(freshUser);
+          } catch {
+          }
+          return;
         }
 
         if (storedUser) {
@@ -61,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     hydrateSession();
   }, []);
 
-  async function signIn(payload: LoginPayload) {
+  const signIn = useCallback(async (payload: LoginPayload) => {
     const { token: receivedToken, user: receivedUser } = await loginRequest(payload);
 
     await Promise.all([saveAccessToken(receivedToken), saveStoredUser(receivedUser)]);
@@ -69,16 +82,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthToken(receivedToken);
     setToken(receivedToken);
     setUser(receivedUser);
-  }
+  }, []);
 
-  async function signUp(payload: RegisterPayload) {
+  const signUp = useCallback(async (payload: RegisterPayload) => {
     return registerRequest(payload);
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     try {
       await logoutRequest();
-    } catch (_error) {
+    } catch {
     }
 
     await clearSessionStorage();
@@ -86,16 +99,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthToken(null);
     setToken(null);
     setUser(null);
-  }
+  }, []);
 
-  async function updateProfile(payload: UpdateProfilePayload) {
+  const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
     const updatedUser = await updateProfileRequest(payload);
 
     await saveStoredUser(updatedUser);
     setUser(updatedUser);
 
     return updatedUser;
-  }
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -108,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       signOut,
       updateProfile,
     }),
-    [isLoadingSession, token, user, updateProfile],
+    [isLoadingSession, signIn, signOut, signUp, token, updateProfile, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

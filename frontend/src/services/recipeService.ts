@@ -55,16 +55,12 @@ export type Recipe = {
   servings?: number;
   difficulty: RecipeDifficulty;
   category: RecipeCategory[];
-  ingredients: Array<
-    CreateRecipeIngredient & {
-      id: string;
-    }
-  >;
-  steps: Array<
-    CreateRecipeStep & {
-      id: string;
-    }
-  >;
+  ingredients: (CreateRecipeIngredient & {
+    id: string;
+  })[];
+  steps: (CreateRecipeStep & {
+    id: string;
+  })[];
   createdAt: string;
   updatedAt: string;
 };

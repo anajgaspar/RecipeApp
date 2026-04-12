@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import TopBar from "../components/TopBar";
 import ProfileInfo from "../components/ProfileInfo";
 import CardOption from "../components/CardOption";

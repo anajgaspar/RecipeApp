@@ -72,6 +72,20 @@ type UpdateProfileResponse = {
   user: AuthUser;
 };
 
+type GetProfileResponse = {
+  user: AuthUser;
+};
+
+export type PublicAuthorProfile = {
+  id: string;
+  name: string;
+  avatarDataUrl?: string | null;
+};
+
+type GetPublicProfileResponse = {
+  user: PublicAuthorProfile;
+};
+
 function getErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
     const responseMessage =
@@ -145,6 +159,24 @@ export async function logout(): Promise<string> {
 export async function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
   try {
     const { data } = await api.put<UpdateProfileResponse>("/user", payload);
+    return data.user;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getProfile(): Promise<AuthUser> {
+  try {
+    const { data } = await api.get<GetProfileResponse>("/user");
+    return data.user;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getPublicUserProfile(userId: string): Promise<PublicAuthorProfile> {
+  try {
+    const { data } = await api.get<GetPublicProfileResponse>(`/user/public/${userId}`);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));

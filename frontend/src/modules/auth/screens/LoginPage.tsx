@@ -26,8 +26,6 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                 email: email.trim(),
                 password,
             });
-
-            navigation.replace("Feed");
         } catch (error) {
             const message = error instanceof Error ? error.message : "Falha ao entrar.";
 

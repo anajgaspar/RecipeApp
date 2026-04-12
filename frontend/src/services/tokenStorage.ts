@@ -12,6 +12,8 @@ export type StoredUser = {
   updatedAt?: string;
 };
 
+type PersistedUser = Omit<StoredUser, "avatarDataUrl">;
+
 export async function saveAccessToken(token: string): Promise<void> {
   await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token);
 }
@@ -25,7 +27,15 @@ export async function clearAccessToken(): Promise<void> {
 }
 
 export async function saveStoredUser(user: StoredUser): Promise<void> {
-  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+  const persistedUser: PersistedUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+
+  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(persistedUser));
 }
 
 export async function getStoredUser(): Promise<StoredUser | null> {

@@ -4,6 +4,7 @@ import { UserController } from '../controllers/userController';
 
 const router = Router()
 
+router.get("/public/:userId", UserController.getPublicProfile)
 router.get("/", AuthMiddleware.authenticateUser, UserController.getProfile)
 router.put("/", AuthMiddleware.authenticateUser, UserController.updateProfile)
 

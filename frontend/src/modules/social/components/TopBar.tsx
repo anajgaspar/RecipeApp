@@ -1,18 +1,12 @@
 import { Pressable, View, Text } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 
 export default function TopBar() {
-    const navigation = useNavigation<any>();
     const { signOut } = useAuth();
 
     async function handleLogout() {
         await signOut();
-        navigation.reset({
-            index: 0,
-            routes: [{ name: "Login" }],
-        });
     }
 
     return (

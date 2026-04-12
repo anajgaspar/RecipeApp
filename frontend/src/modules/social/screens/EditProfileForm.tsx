@@ -1,4 +1,4 @@
-import { View, Image, Text, TextInput, Pressable, Alert } from "react-native";
+import { View, Image, Text, TextInput, Pressable, Alert, AlertButton } from "react-native";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useEffect, useState } from "react";
@@ -49,7 +49,7 @@ async function compressAvatarToDataUrl(uri: string, width?: number, height?: num
     return `data:image/jpeg;base64,${result.base64}`;
 }
 
-export default function EditProfileForm({ navigation}: { navigation: any }) {
+export default function EditProfileForm({ navigation }: { navigation: any }) {
     const { user, updateProfile } = useAuth();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -96,6 +96,52 @@ export default function EditProfileForm({ navigation}: { navigation: any }) {
         }
     }
 
+    function handleRemoveAvatarConfirm() {
+        Alert.alert(
+            "Remover foto",
+            "Tem certeza que deseja remover sua foto de perfil? Esta ação não pode ser desfeita.",
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel",
+                },
+                {
+                    text: "Remover",
+                    style: "destructive",
+                    onPress: () => {
+                        setAvatarDataUrl(null);
+                    },
+                },
+            ]
+        );
+    }
+
+    function handleAvatarOptions() {
+        const options: AlertButton[] = [
+            {
+                text: "Fazer upload de foto",
+                onPress: () => {
+                    void handlePickAvatar();
+                },
+            },
+        ];
+
+        if (avatarDataUrl) {
+            options.push({
+                text: "Remover foto",
+                style: "destructive",
+                onPress: handleRemoveAvatarConfirm,
+            });
+        }
+
+        options.push({
+            text: "Cancelar",
+            style: "cancel",
+        });
+
+        Alert.alert("Foto de perfil", "Escolha uma opção:", options);
+    }
+
     async function handleSaveProfile() {
         setErrorMessage(null);
 
@@ -115,7 +161,7 @@ export default function EditProfileForm({ navigation}: { navigation: any }) {
             await updateProfile({
                 name: name.trim(),
                 email: email.trim().toLowerCase(),
-                avatarDataUrl: avatarDataUrl ?? undefined,
+                avatarDataUrl,
                 ...(currentPassword && password ? {
                     currentPassword,
                     newPassword: password,
@@ -144,10 +190,10 @@ export default function EditProfileForm({ navigation}: { navigation: any }) {
                         <Image source={{ uri: avatarDataUrl }} className="self-center rounded-full border-4 border-orange-50 w-28 h-28" />
                     ) : (
                         <View className="self-center rounded-full border-4 border-orange-50 w-28 h-28 bg-[#fdfbf7] items-center justify-center">
-                            <MaterialCommunityIcons name="account-circle-outline" size={88} color="#9ca3af" />
+                            <FontAwesome6 name="user" size={18} color="#6b7280" />
                         </View>
                     )}
-                    <Pressable onPress={handlePickAvatar} className="self-center absolute bottom-0 right-40 bg-orange-50 rounded-full p-1">
+                    <Pressable onPress={handleAvatarOptions} className="self-center absolute bottom-0 right-40 bg-orange-50 rounded-full p-1">
                         <MaterialCommunityIcons name="pencil" size={22} color="black" />
                     </Pressable>
                 </View>

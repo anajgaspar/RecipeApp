@@ -1,6 +1,5 @@
 import { View, Image, Text } from "react-native";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { Recipe } from "@/src/services/recipeService";
 
 type RecipeCardProps = {

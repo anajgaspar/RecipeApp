@@ -116,5 +116,20 @@ export const UserService = {
         return {
             user: toPublicUser(updatedUser),
         };
+    },
+
+    async getPublicUserById(userId: string) {
+        const user = await UserRepository.findById(userId);
+        if (!user) {
+            throw new Error("Usuário não encontrado");
+        }
+
+        return {
+            user: {
+                id: user.id,
+                name: user.name,
+                avatarDataUrl: user.avatarDataUrl,
+            },
+        };
     }
 }
