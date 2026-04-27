@@ -1,3 +1,13 @@
+import { beforeEach, describe, expect, jest, test } from "@jest/globals";
+
+jest.mock("firebase-admin", () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  credential: {
+    cert: jest.fn(),
+  },
+}));
+
 import { Request, Response } from "express";
 
 jest.mock("../../src/services/authService", () => ({
@@ -12,8 +22,8 @@ import { AuthService } from "../../src/services/authService";
 
 function createResponseMock(): Response {
   const res = {} as Response;
-  res.status = jest.fn().mockReturnValue(res);
-  res.json = jest.fn().mockReturnValue(res);
+  res.status = jest.fn(() => res) as unknown as Response["status"];
+  res.json = jest.fn(() => res) as unknown as Response["json"];
   return res;
 }
 
@@ -36,13 +46,14 @@ describe("AuthController", () => {
 
   test("register deve retornar 201 quando usuario for criado", async () => {
     const req = {
-      body: { name: "Ana", email: "ana@mail.com", password: "123456" }
+      body: { name: "Ana", email: "ana@mail.com", password: "password123456" }
     } as Request;
     const res = createResponseMock();
     mockedAuthService.register.mockResolvedValue({
       id: "user-1",
       name: "Ana",
       email: "ana@mail.com",
+      avatarDataUrl: null,
       emailVerified: false,
       emailVerificationSent: true,
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -54,14 +65,14 @@ describe("AuthController", () => {
     expect(mockedAuthService.register).toHaveBeenCalledWith({
       name: "Ana",
       email: "ana@mail.com",
-      password: "123456"
+      password: "password123456"
     });
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
   test("register deve retornar 409 quando email ja estiver em uso", async () => {
     const req = {
-      body: { name: "Ana", email: "ana@mail.com", password: "123456" }
+      body: { name: "Ana", email: "ana@mail.com", password: "password123456" }
     } as Request;
     const res = createResponseMock();
     mockedAuthService.register.mockRejectedValue(new Error("Email já em uso"));
@@ -95,6 +106,7 @@ describe("AuthController", () => {
         id: "user-1",
         name: "Ana",
         email: "ana@mail.com",
+        avatarDataUrl: null,
         emailVerified: true,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z"

@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
 jest.mock("../../src/services/recipeService", () => ({
     RecipeService: {
         createRecipe: jest.fn(),
@@ -40,8 +42,8 @@ describe("Controlador de receitas", () => {
             title: "Bolo",
             imageUrl: "https://example.com/bolo.jpg",
             prepTimeMinutes: 30,
-            difficulty: "fácil",
-            category: "doce",
+            difficulty: "Fácil",
+            category: ["Low Carb"],
             ingredients: [{ id: "i1", name: "Farinha", quantityValue: "2", quantityUnit: "xícaras", position: 1 }],
             steps: [{ id: "s1", stepNumber: 1, instruction: "Misture", timerSeconds: 10 }],
             createdAt: "2026-04-03T00:00:00.000Z",

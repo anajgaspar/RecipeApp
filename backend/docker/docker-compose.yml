@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  auth-service:
+    build:
+      context: ../services/auth-service
+      dockerfile: Dockerfile
+    container_name: recipe-app-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:secret-key-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-recipeapp-d4740}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+    volumes:
+      - ../services/auth-service/src:/app/src
+    command: npm run dev
+    networks:
+      - recipe-app-network
+
+  recipe-service:
+    build:
+      context: ../services/recipe-service
+      dockerfile: Dockerfile
+    container_name: recipe-app-recipe-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-recipeapp-d4740}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+    volumes:
+      - ../services/recipe-service/src:/app/src
+    command: npm run dev
+    depends_on:
+      - auth-service
+    networks:
+      - recipe-app-network
+
+networks:
+  recipe-app-network:
+    driver: bridge

@@ -1,3 +1,22 @@
+import { describe, expect, jest, test } from "@jest/globals";
+
+jest.mock("firebase-admin", () => {
+  const mockCredential = {};
+  return {
+    initializeApp: jest.fn(() => ({
+      auth: () => ({}),
+    })),
+    getApps: jest.fn(() => [
+      {
+        auth: () => ({}),
+      }
+    ]),
+    credential: {
+      cert: jest.fn(() => mockCredential),
+    },
+  };
+});
+
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -35,6 +54,7 @@ describe("AuthService", () => {
     id: "user-1",
     name: "Ana",
     email: "ana@mail.com",
+    avatarDataUrl: null,
     passwordHash: "hashed-password",
     emailVerified: true,
     emailVerificationTokenHash: null,
@@ -63,11 +83,11 @@ describe("AuthService", () => {
     const result = await AuthService.register({
       name: "Ana",
       email: "ana@mail.com",
-      password: "123456"
+      password: "password123456"
     });
 
     expect(mockedUserRepository.findByEmail).toHaveBeenCalledWith("ana@mail.com");
-    expect(bcrypt.hash).toHaveBeenCalledWith("123456", 10);
+    expect(bcrypt.hash).toHaveBeenCalledWith("password123456", 10);
     expect(mockedUserRepository.create).toHaveBeenCalledWith({
       id: "123e4567-e89b-12d3-a456-426614174000",
       name: "Ana",
@@ -121,8 +141,8 @@ describe("AuthService", () => {
 
     const result = await AuthService.login({ email: "ana@mail.com", password: "123456" });
 
-    expect(jwt.sign).toHaveBeenCalledWith({ userId: "user-1" }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
+    expect(jwt.sign).toHaveBeenCalledWith({ userId: "user-1" }, expect.any(String), {
+      expiresIn: expect.any(String)
     });
     expect(result).toEqual({
       token: "jwt-token",

@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
 jest.mock("../../src/repositories/searchHistoryRepository", () => ({
     SearchHistoryRepository: {
         listByUserId: jest.fn(),

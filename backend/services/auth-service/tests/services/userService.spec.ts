@@ -1,3 +1,13 @@
+import { describe, expect, jest, test } from "@jest/globals";
+
+jest.mock("firebase-admin", () => ({
+  initializeApp: jest.fn(),
+  getApps: jest.fn(() => []),
+  credential: {
+    cert: jest.fn(),
+  },
+}));
+
 jest.mock("../../src/repositories/userRepository", () => ({
   UserRepository: {
     findById: jest.fn(),
@@ -18,6 +28,7 @@ describe("UserService", () => {
       id: "user-1",
       name: "Ana",
       email: "ana@mail.com",
+      avatarDataUrl: null,
       passwordHash: "hashed",
       emailVerified: true,
       emailVerificationTokenHash: null,
@@ -33,7 +44,11 @@ describe("UserService", () => {
       user: {
         id: "user-1",
         name: "Ana",
-        email: "ana@mail.com"
+        email: "ana@mail.com",
+        avatarDataUrl: null,
+        emailVerified: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z"
       }
     });
   });
