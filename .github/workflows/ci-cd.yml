@@ -139,11 +139,8 @@ jobs:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-        run: docker compose -f backend/docker/docker-compose.yml up -d
+        run: docker compose -f backend/docker/docker-compose.yml up -d --wait
         working-directory: .
-      
-      - name: Wait for services to be healthy
-        run: sleep 10
       
       - name: Run health checks
         run: |

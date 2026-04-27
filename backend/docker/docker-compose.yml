@@ -19,6 +19,12 @@ services:
     volumes:
       - ../services/auth-service/src:/app/src
     command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
     networks:
       - recipe-app-network
 
@@ -39,8 +45,15 @@ services:
     volumes:
       - ../services/recipe-service/src:/app/src
     command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
     depends_on:
-      - auth-service
+      auth-service:
+        condition: service_healthy
     networks:
       - recipe-app-network
 
