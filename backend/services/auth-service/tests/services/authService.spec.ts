@@ -1,5 +1,12 @@
 import { describe, expect, jest, test } from "@jest/globals";
 
+jest.mock("../../src/config/firebase", () => ({
+  auth: {
+    verifyIdToken: jest.fn(),
+    createUser: jest.fn(),
+  },
+}));
+
 jest.mock("firebase-admin", () => {
   const mockCredential = {};
   return {
@@ -93,6 +100,7 @@ describe("AuthService", () => {
       name: "Ana",
       email: "ana@mail.com",
       passwordHash: "hashed-password",
+      avatarDataUrl: null,
       emailVerified: false,
       emailVerificationTokenHash: expect.any(String),
       emailVerificationExpiresAt: expect.any(String),
@@ -101,6 +109,7 @@ describe("AuthService", () => {
       id: "123e4567-e89b-12d3-a456-426614174000",
       name: "Ana",
       email: "ana@mail.com",
+      avatarDataUrl: null,
       emailVerified: false,
       emailVerificationSent: true,
       createdAt: baseUser.createdAt,
@@ -150,6 +159,7 @@ describe("AuthService", () => {
         id: "user-1",
         name: "Ana",
         email: "ana@mail.com",
+        avatarDataUrl: null,
         emailVerified: true,
         createdAt: baseUser.createdAt,
         updatedAt: baseUser.updatedAt
