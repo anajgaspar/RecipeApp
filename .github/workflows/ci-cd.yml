@@ -100,8 +100,8 @@ jobs:
         working-directory: frontend
         env:
           EXPO_TOKEN: ${{ secrets.EAS_TOKEN }}
-          EXPO_PUBLIC_API_AUTH_URL: ${{ secrets.EXPO_PUBLIC_API_AUTH_URL || 'http://172.20.10.13:3001' }}
-          EXPO_PUBLIC_API_RECIPE_URL: ${{ secrets.EXPO_PUBLIC_API_RECIPE_URL || 'http://172.20.10.13:3002' }}
+          EXPO_PUBLIC_API_AUTH_URL: ${{ secrets.EXPO_PUBLIC_API_AUTH_URL != '' && secrets.EXPO_PUBLIC_API_AUTH_URL || 'http://172.20.10.13:3001' }}
+          EXPO_PUBLIC_API_RECIPE_URL: ${{ secrets.EXPO_PUBLIC_API_RECIPE_URL != '' && secrets.EXPO_PUBLIC_API_RECIPE_URL || 'http://172.20.10.13:3002' }}
           EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
           EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
           EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
@@ -139,7 +139,7 @@ jobs:
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
           FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-        run: docker-compose -f backend/docker/docker-compose.yml up -d
+        run: docker compose -f backend/docker/docker-compose.yml up -d
         working-directory: .
       
       - name: Wait for services to be healthy
