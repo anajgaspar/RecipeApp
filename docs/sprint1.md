@@ -153,7 +153,31 @@
 	**Quando:** o usuário abre os detalhes dessa receita,  
 	**Então:** a tela deve ser exibida normalmente, com placeholders ou campos omitidos sem quebrar layout.
 
-- **Cenário 2 (exceção) - Receita indisponível:**  
+- **Cenário 3 (exceção) - Receita indisponível:**  
 	**Dado que:** o usuário tenta abrir uma receita removida ou inexistente,  
 	**Quando:** o sistema não encontra os dados da receita,  
 	**Então:** deve exibir mensagem de indisponibilidade e permitir voltar para a tela anterior.
+
+---
+
+## US de Rank #5 - Favoritar receitas
+
+**User Story:** Como usuário, quero marcar receitas como favoritas, para acessá-las facilmente sempre que quiser prepará-las novamente.
+
+### Critérios de aceitação
+
+- O sistema deve permitir que o usuário marque uma receita como favorita a partir da tela de detalhes da receita.
+- O sistema deve exibir um indicador visual (ícone de coração) mostrando que a receita foi adicionada aos favoritos.
+- O sistema deve disponibilizar uma seção onde o usuário possa visualizar todas as receitas que foram marcadas como favoritas.
+
+### Cenários de teste
+
+- **Cenário 1 (sucesso) - Marcar receita como favorita na tela de detalhes:**  
+	**Dado que:** o usuário está autenticado e visualizando os detalhes de uma receita,  
+	**Quando:** ele aciona o botão de favorito (ícone de coração),  
+	**Então:** a receita deve ser adicionada aos favoritos do usuário.
+
+- **Cenário 2 (sucesso) - Listar receitas favoritadas na seção de favoritos:**  
+	**Dado que:** o usuário possui receitas marcadas como favoritas,  
+	**Quando:** ele acessa a seção de favoritos,  
+	**Então:** o sistema deve exibir todas as receitas favoritadas por esse usuário.

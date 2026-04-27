@@ -1,0 +1,54 @@
+name: Tests e Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Instalar dependências Auth Service
+        run: cd backend/services/auth-service && npm ci
+
+      - name: Rodar testes Auth Service
+        run: cd backend/services/auth-service && npm test
+
+      - name: Instalar dependências Recipe Service
+        run: cd backend/services/recipe-service && npm ci
+
+      - name: Rodar testes Recipe Service
+        run: cd backend/services/recipe-service && npm test
+
+  test-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Instalar dependências
+        run: cd ReceitaNaMao && npm ci
+
+      - name: Rodar testes
+        run: cd ReceitaNaMao && npm test
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-app]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v2
+
+      - name: Build Auth Service
+        run: docker build -f backend/services/auth-service/Dockerfile -t recipe-auth:latest backend/services/auth-service
+
+      - name: Build Recipe Service
+        run: docker build -f backend/services/recipe-service/Dockerfile -t recipe-service:latest backend/services/recipe-service

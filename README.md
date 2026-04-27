@@ -25,7 +25,7 @@ Entre as funcionalidades principais do produto, destacam-se:
 Sprint | Previsão | Status | Documentação |
 |------|----------|--------|--------------|
 |01| 16/03/2026 - 12/04/2026 |✅ Concluído| [Ver Documento](./docs/sprint1.md) |
-|02|  13/04/2026 - 10/05/2026 |⏳ A iniciar| [Ver Documento]() |
+|02|  13/04/2026 - 10/05/2026 |✅ Concluído| [Ver Documento](./docs/sprint2.md) |
 |03| 11/05/2026 - 07/06/2026 |⏳ A iniciar| [Ver Documento]() |
 
 ---
@@ -52,11 +52,11 @@ Sprint | Previsão | Status | Documentação |
 | 02 |    Alta    | Como usuário, quero visualizar um feed de receitas sugeridas, baseado nas minhas preferências, para descobrir novas receitas relevantes para mim. |    1   |
 | 03 |    Alta    | Como usuário, quero buscar receitas utilizando palavras-chave, voz e aplicar filtros, para encontrar facilmente receitas que atendam às minhas preferências. |    1   |
 | 04 |    Alta    | Como usuário, quero visualizar os detalhes de uma receita, para entender os ingredientes, modo de preparo e outras informações necessárias antes de prepará-la. |    1   |
-| 05 |    Alta    | Como usuário, quero visualizar o modo de preparo da receita em passos, iniciar temporizadores quando necessário e adicionar anotações pessoais, para acompanhar a receita facilmente durante o preparo. |    2   |
-| 06 |    Média    | Como usuário, quero registrar os ingredientes disponíveis na minha despensa e receber sugestões de receitas com base nesses ingredientes, para aproveitar melhor os alimentos que já possuo. |    2   |
-| 07 |    Média    | Como usuário, quero gerenciar minha lista de compras, podendo adicionar itens manualmente ou escaneando código de barras e compartilhá-la com familiares, para facilitar a organização das compras. |    2   |
-| 08 |    Média    | Como usuário, quero avaliar receitas, comentar e compartilhar fotos dos pratos que preparei, para registrar minha experiência e ajudar outros usuários |    2   |
-| 09 |    Média    | Como usuário, quero marcar receitas como favoritas, para acessá-las facilmente sempre que quiser prepará-las novamente.                 |    3   |
+| 05 |    Média    | Como usuário, quero marcar receitas como favoritas, para acessá-las facilmente sempre que quiser prepará-las novamente.                 |    1   |
+| 06 |    Alta    | Como usuário, quero visualizar o modo de preparo da receita em passos, iniciar temporizadores quando necessário e adicionar anotações pessoais, para acompanhar a receita facilmente durante o preparo. |    2   |
+| 07 |    Média    | Como usuário, quero registrar os ingredientes disponíveis na minha despensa e receber sugestões de receitas com base nesses ingredientes, para aproveitar melhor os alimentos que já possuo. |    2   |
+| 08 |    Média    | Como usuário, quero gerenciar minha lista de compras, podendo adicionar itens manualmente ou escaneando código de barras e compartilhá-la com familiares, para facilitar a organização das compras. |    2   |
+| 09 |    Média    | Como usuário, quero avaliar receitas, comentar e compartilhar fotos dos pratos que preparei, para registrar minha experiência e ajudar outros usuários |    2   |
 | 10 |    Média   | Como usuário, quero planejar minhas refeições da semana organizando receitas por dia e tipo de refeição, para facilitar a organização da minha alimentação. |    3   |
 | 11 |    Baixa   | Como usuário, quero compartilhar minhas receitas com outras pessoas, para que elas possam acessá-las facilmente. |    3   |
 
