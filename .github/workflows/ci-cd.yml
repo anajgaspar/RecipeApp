@@ -128,6 +128,7 @@ jobs:
     name: Integration Tests
     needs: [test-auth-service, test-recipe-service]
     runs-on: ubuntu-latest
+    environment: production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
