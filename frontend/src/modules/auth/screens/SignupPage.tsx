@@ -106,15 +106,6 @@ export default function SignupPage({ navigation }: { navigation: any }) {
                     loading={isLoading}
                     onPress={() => void handleSignUp()}
                 />
-                <View className="w-full flex-row items-center gap-3">
-                    <View className="flex-1 h-px bg-gray-200" />
-                    <Text className="text-xs text-gray-400">OU</Text>
-                    <View className="flex-1 h-px bg-gray-200" />
-                </View>
-                <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
-                    <FontAwesome6 name="chrome" size={20} color="black" />
-                    <Text className="">Cadastre-se com Google</Text>
-                </Pressable>
                 <Pressable onPress={() => navigation.replace('Login')}>
                     <Text className="self-center">Já tem uma conta? <Text className="text-[#f97316]">Faça login</Text></Text>
                 </Pressable>

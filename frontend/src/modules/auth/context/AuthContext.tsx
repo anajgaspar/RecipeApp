@@ -1,10 +1,12 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthUser,
+  FirebaseLoginPayload,
   getProfile as getProfileRequest,
   LoginPayload,
   RegisterPayload,
   login as loginRequest,
+  loginWithFirebase as loginWithFirebaseRequest,
   logout as logoutRequest,
   register as registerRequest,
   updateProfile as updateProfileRequest,
@@ -25,6 +27,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isLoadingSession: boolean;
   signIn: (payload: LoginPayload) => Promise<void>;
+  signInWithGoogle: (payload: FirebaseLoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
@@ -84,6 +87,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(receivedUser);
   }, []);
 
+  const signInWithGoogle = useCallback(async (payload: FirebaseLoginPayload) => {
+    const { token: receivedToken, user: receivedUser } = await loginWithFirebaseRequest(payload);
+
+    await Promise.all([saveAccessToken(receivedToken), saveStoredUser(receivedUser)]);
+
+    setAuthToken(receivedToken);
+    setToken(receivedToken);
+    setUser(receivedUser);
+  }, []);
+
   const signUp = useCallback(async (payload: RegisterPayload) => {
     return registerRequest(payload);
   }, []);
@@ -117,11 +130,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: Boolean(token),
       isLoadingSession,
       signIn,
+      signInWithGoogle,
       signUp,
       signOut,
       updateProfile,
     }),
-    [isLoadingSession, signIn, signOut, signUp, token, updateProfile, user],
+    [isLoadingSession, signIn, signInWithGoogle, signOut, signUp, token, updateProfile, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

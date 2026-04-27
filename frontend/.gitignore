@@ -140,3 +140,6 @@ dist
 
 expo-env.d.ts
 # @end expo-cli
+
+# Firebase / Google config
+google-services.json

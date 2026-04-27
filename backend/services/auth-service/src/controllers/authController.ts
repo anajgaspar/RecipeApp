@@ -3,6 +3,7 @@ import { AuthService } from "../services/authService";
 import {
   RegisterSchema,
   LoginSchema,
+  FirebaseLoginSchema,
   VerifyEmailSchema,
   ResendVerificationSchema,
 } from "../schemas/authSchema";
@@ -60,6 +61,32 @@ export const AuthController = {
           error: message,
           code: "EMAIL_NOT_VERIFIED",
         });
+      }
+
+      return res.status(500).json({ error: message });
+    }
+   },
+
+   async firebaseLogin(req: Request, res: Response) {
+    try {
+      const validated = FirebaseLoginSchema.safeParse(req.body);
+      if (!validated.success) {
+        return res.status(400).json({
+          error: "Dados inválidos",
+          details: validated.error.issues
+        });
+      }
+
+      const result = await AuthService.firebaseLogin(validated.data.firebaseIdToken);
+      return res.status(200).json({
+        message: "Login Google realizado com sucesso",
+        token: result.token,
+        user: result.user
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      if (message === "Token Firebase inválido") {
+        return res.status(401).json({ error: message });
       }
 
       return res.status(500).json({ error: message });

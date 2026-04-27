@@ -11,6 +11,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { EmailService } from "./emailService";
 import { TokenBlacklistRepository } from "../repositories/tokenBlacklistRepository";
+import { adminAuth } from "../config/firebase";
 
 const jwtSecret = process.env.JWT_SECRET as string;
 const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? "1h") as jwt.SignOptions["expiresIn"];
@@ -21,6 +22,19 @@ function getJwtSecret(): string {
         throw new Error("JWT_SECRET ausente.");
     }
     return jwtSecret;
+}
+
+function signAccessToken(userId: string): string {
+    return jwt.sign(
+        { userId },
+        getJwtSecret(),
+        { expiresIn: jwtExpiresIn }
+    );
+}
+
+function deriveDisplayNameFromEmail(email: string): string {
+    const [localPart] = email.split("@");
+    return localPart || "Usuário";
 }
 
 function hashToken(token: string): string {
@@ -101,11 +115,7 @@ export const AuthService = {
             throw new Error("Email não verificado");
         }
 
-        const token = jwt.sign(
-            {userId: user.id},
-            getJwtSecret(),
-            {expiresIn: jwtExpiresIn}
-        );
+        const token = signAccessToken(user.id);
 
         return {
             token,
@@ -118,6 +128,72 @@ export const AuthService = {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt
             }
+        };
+    },
+
+    async firebaseLogin(firebaseIdToken: string) {
+        let decodedToken;
+        try {
+            decodedToken = await adminAuth.verifyIdToken(firebaseIdToken);
+        } catch {
+            throw new Error("Token Firebase inválido");
+        }
+
+        const email = decodedToken.email?.toLowerCase();
+        if (!email) {
+            throw new Error("Token Firebase inválido");
+        }
+
+        let user = await UserRepository.findByEmail(email);
+
+        if (!user) {
+            const generatedPasswordHash = await bcrypt.hash(crypto.randomUUID(), 10);
+            user = await UserRepository.create({
+                id: crypto.randomUUID(),
+                name: decodedToken.name || deriveDisplayNameFromEmail(email),
+                email,
+                avatarDataUrl: null,
+                passwordHash: generatedPasswordHash,
+                emailVerified: true,
+                emailVerificationTokenHash: null,
+                emailVerificationExpiresAt: null,
+            });
+        }
+
+        if (!user) {
+            throw new Error("Falha ao criar usuário.");
+        }
+
+        if (!user.emailVerified) {
+            await UserRepository.updateById(user.id, {
+                emailVerified: true,
+                emailVerificationTokenHash: null,
+                emailVerificationExpiresAt: null,
+                updatedAt: new Date().toISOString(),
+            });
+
+            user = {
+                ...user,
+                emailVerified: true,
+                emailVerificationTokenHash: null,
+                emailVerificationExpiresAt: null,
+                updatedAt: new Date().toISOString(),
+            };
+        }
+
+        const token = signAccessToken(user.id);
+
+        return {
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                avatarDataUrl: user.avatarDataUrl,
+                emailVerified: user.emailVerified,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            },
         };
     },
 

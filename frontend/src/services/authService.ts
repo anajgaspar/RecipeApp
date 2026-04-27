@@ -22,6 +22,10 @@ export type LoginPayload = {
   password: string;
 };
 
+export type FirebaseLoginPayload = {
+  firebaseIdToken: string;
+};
+
 type RegisterResponse = {
   message: string;
   user: AuthUser;
@@ -102,6 +106,18 @@ export async function register(payload: RegisterPayload): Promise<AuthUser> {
 export async function login(payload: LoginPayload): Promise<{ token: string; user: AuthUser }> {
   try {
     const { data } = await api.post<LoginResponse>("/auth/login", payload);
+    return {
+      token: data.token,
+      user: data.user,
+    };
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function loginWithFirebase(payload: FirebaseLoginPayload): Promise<{ token: string; user: AuthUser }> {
+  try {
+    const { data } = await api.post<LoginResponse>("/auth/firebase-login", payload);
     return {
       token: data.token,
       user: data.user,

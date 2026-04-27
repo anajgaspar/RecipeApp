@@ -11,6 +11,10 @@ export const LoginSchema = z.object({
     password: z.string().min(6)
 })
 
+export const FirebaseLoginSchema = z.object({
+    firebaseIdToken: z.string().min(10),
+})
+
 export const VerifyEmailSchema = z.object({
     email: z.string().email(),
     token: z.string().length(6)

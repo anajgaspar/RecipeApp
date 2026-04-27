@@ -1,18 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, View, Text, TextInput, Pressable } from "react-native";
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import ActionButton from "@/src/components/ActionButton";
 import InlineError from "@/src/components/InlineError";
+import { firebaseAuth } from "@/src/config/firebase";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginPage({ navigation }: { navigation: any }) {
-    const { signIn } = useAuth();
+    const { signIn, signInWithGoogle } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const redirectUri = AuthSession.makeRedirectUri({ scheme: "receitanamao" });
+
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+        redirectUri,
+        scopes: ["openid", "profile", "email"],
+    });
+
+    useEffect(() => {
+        async function handleGoogleAuthResponse() {
+            if (response?.type !== "success") {
+                if (response?.type === "error") {
+                    setErrorMessage("Falha ao autenticar com o Google.");
+                }
+                return;
+            }
+
+            const googleIdToken = response.authentication?.idToken;
+            if (!googleIdToken) {
+                setErrorMessage("Não foi possível obter o token do Google.");
+                return;
+            }
+
+            setErrorMessage("");
+            setIsGoogleLoading(true);
+
+            try {
+                const credential = GoogleAuthProvider.credential(googleIdToken);
+                const credentialResult = await signInWithCredential(firebaseAuth, credential);
+                const firebaseIdToken = await credentialResult.user.getIdToken();
+
+                await signInWithGoogle({ firebaseIdToken });
+            } catch (error) {
+                const message = error instanceof Error ? error.message : "Falha ao entrar com Google.";
+                setErrorMessage(message);
+            } finally {
+                setIsGoogleLoading(false);
+            }
+        }
+
+        void handleGoogleAuthResponse();
+    }, [response, signInWithGoogle]);
 
     async function handleSignIn() {
         if (!email.trim() || !password.trim()) {
@@ -94,9 +145,13 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                     <Text className="text-xs text-gray-400">OU</Text>
                     <View className="flex-1 h-px bg-gray-200" />
                 </View>
-                <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
+                <Pressable
+                    className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md"
+                    disabled={isGoogleLoading || !request}
+                    onPress={() => void promptAsync()}
+                >
                     <FontAwesome6 name="chrome" size={20} color="black" />
-                    <Text className="">Faça login com Google</Text>
+                    <Text className="">{isGoogleLoading ? "Conectando ao Google..." : "Faça login com Google"}</Text>
                 </Pressable>
                 <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
                     <FontAwesome6 name="fingerprint" size={20} color="black" />
