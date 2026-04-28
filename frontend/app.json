@@ -7,12 +7,20 @@
     "icon": "./src/assets/logo.png",
     "scheme": "receitanamao",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.receitanamao.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "supportsTablet": true,
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Permitir acesso ao reconhecimento de fala para buscar por voz",
-        "NSMicrophoneUsageDescription": "Permitir acesso ao microfone para buscar por voz"
+        "NSMicrophoneUsageDescription": "Permitir acesso ao microfone para buscar por voz",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
@@ -23,11 +31,11 @@
         "backgroundImage": "./src/assets/logo.png",
         "monochromeImage": "./src/assets/logo.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "output": "static",
@@ -48,6 +56,14 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -79,6 +95,9 @@
         "projectId": "f86baddc-a390-40ed-8a5e-e928f2df1df4"
       }
     },
-    "owner": "anajgaspar"
+    "owner": "anajgaspar",
+    "updates": {
+      "url": "https://u.expo.dev/f86baddc-a390-40ed-8a5e-e928f2df1df4"
+    }
   }
 }

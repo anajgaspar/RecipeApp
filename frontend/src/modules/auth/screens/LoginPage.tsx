@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Image, View, Text, TextInput, Pressable } from "react-native";
-import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { LinearGradient } from "expo-linear-gradient";
@@ -21,12 +20,9 @@ export default function LoginPage({ navigation }: { navigation: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const redirectUri = AuthSession.makeRedirectUri({ scheme: "receitanamao" });
-
     const [request, response, promptAsync] = Google.useAuthRequest({
         androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
         iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-        redirectUri,
         scopes: ["openid", "profile", "email"],
     });
 
@@ -49,6 +45,10 @@ export default function LoginPage({ navigation }: { navigation: any }) {
             setIsGoogleLoading(true);
 
             try {
+                if (!firebaseAuth) {
+                    throw new Error("Firebase não inicializado. Verifique as variáveis EXPO_PUBLIC_FIREBASE_*.");
+                }
+
                 const credential = GoogleAuthProvider.credential(googleIdToken);
                 const credentialResult = await signInWithCredential(firebaseAuth, credential);
                 const firebaseIdToken = await credentialResult.user.getIdToken();
