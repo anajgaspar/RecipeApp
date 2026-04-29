@@ -1,4 +1,4 @@
-import { ScrollView, View, Image, Text, Pressable, Alert } from "react-native";
+import { ScrollView, View, Image, Text, Pressable, Alert, Modal } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -9,6 +9,7 @@ import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import { getPublicUserProfile } from "@/src/services/authService";
 import LoadingState from "@/src/components/LoadingState";
 import InlineError from "@/src/components/InlineError";
+import RecipeSteps from "../components/RecipeSteps";
 
 export default function RecipeDetails({ navigation, route }: { navigation: any; route: any }) {
     const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [authorProfileAvatar, setAuthorProfileAvatar] = useState<string | null>(null);
     const [isFavorited, setIsFavorited] = useState(false);
     const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+    const [isStepsOpen, setIsStepsOpen] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -280,10 +282,19 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                 <View className="flex-1 h-px mt-2 bg-gray-200" />
                 <RecipeComments />
             </ScrollView>
-            <Pressable className="absolute bottom-6 left-4 right-4 flex flex-row justify-center items-center gap-4 bg-[#f97316] p-4 rounded-md">
+            <Pressable onPress={() => setIsStepsOpen(true)}
+                className="absolute bottom-6 left-4 right-4 flex flex-row justify-center items-center gap-4 bg-[#f97316] p-4 rounded-md">
                 <Ionicons name="play-outline" size={16} color="white" />
                 <Text className="text-white font-semibold">Iniciar Modo de Preparo</Text>
             </Pressable>
+            <Modal visible={isStepsOpen}>
+                <RecipeSteps
+                    navigation={navigation}
+                    recipe={recipe}
+                    steps={recipe.steps}
+                    onClose={() => setIsStepsOpen(false)}
+                />
+            </Modal>
         </View>
     )
 }
