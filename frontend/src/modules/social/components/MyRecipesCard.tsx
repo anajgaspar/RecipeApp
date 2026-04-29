@@ -1,5 +1,6 @@
 import { Recipe } from "@/src/services/recipeService";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useEffect, useState } from "react";
 import { View, Image, Text, Pressable } from "react-native";
 
 type MyRecipesCardProps = {
@@ -10,13 +11,26 @@ type MyRecipesCardProps = {
 };
 
 export default function MyRecipesCard({ recipe, onOpen, onEdit, onDelete }: MyRecipesCardProps) {
+    const [isImageError, setIsImageError] = useState(false);
+
+    useEffect(() => {
+        setIsImageError(false);
+    }, [recipe.imageUrl]);
+
     return (
         <Pressable onPress={onOpen} className="flex flex-row gap-4 bg-white rounded-xl border border-[#9ca3af] p-4">
-            <Image
-                source={{ uri: recipe.imageUrl }}
-                className="w-28 h-28 rounded-xl"
-                resizeMode="cover"
-            />
+            {!isImageError && recipe.imageUrl ? (
+                <Image
+                    source={{ uri: recipe.imageUrl }}
+                    className="w-28 h-28 rounded-xl"
+                    resizeMode="cover"
+                    onError={() => setIsImageError(true)}
+                />
+            ) : (
+                <View className="w-28 h-28 rounded-xl bg-[#f3f4f6] items-center justify-center">
+                    <FontAwesome6 name="image" size={18} color="#9ca3af" />
+                </View>
+            )}
             <View className="flex flex-col gap-2">
                 <Text className="font-semibold text-lg">{recipe.title}</Text>
                 <View className="flex flex-row justify-between gap-2">

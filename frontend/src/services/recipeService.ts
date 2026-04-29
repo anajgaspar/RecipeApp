@@ -1,5 +1,6 @@
 import api from "@/src/services/api";
 import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
+import { ApiEntityResponse, ApiMessageResponse } from "./apiTypes";
 
 const AUTH_API_URL = process.env.EXPO_PUBLIC_API_AUTH_URL;
 const RECIPE_API_URL =
@@ -69,19 +70,9 @@ function getErrorMessage(error: unknown): string {
   return getFriendlyHttpErrorMessage(error, "Não foi possível concluir a operação com receitas.");
 }
 
-type CreateRecipeResponse = {
-  message: string;
-  recipe: unknown;
-};
-
-type UpdateRecipeResponse = {
-  message: string;
-  recipe: unknown;
-};
-
-type DeleteRecipeResponse = {
-  message: string;
-};
+type CreateRecipeResponse = ApiEntityResponse<"recipe", Recipe>;
+type UpdateRecipeResponse = ApiEntityResponse<"recipe", Recipe>;
+type DeleteRecipeResponse = ApiMessageResponse;
 
 type ListRecipesResponse = {
   recipes: Recipe[];

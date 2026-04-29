@@ -20,6 +20,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [authorProfileName, setAuthorProfileName] = useState<string | null>(null);
     const [authorProfileAvatar, setAuthorProfileAvatar] = useState<string | null>(null);
+    const [isRecipeImageError, setIsRecipeImageError] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
     const [isStepsOpen, setIsStepsOpen] = useState(false);
@@ -80,15 +81,6 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                 return;
             }
 
-            const needsNameFallback = !recipe.authorName;
-            const needsAvatarFallback = !recipe.authorAvatarDataUrl;
-
-            if (!needsNameFallback && !needsAvatarFallback) {
-                setAuthorProfileName(null);
-                setAuthorProfileAvatar(null);
-                return;
-            }
-
             try {
                 const publicProfile = await getPublicUserProfile(recipe.authorId);
                 if (!isMounted) {
@@ -113,6 +105,10 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
             isMounted = false;
         };
     }, [recipe, user?.id]);
+
+    useEffect(() => {
+        setIsRecipeImageError(false);
+    }, [recipe?.imageUrl]);
 
     useEffect(() => {
         let isMounted = true;
@@ -200,22 +196,31 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     }
 
     const firstCategory = recipe.category[0] ?? "Sem categoria";
-    const authorName = recipe.authorName
-        ?? (recipe.authorId === user?.id ? user?.name : authorProfileName)
-        ?? "Autor da receita";
-    const authorAvatar = recipe.authorAvatarDataUrl
-        ?? (recipe.authorId === user?.id ? user?.avatarDataUrl : authorProfileAvatar);
+    const authorName = recipe.authorId === user?.id
+        ? (user?.name ?? recipe.authorName ?? "Autor da receita")
+        : (authorProfileName ?? recipe.authorName ?? "Autor da receita");
+    const authorAvatar = recipe.authorId === user?.id
+        ? (user?.avatarDataUrl ?? recipe.authorAvatarDataUrl ?? null)
+        : (authorProfileAvatar ?? recipe.authorAvatarDataUrl ?? null);
 
     return (
         <View className="flex-1 bg-white">
             <ScrollView className="w-full" contentContainerStyle={{ paddingBottom: 96 }}>
                 <View className="w-full flex flex-col">
                     <View className="relative">
-                        <Image
-                            source={{ uri: recipe.imageUrl }}
-                            className="w-full h-80 rounded-t-xl"
-                            resizeMode="cover"
-                        />
+                        {!isRecipeImageError && recipe.imageUrl ? (
+                            <Image
+                                source={{ uri: recipe.imageUrl }}
+                                className="w-full h-80 rounded-t-xl"
+                                resizeMode="cover"
+                                onError={() => setIsRecipeImageError(true)}
+                            />
+                        ) : (
+                            <View className="w-full h-80 rounded-t-xl bg-[#f3f4f6] items-center justify-center">
+                                <FontAwesome6 name="image" size={28} color="#9ca3af" />
+                                <Text className="text-[#9ca3af] mt-2">Imagem indisponível</Text>
+                            </View>
+                        )}
                         <Pressable
                             onPress={() => void handleToggleFavorite()}
                             disabled={isFavoriteLoading}
@@ -280,7 +285,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                 <View className="flex-1 h-px bg-gray-200" />
                 <RecipeList ingredients={recipe.ingredients} steps={recipe.steps} />
                 <View className="flex-1 h-px mt-2 bg-gray-200" />
-                <RecipeComments />
+                <RecipeComments recipe={recipe} />
             </ScrollView>
             <Pressable onPress={() => setIsStepsOpen(true)}
                 className="absolute bottom-6 left-4 right-4 flex flex-row justify-center items-center gap-4 bg-[#f97316] p-4 rounded-md">

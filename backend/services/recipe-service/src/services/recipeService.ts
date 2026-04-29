@@ -108,7 +108,7 @@ export const RecipeService = {
             throw new Error("Você não tem permissão para editar esta receita.");
         }
 
-        const nextRecipe: RecipeDocument = {
+        const updatedRecipe: RecipeDocument = {
             ...existingRecipe,
             ...data,
             authorId,
@@ -129,8 +129,8 @@ export const RecipeService = {
             })),
         };
 
-        await RecipeRepository.updateById(recipeId, nextRecipe);
-        return nextRecipe;
+        await RecipeRepository.updateById(recipeId, updatedRecipe);
+        return updatedRecipe;
     },
 
     async deleteRecipe(authorId: string, recipeId: string): Promise<void> {

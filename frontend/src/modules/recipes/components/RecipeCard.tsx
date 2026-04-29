@@ -1,4 +1,5 @@
 import { View, Image, Text, Pressable } from "react-native";
+import { useEffect, useState } from "react";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Recipe } from "@/src/services/recipeService";
@@ -11,16 +12,29 @@ type RecipeCardProps = {
 
 export default function RecipeCard({ recipe, isFavorited = false, onFavorite }: RecipeCardProps) {
     const firstCategory = recipe.category[0] ?? "Sem categoria";
+    const [isImageError, setIsImageError] = useState(false);
+
+    useEffect(() => {
+        setIsImageError(false);
+    }, [recipe.imageUrl]);
 
     return (
         <View className="w-full">
             <View className="w-full flex flex-col">
                 <View className="relative">
-                    <Image
-                        source={{ uri: recipe.imageUrl }}
-                        className="w-full h-56 rounded-t-xl"
-                        resizeMode="cover"
-                    />
+                    {!isImageError && recipe.imageUrl ? (
+                        <Image
+                            source={{ uri: recipe.imageUrl }}
+                            className="w-full h-56 rounded-t-xl"
+                            resizeMode="cover"
+                            onError={() => setIsImageError(true)}
+                        />
+                    ) : (
+                        <View className="w-full h-56 rounded-t-xl bg-[#f3f4f6] items-center justify-center">
+                            <FontAwesome6 name="image" size={24} color="#9ca3af" />
+                            <Text className="text-[#9ca3af] mt-2">Imagem indisponível</Text>
+                        </View>
+                    )}
                     {onFavorite ? (
                         <Pressable onPress={onFavorite} className="absolute top-2 right-2 bg-white rounded-full p-2">
                             <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "#ef4444" : "black"} />

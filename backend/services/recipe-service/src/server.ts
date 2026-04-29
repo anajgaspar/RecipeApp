@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import recipeRoutes from "./routes/recipeRoutes";
+import appRoutes from "./routes/appRoutes";
 
 const api = express();
 const port = Number(process.env.PORT) || 3002;
@@ -11,7 +11,7 @@ api.use(express.json({ limit: bodySizeLimit }));
 api.use(express.urlencoded({ extended: true, limit: bodySizeLimit }));
 api.use(cors());
 
-api.use("/api", recipeRoutes);
+api.use("/api", appRoutes);
 
 api.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok" });

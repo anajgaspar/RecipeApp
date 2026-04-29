@@ -1,6 +1,7 @@
-import { View, Pressable, Text, Image, ActivityIndicator } from "react-native";
+import { View, Pressable, Text, Image, ActivityIndicator, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from "expo-image-manipulator";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 type UploadImageProps = {
@@ -11,6 +12,47 @@ type UploadImageProps = {
 export default function UploadImage({ onChange, value = null }: UploadImageProps) {
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+
+    async function compressImageToDataUrl(uri: string, width?: number, height?: number): Promise<string> {
+        const canResize = Boolean(width && height);
+        const maxDimension = 1400;
+        const resizeRatio = canResize ? Math.min(1, maxDimension / Math.max(width!, height!)) : 1;
+        const resizeAction = canResize && resizeRatio < 1
+            ? [{ resize: { width: Math.round(width! * resizeRatio), height: Math.round(height! * resizeRatio) } }]
+            : [];
+
+        let result = await ImageManipulator.manipulateAsync(uri, resizeAction, {
+            format: ImageManipulator.SaveFormat.JPEG,
+            compress: 0.84,
+            base64: true,
+        });
+
+        if (!result.base64) {
+            throw new Error("Não foi possível processar a imagem.");
+        }
+
+        let estimatedBytes = Math.ceil((result.base64.length * 3) / 4);
+
+        if (estimatedBytes > 2 * 1024 * 1024) {
+            result = await ImageManipulator.manipulateAsync(result.uri, [], {
+                format: ImageManipulator.SaveFormat.JPEG,
+                compress: 0.72,
+                base64: true,
+            });
+
+            if (!result.base64) {
+                throw new Error("Não foi possível processar a imagem.");
+            }
+
+            estimatedBytes = Math.ceil((result.base64.length * 3) / 4);
+        }
+
+        if (estimatedBytes > 2 * 1024 * 1024) {
+            throw new Error("Imagem muito grande");
+        }
+
+        return `data:image/jpeg;base64,${result.base64}`;
+    }
 
     useEffect(() => {
         setImageUri(value);
@@ -28,12 +70,23 @@ export default function UploadImage({ onChange, value = null }: UploadImageProps
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0.8,
+                quality: 1,
+                base64: false,
             });
 
             if (!result.canceled) {
-                updateImage(result.assets[0].uri);
+                const asset = result.assets[0];
+                const compressedDataUrl = await compressImageToDataUrl(asset.uri, asset.width, asset.height);
+                updateImage(compressedDataUrl);
             }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Não foi possível processar a imagem selecionada.";
+            Alert.alert(
+                "Não foi possível usar esta foto",
+                message === "Imagem muito grande"
+                    ? "A imagem escolhida ultrapassa o tamanho permitido. Selecione uma imagem menor."
+                    : message
+            );
         } finally {
             setLoading(false);
         }

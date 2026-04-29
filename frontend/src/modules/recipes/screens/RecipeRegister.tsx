@@ -27,7 +27,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
     const mode = route?.params?.mode ?? "create";
     const recipeToEdit = route?.params?.recipe;
     const isEditMode = mode === "edit" && !!recipeToEdit?.id;
-    const [imageUri, setImageUri] = useState<string | null>(null);
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [title, setTitle] = useState("");
     const [prepTimeMinutes, setPrepTimeMinutes] = useState("");
     const [servings, setServings] = useState("");
@@ -48,7 +48,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
             return;
         }
 
-        setImageUri(recipeToEdit.imageUrl);
+        setImageUrl(recipeToEdit.imageUrl);
         setTitle(recipeToEdit.title);
         setPrepTimeMinutes(String(recipeToEdit.prepTimeMinutes));
         setServings(recipeToEdit.servings ? String(recipeToEdit.servings) : "");
@@ -132,7 +132,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
             return;
         }
 
-        if (!imageUri) {
+        if (!imageUrl) {
             Alert.alert("Imagem obrigatória", "Selecione uma imagem para a receita.");
             return;
         }
@@ -199,7 +199,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
             authorName: user?.name,
             authorAvatarDataUrl: user?.avatarDataUrl ?? null,
             title: title.trim(),
-            imageUrl: imageUri,
+            imageUrl: imageUrl,
             prepTimeMinutes: parsedPrepTime,
             servings: parsedServings,
             difficulty: difficulty as RecipeDifficulty,
@@ -251,7 +251,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
                     <Text className="left-2 bottom-1 bg-white px-1 text-xs">
                         Imagem
                     </Text>
-                    <UploadImage onChange={setImageUri} value={imageUri} />
+                    <UploadImage onChange={setImageUrl} value={imageUrl} />
                 </View>
                 <View className="relative bg-[#fdfbf7] rounded-md px-3 py-2">
                     <Text className="absolute -top-2 left-2 bg-white px-1 text-xs">
