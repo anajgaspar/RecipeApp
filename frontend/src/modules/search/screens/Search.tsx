@@ -327,7 +327,7 @@ export default function Search({ navigation }: { navigation: any }) {
                 ) : null}
 
                 <View className="gap-4 pb-8">
-                    {results.map((recipe) => (
+                    {query.length > 0 && results.map((recipe) => (
                         <Pressable
                             key={recipe.id}
                             onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id, recipe })}

@@ -166,7 +166,7 @@ describe("Serviço de receitas", () => {
         const result = await RecipeService.getSuggestedFeed("user-1", 10);
 
         expect(result[0].id).toBe("2");
-        expect(result.some((recipe) => recipe.id === "fav-recipe")).toBe(false);
+        expect(result.some((recipe) => recipe.id === "fav-recipe")).toBe(true);
     });
 
     it("deve buscar receitas pelo texto informado", async () => {

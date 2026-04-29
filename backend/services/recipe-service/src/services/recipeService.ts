@@ -175,10 +175,7 @@ export const RecipeService = {
 
         const profile = buildRecommendationProfile(validFavoriteRecipes);
 
-        const favoritedIds = new Set(favorites.map((f) => f.recipeId));
-
         const rankedRecipes = allRecipes
-            .filter((recipe) => !favoritedIds.has(recipe.id))
             .map((recipe) => ({
                 recipe,
                 score: scoreRecipeForRecommendation(recipe, profile),
