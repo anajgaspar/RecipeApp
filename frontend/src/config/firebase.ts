@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import Constants from "expo-constants";
 
 function getEnv(name: string): string | undefined {
-	const fromProcess = process.env[name];
+	const fromProcess = (globalThis as any)?.process?.env?.[name] as string | undefined;
 	const fromExtra = (Constants.expoConfig && (Constants.expoConfig as any).extra && (Constants.expoConfig as any).extra[name]) || undefined;
 	const value = fromProcess ?? fromExtra;
 	if (!value) {

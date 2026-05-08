@@ -27,6 +27,34 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "pantry",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "shopping_list",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
