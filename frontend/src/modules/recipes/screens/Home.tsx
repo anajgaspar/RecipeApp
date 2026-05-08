@@ -1,14 +1,15 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { View, Text, ScrollView, Pressable, TextInput } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import TopBar from "../components/TopBar";
 import RecipeCard from "../components/RecipeCard";
-import { getSuggestedRecipes, listFavoriteRecipes, Recipe, toggleFavorite } from "@/src/services/recipeService";
+import { getSuggestedRecipes, listFavoriteRecipes, Recipe, searchRecipes, toggleFavorite } from "@/src/services/recipeService";
 import LoadingState from "@/src/components/LoadingState";
 import InlineError from "@/src/components/InlineError";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import BasicTutorialModal, { TutorialStep } from "@/src/modules/onboarding/components/BasicTutorialModal";
 import { hasSeenAppTutorial, markAppTutorialAsSeen } from "@/src/services/tutorialStorage";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const tutorialSteps: TutorialStep[] = [
     {
@@ -22,10 +23,10 @@ const tutorialSteps: TutorialStep[] = [
         title: "Busque do seu jeito",
         highlight: "Use texto para encontrar receitas rapidamente.",
         description:
-            "Na aba Busca, você pode filtrar por categoria, dificuldade e até usar reconhecimento de voz para procurar por ingredientes.",
-        tip: "Se você já sabe o que quer cozinhar, a busca reduz bastante o tempo para achar a receita certa.",
-        actionLabel: "Abrir Busca",
-        actionHint: "Leva você para a aba de pesquisa agora.",
+            "Na home, a barra de busca fica acima dos filtros. Quando você digita algo, o feed some e aparecem só os resultados.",
+        tip: "Se você já sabe o que quer cozinhar, basta digitar e a lista se ajusta sozinha.",
+        actionLabel: "Buscar na home",
+        actionHint: "Foca a barra de busca na tela inicial.",
     },
     {
         title: "Cadastre sua receita",
@@ -62,11 +63,68 @@ export default function Home({ navigation }: { navigation: any }) {
     const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [query, setQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<Recipe[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
     const [isTutorialVisible, setIsTutorialVisible] = useState(false);
     const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
     const [isCheckingTutorial, setIsCheckingTutorial] = useState(true);
+    const searchInputRef = useRef<TextInput>(null);
 
     const currentTutorialStep = useMemo(() => tutorialSteps[tutorialStepIndex], [tutorialStepIndex]);
+    const trimmedQuery = query.trim();
+    const isSearching = trimmedQuery.length > 0;
+
+    const visibleRecipes = isSearching ? searchResults : recipes;
+    const visibleLoading = isSearching ? searchLoading : isLoading;
+    const visibleError = isSearching ? searchError : errorMessage;
+
+    useEffect(() => {
+        if (!isSearching) {
+            setSearchResults([]);
+            setSearchError(null);
+            setSearchLoading(false);
+            return;
+        }
+
+        let isActive = true;
+        const timeout = setTimeout(() => {
+            async function runSearch() {
+                try {
+                    setSearchLoading(true);
+                    setSearchError(null);
+
+                    const data = await searchRecipes({
+                        query: trimmedQuery,
+                        limit: 30,
+                    });
+
+                    if (isActive) {
+                        setSearchResults(data);
+                    }
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : "Não foi possível realizar a busca.";
+
+                    if (isActive) {
+                        setSearchResults([]);
+                        setSearchError(message);
+                    }
+                } finally {
+                    if (isActive) {
+                        setSearchLoading(false);
+                    }
+                }
+            }
+
+            void runSearch();
+        }, 300);
+
+        return () => {
+            isActive = false;
+            clearTimeout(timeout);
+        };
+    }, [isSearching, trimmedQuery]);
 
     useEffect(() => {
         let isActive = true;
@@ -112,11 +170,11 @@ export default function Home({ navigation }: { navigation: any }) {
         const step = tutorialSteps[tutorialStepIndex];
 
         if (step.actionLabel?.includes("Busca")) {
-            navigation.navigate("Search");
+            searchInputRef.current?.focus();
         } else if (step.actionLabel?.includes("cadastro")) {
             navigation.navigate("RecipeRegister");
-        // } else if (step.actionLabel?.includes("despensa")) {
-        //     navigation.navigate("Pantry");
+            // } else if (step.actionLabel?.includes("despensa")) {
+            //     navigation.navigate("Pantry");
         } else if (step.actionLabel?.includes("perfil")) {
             navigation.navigate("Social");
         }
@@ -126,6 +184,10 @@ export default function Home({ navigation }: { navigation: any }) {
 
     useFocusEffect(
         useCallback(() => {
+            if (isSearching) {
+                return;
+            }
+
             let isActive = true;
 
             async function loadRecipes() {
@@ -159,7 +221,7 @@ export default function Home({ navigation }: { navigation: any }) {
             return () => {
                 isActive = false;
             };
-        }, [])
+        }, [isSearching])
     );
 
     async function handleFavorite(recipeId: string) {
@@ -184,33 +246,76 @@ export default function Home({ navigation }: { navigation: any }) {
                 <TopBar />
                 <View className="flex flex-col gap-6 p-4">
                     <View className="flex flex-row items-center gap-2">
-                        <Pressable>
-                            <Text className="text-white bg-[#f97316] p-2 rounded-full">Todas as receitas</Text>
-                        </Pressable>
-                        <Pressable>
-                            <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Minha despensa</Text>
-                        </Pressable>
-                        <Pressable>
-                            <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Sazonais</Text>
-                        </Pressable>
-                    </View>
-                    <View className="flex flex-col">
-                        <Text className="text-2xl font-bold mb-4">Recomendado para você</Text>
-                        {isLoading ? <LoadingState label="Carregando receitas..." compact /> : null}
-                        {errorMessage ? <InlineError message={errorMessage} title="Não conseguimos carregar o feed" /> : null}
-                        {!isLoading && !errorMessage && recipes.length === 0 ? <Text>Nenhuma receita encontrada.</Text> : null}
-                        <View className="gap-4">
-                            {recipes.map((recipe, index) => (
-                                <Pressable key={`${recipe.id}-${index}`} onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id, recipe })}>
-                                    <RecipeCard
-                                        recipe={recipe}
-                                        isFavorited={favoriteIds.includes(recipe.id)}
-                                        onFavorite={() => void handleFavorite(recipe.id)}
-                                    />
+                        <View className="flex-1 relative">
+                            <View className="absolute left-4 top-3 z-10">
+                                <Ionicons name="search-outline" size={18} color="#9ca3af" />
+                            </View>
+                            {query ? (
+                                <Pressable
+                                    onPress={() => setQuery("")}
+                                    className="absolute right-3 top-2.5 z-10 rounded-full bg-[#9ca3af]/15 p-1"
+                                >
+                                    <Ionicons name="close" size={16} color="#6b7280" />
                                 </Pressable>
-                            ))}
+                            ) : null}
+                            <TextInput
+                                ref={searchInputRef}
+                                value={query}
+                                onChangeText={setQuery}
+                                placeholder="Busque por receitas ou ingredientes..."
+                                placeholderTextColor="#9ca3af"
+                                className="w-full border border-[#9ca3af] py-3 pl-11 pr-11 rounded-full bg-white"
+                            />
                         </View>
                     </View>
+
+                    {!isSearching ? (
+                        <View className="flex flex-row items-center gap-2">
+                            <Pressable>
+                                <Text className="text-white bg-[#f97316] p-2 rounded-full">Todas as receitas</Text>
+                            </Pressable>
+                            <Pressable>
+                                <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Minha despensa</Text>
+                            </Pressable>
+                            <Pressable>
+                                <Text className="bg-white border border-[#9ca3af] p-2 rounded-full">Sazonais</Text>
+                            </Pressable>
+                        </View>
+                    ) : null}
+
+                    {isSearching ? (
+                        <View className="flex flex-col">
+                            <Text className="text-2xl font-bold mb-4">Resultados da busca</Text>
+                            {searchLoading ? <LoadingState label="Buscando receitas..." compact /> : null}
+                            {searchError ? <InlineError message={searchError} title="Falha ao buscar receitas" /> : null}
+                            {!searchLoading && !searchError && searchResults.length === 0 ? <Text>Nenhuma receita encontrada.</Text> : null}
+                            <View className="gap-4">
+                                {searchResults.map((recipe) => (
+                                    <Pressable key={recipe.id} onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id, recipe })}>
+                                        <RecipeCard recipe={recipe} />
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
+                    ) : (
+                        <View className="flex flex-col">
+                            <Text className="text-2xl font-bold mb-4">Recomendado para você</Text>
+                            {isLoading ? <LoadingState label="Carregando receitas..." compact /> : null}
+                            {errorMessage ? <InlineError message={errorMessage} title="Não conseguimos carregar o feed" /> : null}
+                            {!isLoading && !errorMessage && recipes.length === 0 ? <Text>Nenhuma receita encontrada.</Text> : null}
+                            <View className="gap-4">
+                                {recipes.map((recipe, index) => (
+                                    <Pressable key={`${recipe.id}-${index}`} onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id, recipe })}>
+                                        <RecipeCard
+                                            recipe={recipe}
+                                            isFavorited={favoriteIds.includes(recipe.id)}
+                                            onFavorite={() => void handleFavorite(recipe.id)}
+                                        />
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
             <Pressable

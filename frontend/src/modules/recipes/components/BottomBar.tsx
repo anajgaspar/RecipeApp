@@ -4,7 +4,7 @@ import Feather from '@expo/vector-icons/Feather';
 import Pantry from "../../pantry/screens/Pantry";
 import Profile from "../../social/screens/Profile";
 import Planning from "../../planning/screens/Planning";
-import Search from "../../search/screens/Search";
+import ShoppingList from "../../shopping/screens/ShoppingList";
 
 export default function BottomBar() {
     const Tab = createBottomTabNavigator();
@@ -16,7 +16,7 @@ export default function BottomBar() {
                 tabBarIcon: ({ color, size }) => {
                     let iconName;
                     if (route.name === 'Início') iconName = 'home';
-                    else if (route.name === 'Search') iconName = 'search';
+                    else if (route.name === 'ShoppingList') iconName = 'shopping-bag';
                     else if (route.name === 'Planning') iconName = 'calendar';
                     else if (route.name === 'Pantry') iconName = 'archive';
                     else if (route.name === 'Social') iconName = 'users';
@@ -33,9 +33,9 @@ export default function BottomBar() {
                 options={{ tabBarLabel: 'Início' }}
             />
             <Tab.Screen
-                name="Search"
-                component={Search}
-                options={{ tabBarLabel: 'Busca' }}
+                name="ShoppingList"
+                component={ShoppingList}
+                options={{ tabBarLabel: 'Compras' }}
             />
             <Tab.Screen
                 name="Pantry"
