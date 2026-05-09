@@ -5,11 +5,11 @@ import { z } from "zod";
 type ShoppingListItem = z.infer<typeof ShoppingListItemSchema>;
 
 export const ShoppingListService = {
-    async addItem(userId: string, payload: { name: string; quantityValue?: string; quantityUnit?: string; checked?: boolean; }) {
+    async addItem(userId: string, payload: { name: string; quantity?: string; checked?: boolean; }) {
         const toCreate = {
             userId,
             name: payload.name,
-            quantity: payload.quantityValue && payload.quantityUnit ? `${payload.quantityValue} ${payload.quantityUnit}` : undefined,
+            quantity: payload.quantity?.trim() || undefined,
             checked: payload.checked ?? false,
         } as any;
 

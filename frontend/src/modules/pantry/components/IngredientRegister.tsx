@@ -26,7 +26,6 @@ export default function IngredientRegister({ visible, onClose, onSubmit, initial
         return new Date(year, month - 1, day);
     }
 
-    // initialize from `initial` when dialog opens or when initial changes
     useEffect(() => {
         if (!visible) return;
         if (initial?.name) setName(initial.name);

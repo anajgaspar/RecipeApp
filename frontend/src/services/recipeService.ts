@@ -70,6 +70,15 @@ function getErrorMessage(error: unknown): string {
   return getFriendlyHttpErrorMessage(error, "Não foi possível concluir a operação com receitas.");
 }
 
+function normalizeIngredientName(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
 type CreateRecipeResponse = ApiEntityResponse<"recipe", Recipe>;
 type UpdateRecipeResponse = ApiEntityResponse<"recipe", Recipe>;
 type DeleteRecipeResponse = ApiMessageResponse;
@@ -196,6 +205,37 @@ export async function toggleFavorite(recipeId: string): Promise<ToggleFavoriteRe
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function searchRecipesByIngredients(ingredients: string[]): Promise<Recipe[]> {
+  try {
+    const normalizedIngredients = ingredients
+      .map(normalizeIngredientName)
+      .filter(Boolean);
+
+    if (normalizedIngredients.length === 0) return [];
+
+    const recipeById = new Map<string, Recipe>();
+
+    await Promise.all(
+      normalizedIngredients.map(async (ingredient) => {
+        const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/search`, {
+          params: { q: ingredient, limit: 100 },
+        });
+
+        data.recipes.forEach((recipe) => {
+          recipeById.set(recipe.id, recipe);
+        });
+      })
+    );
+
+    return Array.from(recipeById.values()).filter((recipe) =>
+      recipe.ingredients.some((ingredient) => normalizedIngredients.includes(normalizeIngredientName(ingredient.name)))
+    );
+  } catch (error) {
+    console.warn("Erro ao buscar receitas por ingredientes:", error);
+    return [];
   }
 }
 
