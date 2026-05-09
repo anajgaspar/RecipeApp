@@ -4,7 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import TopBar from "../components/TopBar";
 import RecipeCard from "../components/RecipeCard";
 import { getSuggestedRecipes, listFavoriteRecipes, Recipe, searchRecipes, toggleFavorite, searchRecipesByIngredients } from "@/src/services/recipeService";
-import { listPantryItems, PantryItem } from "@/src/services/pantryService";
+import { listPantryItems } from "@/src/services/pantryService";
 import LoadingState from "@/src/components/LoadingState";
 import InlineError from "@/src/components/InlineError";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
@@ -79,10 +79,6 @@ export default function Home({ navigation }: { navigation: any }) {
     const currentTutorialStep = useMemo(() => tutorialSteps[tutorialStepIndex], [tutorialStepIndex]);
     const trimmedQuery = query.trim();
     const isSearching = trimmedQuery.length > 0;
-
-    const visibleRecipes = isSearching ? searchResults : recipes;
-    const visibleLoading = isSearching ? searchLoading : isLoading;
-    const visibleError = isSearching ? searchError : errorMessage;
 
     useEffect(() => {
         if (!isSearching) {

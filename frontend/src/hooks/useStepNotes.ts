@@ -9,7 +9,7 @@ export function useStepNotes(recipeId: string) {
         AsyncStorage.getItem(storageKey).then(raw => {
             if (raw) setNotes(JSON.parse(raw));
         });
-    }, [recipeId]);
+    }, [recipeId, storageKey]);
 
     async function saveNote(stepNumber: number, text: string) {
         const updated = { ...notes, [stepNumber]: text };

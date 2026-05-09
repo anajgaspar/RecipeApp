@@ -16,14 +16,6 @@ type RecipeComment = Comment;
 type AuthorProfilesMap = Record<string, PublicAuthorProfile>;
 
 export default function RecipeComments({ recipe }: CommentsProps) {
-    if (!recipe || !recipe.id) {
-        return (
-            <View className="w-full p-4">
-                <Text className="text-sm text-gray-500">Carregando comentários...</Text>
-            </View>
-        );
-    }
-
     const { user } = useAuth();
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [commentText, setCommentText] = useState("");
@@ -34,11 +26,14 @@ export default function RecipeComments({ recipe }: CommentsProps) {
     const [comments, setComments] = useState<RecipeComment[]>([]);
     const [authorProfiles, setAuthorProfiles] = useState<AuthorProfilesMap>({});
     const [imageUrl, setImageUrl] = useState("");
-
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        if (!recipe || !recipe.id) {
+            return;
+        }
+
         let mounted = true;
 
         async function loadComments() {
@@ -61,11 +56,14 @@ export default function RecipeComments({ recipe }: CommentsProps) {
         return () => {
             mounted = false;
         };
-    }, [recipe.id]);
+    }, [recipe]);
 
     useEffect(() => {
-        let mounted = true;
+        if (!recipe || !recipe.id) {
+            return;
+        }
 
+        let mounted = true;
         async function hydrateAuthorProfiles() {
             if (!comments.length) {
                 if (mounted) {
@@ -111,7 +109,7 @@ export default function RecipeComments({ recipe }: CommentsProps) {
         return () => {
             mounted = false;
         };
-    }, [comments, user?.id]);
+    }, [comments, user?.id, recipe]);
 
     const handleSubmit = async () => {
         if (!commentText.trim()) {
@@ -232,201 +230,207 @@ export default function RecipeComments({ recipe }: CommentsProps) {
     }
 
     return (
-        <KeyboardAvoidingView
-            className="flex-1 bg-white"
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
-        >
-            <View className="w-full p-4 gap-4">
-                <Text className="text-lg font-semibold">Comentários</Text>
-                <View className="flex-row items-center gap-2">
-                    <Text className="text-2xl font-bold text-gray-900">{averageRating.toFixed(1)}</Text>
-                    <View className="flex-row">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Ionicons
-                                key={`avg-${star}`}
-                                name={star <= Math.round(averageRating) ? "star" : "star-outline"}
-                                size={16}
-                                color="#f59e0b"
-                            />
-                        ))}
-                    </View>
-                    <Text className="text-sm text-gray-500">({comments.length} avaliações)</Text>
-                </View>
-                <View className="gap-2">
-                    <Text className="text-sm text-gray-700">Sua nota</Text>
-                    <View className="flex-row gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Pressable
-                                key={`input-${star}`}
-                                onPress={() => setSelectedRating(star)}
-                                hitSlop={6}
-                            >
+        !recipe || !recipe.id ? (
+            <View className="w-full p-4">
+                <Text className="text-sm text-gray-500">Carregando comentários...</Text>
+            </View>
+        ) : (
+            <KeyboardAvoidingView
+                className="flex-1 bg-white"
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
+            >
+                <View className="w-full p-4 gap-4">
+                    <Text className="text-lg font-semibold">Comentários</Text>
+                    <View className="flex-row items-center gap-2">
+                        <Text className="text-2xl font-bold text-gray-900">{averageRating.toFixed(1)}</Text>
+                        <View className="flex-row">
+                            {[1, 2, 3, 4, 5].map((star) => (
                                 <Ionicons
-                                    name={star <= selectedRating ? "star" : "star-outline"}
-                                    size={24}
+                                    key={`avg-${star}`}
+                                    name={star <= Math.round(averageRating) ? "star" : "star-outline"}
+                                    size={16}
                                     color="#f59e0b"
                                 />
-                            </Pressable>
-                        ))}
+                            ))}
+                        </View>
+                        <Text className="text-sm text-gray-500">({comments.length} avaliações)</Text>
                     </View>
-                    <TextInput
-                        className="w-full text-sm py-3 px-3 border border-gray-300 rounded-md"
-                        placeholder="Escreva uma avaliação..."
-                        placeholderTextColor="#9ca3af"
-                        multiline={true}
-                        numberOfLines={4}
-                        value={commentText}
-                        onChangeText={setCommentText}
-                    />
-                    <UploadImage onChange={handleImageUpload} value={imageUrl} />
-                    <Pressable
-                        onPress={handleSubmit}
-                        className="self-end bg-[#f97316] p-2 rounded-full"
-                    >
-                        {isSaving ? (
-                            <ActivityIndicator color="white" />
+                    <View className="gap-2">
+                        <Text className="text-sm text-gray-700">Sua nota</Text>
+                        <View className="flex-row gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Pressable
+                                    key={`input-${star}`}
+                                    onPress={() => setSelectedRating(star)}
+                                    hitSlop={6}
+                                >
+                                    <Ionicons
+                                        name={star <= selectedRating ? "star" : "star-outline"}
+                                        size={24}
+                                        color="#f59e0b"
+                                    />
+                                </Pressable>
+                            ))}
+                        </View>
+                        <TextInput
+                            className="w-full text-sm py-3 px-3 border border-gray-300 rounded-md"
+                            placeholder="Escreva uma avaliação..."
+                            placeholderTextColor="#9ca3af"
+                            multiline={true}
+                            numberOfLines={4}
+                            value={commentText}
+                            onChangeText={setCommentText}
+                        />
+                        <UploadImage onChange={handleImageUpload} value={imageUrl} />
+                        <Pressable
+                            onPress={handleSubmit}
+                            className="self-end bg-[#f97316] p-2 rounded-full"
+                        >
+                            {isSaving ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Ionicons name="play-outline" size={16} color="white" />
+                            )}
+                        </Pressable>
+                    </View>
+                    <View className="gap-3">
+                        {isLoading ? (
+                            <Text className="text-sm text-gray-500">Carregando comentários...</Text>
                         ) : (
-                            <Ionicons name="play-outline" size={16} color="white" />
-                        )}
-                    </Pressable>
-                </View>
-                <View className="gap-3">
-                    {isLoading ? (
-                        <Text className="text-sm text-gray-500">Carregando comentários...</Text>
-                    ) : (
-                        comments.map((comment) => (
-                            <View key={comment.id} className="bg-gray-100 rounded-md p-3 gap-2">
-                                {editingCommentId === comment.id ? (
-                                    <View className="gap-3">
-                                        <View className="flex-row gap-1">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <Pressable
-                                                    key={`edit-${comment.id}-${star}`}
-                                                    onPress={() => setEditSelectedRating(star)}
-                                                    hitSlop={6}
-                                                >
-                                                    <Ionicons
-                                                        name={star <= editSelectedRating ? "star" : "star-outline"}
-                                                        size={20}
-                                                        color="#f59e0b"
-                                                    />
-                                                </Pressable>
-                                            ))}
-                                        </View>
-                                        <TextInput
-                                            className="w-full text-sm py-2 px-3 border border-gray-300 rounded-md"
-                                            placeholder="Editar comentário..."
-                                            placeholderTextColor="#9ca3af"
-                                            multiline={true}
-                                            numberOfLines={3}
-                                            value={editCommentText}
-                                            onChangeText={setEditCommentText}
-                                        />
-                                        <UploadImage onChange={handleEditImageUpload} value={editImageUrl} />
-                                        <View className="flex-row gap-2 justify-end">
-                                            <Pressable onPress={handleCancelEdit} className="bg-gray-400 px-3 py-2 rounded-md">
-                                                <Text className="text-white font-semibold">Cancelar</Text>
-                                            </Pressable>
-                                            <Pressable onPress={handleSaveInlineEdit} className="bg-[#f97316] px-3 py-2 rounded-md">
-                                                {isSaving ? (
-                                                    <ActivityIndicator color="white" />
-                                                ) : (
-                                                    <Text className="text-white font-semibold">Salvar</Text>
-                                                )}
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                ) : (
-                                    <View className="flex-row items-start justify-between">
-                                        <View className="flex-1 gap-2">
-                                            <View className="flex-row gap-2">
-                                                {getAuthorAvatar(comment) ? (
-                                                    <Image source={{ uri: getAuthorAvatar(comment)! }} className="rounded-full w-14 h-14" />
-                                                ) : (
-                                                    <View className="rounded-full w-14 h-14 bg-[#9ca3af]/20 items-center justify-center">
-                                                        <FontAwesome6 name="user" size={18} color="#6b7280" />
-                                                    </View>
-                                                )}
-                                                <View className="flex-1 gap-2">
-                                                    <View className="flex-row items-center gap-2">
-                                                        <Text className="font-semibold">{getAuthorName(comment)}</Text>
-                                                        <Text className="text-xs text-gray-500">{formatDate(comment.createdAt)}</Text>
-                                                    </View>
-                                                    <View className="flex-row">
-                                                        {[1, 2, 3, 4, 5].map((star) => (
-                                                            <Ionicons
-                                                                key={`${comment.id}-${star}`}
-                                                                name={star <= comment.rating ? "star" : "star-outline"}
-                                                                size={20}
-                                                                color="#f59e0b"
-                                                            />
-                                                        ))}
-                                                    </View>
-                                                    <Text className="text-gray-700">{comment.text}</Text>
-                                                </View>
+                            comments.map((comment) => (
+                                <View key={comment.id} className="bg-gray-100 rounded-md p-3 gap-2">
+                                    {editingCommentId === comment.id ? (
+                                        <View className="gap-3">
+                                            <View className="flex-row gap-1">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Pressable
+                                                        key={`edit-${comment.id}-${star}`}
+                                                        onPress={() => setEditSelectedRating(star)}
+                                                        hitSlop={6}
+                                                    >
+                                                        <Ionicons
+                                                            name={star <= editSelectedRating ? "star" : "star-outline"}
+                                                            size={20}
+                                                            color="#f59e0b"
+                                                        />
+                                                    </Pressable>
+                                                ))}
                                             </View>
-                                            {comment.imageUrl && (
-                                                <Image
-                                                    source={{ uri: comment.imageUrl }}
-                                                    className="w-full rounded-md"
-                                                    style={{ aspectRatio: 4 / 3 }}
-                                                    resizeMode="cover"
-                                                />
+                                            <TextInput
+                                                className="w-full text-sm py-2 px-3 border border-gray-300 rounded-md"
+                                                placeholder="Editar comentário..."
+                                                placeholderTextColor="#9ca3af"
+                                                multiline={true}
+                                                numberOfLines={3}
+                                                value={editCommentText}
+                                                onChangeText={setEditCommentText}
+                                            />
+                                            <UploadImage onChange={handleEditImageUpload} value={editImageUrl} />
+                                            <View className="flex-row gap-2 justify-end">
+                                                <Pressable onPress={handleCancelEdit} className="bg-gray-400 px-3 py-2 rounded-md">
+                                                    <Text className="text-white font-semibold">Cancelar</Text>
+                                                </Pressable>
+                                                <Pressable onPress={handleSaveInlineEdit} className="bg-[#f97316] px-3 py-2 rounded-md">
+                                                    {isSaving ? (
+                                                        <ActivityIndicator color="white" />
+                                                    ) : (
+                                                        <Text className="text-white font-semibold">Salvar</Text>
+                                                    )}
+                                                </Pressable>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <View className="flex-row items-start justify-between">
+                                            <View className="flex-1 gap-2">
+                                                <View className="flex-row gap-2">
+                                                    {getAuthorAvatar(comment) ? (
+                                                        <Image source={{ uri: getAuthorAvatar(comment)! }} className="rounded-full w-14 h-14" />
+                                                    ) : (
+                                                        <View className="rounded-full w-14 h-14 bg-[#9ca3af]/20 items-center justify-center">
+                                                            <FontAwesome6 name="user" size={18} color="#6b7280" />
+                                                        </View>
+                                                    )}
+                                                    <View className="flex-1 gap-2">
+                                                        <View className="flex-row items-center gap-2">
+                                                            <Text className="font-semibold">{getAuthorName(comment)}</Text>
+                                                            <Text className="text-xs text-gray-500">{formatDate(comment.createdAt)}</Text>
+                                                        </View>
+                                                        <View className="flex-row">
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <Ionicons
+                                                                    key={`${comment.id}-${star}`}
+                                                                    name={star <= comment.rating ? "star" : "star-outline"}
+                                                                    size={20}
+                                                                    color="#f59e0b"
+                                                                />
+                                                            ))}
+                                                        </View>
+                                                        <Text className="text-gray-700">{comment.text}</Text>
+                                                    </View>
+                                                </View>
+                                                {comment.imageUrl && (
+                                                    <Image
+                                                        source={{ uri: comment.imageUrl }}
+                                                        className="w-full rounded-md"
+                                                        style={{ aspectRatio: 4 / 3 }}
+                                                        resizeMode="cover"
+                                                    />
+                                                )}
+                                            </View>
+                                            {comment.authorId === user?.id && (
+                                                <Pressable
+                                                    onPress={() => {
+                                                        Alert.alert("Opções", undefined, [
+                                                            {
+                                                                text: "Editar",
+                                                                onPress: () => handleEditComment(comment),
+                                                            },
+                                                            {
+                                                                text: "Excluir",
+                                                                style: "destructive",
+                                                                onPress: () => {
+                                                                    Alert.alert(
+                                                                        "Confirmar exclusão",
+                                                                        "Deseja realmente excluir este comentário?",
+                                                                        [
+                                                                            { text: "Cancelar", style: "cancel" },
+                                                                            {
+                                                                                text: "Excluir",
+                                                                                style: "destructive",
+                                                                                onPress: async () => {
+                                                                                    try {
+                                                                                        setIsLoading(true);
+                                                                                        await deleteComment(comment.id);
+                                                                                        const data = await getRecipeComments(recipe.id);
+                                                                                        setComments(data ?? []);
+                                                                                    } catch (e) {
+                                                                                        const message = e instanceof Error ? e.message : "Não foi possível excluir o comentário.";
+                                                                                        Alert.alert(message);
+                                                                                    } finally {
+                                                                                        setIsLoading(false);
+                                                                                    }
+                                                                                },
+                                                                            },
+                                                                        ]
+                                                                    );
+                                                                },
+                                                            },
+                                                            { text: "Fechar", style: "cancel" },
+                                                        ]);
+                                                    }}
+                                                >
+                                                    <Ionicons name="ellipsis-vertical" size={18} color="#374151" />
+                                                </Pressable>
                                             )}
                                         </View>
-                                        {comment.authorId === user?.id && (
-                                            <Pressable
-                                                onPress={() => {
-                                                    Alert.alert("Opções", undefined, [
-                                                        {
-                                                            text: "Editar",
-                                                            onPress: () => handleEditComment(comment),
-                                                        },
-                                                        {
-                                                            text: "Excluir",
-                                                            style: "destructive",
-                                                            onPress: () => {
-                                                                Alert.alert(
-                                                                    "Confirmar exclusão",
-                                                                    "Deseja realmente excluir este comentário?",
-                                                                    [
-                                                                        { text: "Cancelar", style: "cancel" },
-                                                                        {
-                                                                            text: "Excluir",
-                                                                            style: "destructive",
-                                                                            onPress: async () => {
-                                                                                try {
-                                                                                    setIsLoading(true);
-                                                                                    await deleteComment(comment.id);
-                                                                                    const data = await getRecipeComments(recipe.id);
-                                                                                    setComments(data ?? []);
-                                                                                } catch (e) {
-                                                                                    const message = e instanceof Error ? e.message : "Não foi possível excluir o comentário.";
-                                                                                    Alert.alert(message);
-                                                                                } finally {
-                                                                                    setIsLoading(false);
-                                                                                }
-                                                                            },
-                                                                        },
-                                                                    ]
-                                                                );
-                                                            },
-                                                        },
-                                                        { text: "Fechar", style: "cancel" },
-                                                    ]);
-                                                }}
-                                            >
-                                                <Ionicons name="ellipsis-vertical" size={18} color="#374151" />
-                                            </Pressable>
-                                        )}
-                                    </View>
-                                )}
-                            </View>
-                        ))
-                    )}
+                                    )}
+                                </View>
+                            ))
+                        )}
+                    </View>
                 </View>
-            </View>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        )
     );
 }

@@ -3,23 +3,38 @@ import nodemailer from "nodemailer";
 const gmailUser = process.env.GMAIL_USER;
 const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
 
-if (!gmailUser) throw new Error("GMAIL_USER não definido.");
-if (!gmailAppPassword) throw new Error("GMAIL_APP_PASSWORD não definido.");
+let transporter: nodemailer.Transporter | null = null;
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: gmailUser,
-        pass: gmailAppPassword,
-    },
-});
+const getTransporter = () => {
+    if (!gmailUser || !gmailAppPassword) {
+        throw new Error("GMAIL_USER ou GMAIL_APP_PASSWORD não configurados. Configure as variáveis de ambiente para usar o email service.");
+    }
+    
+    if (!transporter) {
+        transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: gmailUser,
+                pass: gmailAppPassword,
+            },
+        });
+    }
+    
+    return transporter;
+};
 
 export const EmailService = {
     async sendEmailVerification({ to, name, verificationToken }: { to: string; name: string; verificationToken: string }) {
         try {
-            console.log(`Enviando email de confirmação para: ${to}`);
+            if (!gmailUser) {
+                console.warn("GMAIL_USER não definido. Email não será enviado (modo teste).");
+                return false;
+            }
             
-            await transporter.sendMail({
+            console.log(`Enviando email de confirmação para: ${to}`);
+            const mailer = getTransporter();
+            
+            await mailer.sendMail({
                 from: `"Receita Na Mão" <${gmailUser}>`,
                 to,
                 subject: "Receita Na Mão - Confirmação de e-mail",

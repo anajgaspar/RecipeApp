@@ -30,7 +30,7 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
     useEffect(() => {
         setIsRunning(false);
         setTimeLeft(step.timerSeconds ?? null);
-    }, [currentStep]);
+    }, [currentStep, step.timerSeconds]);
 
     useEffect(() => {
         if (!isRunning || timeLeft === null || timeLeft <= 0) {
