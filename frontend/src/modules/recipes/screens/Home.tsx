@@ -38,15 +38,15 @@ const tutorialSteps: TutorialStep[] = [
         actionLabel: "Abrir cadastro",
         actionHint: "Você pode testar a tela de criação sem perder este tutorial.",
     },
-    // {
-    //     title: "Organize sua rotina",
-    //     highlight: "Despensa e planejamento ajudam a usar melhor o que você já tem.",
-    //     description:
-    //         "As abas Despensa e Planejamento servem para acompanhar ingredientes e montar o dia a dia das refeições.",
-    //     tip: "Essas telas são úteis para evitar desperdício e planejar melhor as compras.",
-    //     actionLabel: "Abrir despensa",
-    //     actionHint: "Depois você também pode voltar e ver o planejamento.",
-    // },
+    {
+        title: "Organize sua rotina",
+        highlight: "Despensa e planejamento ajudam a usar melhor o que você já tem.",
+        description:
+            "As abas Despensa e Planejamento servem para acompanhar ingredientes e montar o dia a dia das refeições.",
+        tip: "Essas telas são úteis para evitar desperdício e planejar melhor as compras.",
+        actionLabel: "Abrir despensa",
+        actionHint: "Depois você também pode voltar e ver o planejamento.",
+    },
     {
         title: "Seu perfil e favoritos",
         highlight: "Ali ficam seus dados, receitas criadas e favoritos.",
@@ -173,8 +173,8 @@ export default function Home({ navigation }: { navigation: any }) {
             searchInputRef.current?.focus();
         } else if (step.actionLabel?.includes("cadastro")) {
             navigation.navigate("RecipeRegister");
-            // } else if (step.actionLabel?.includes("despensa")) {
-            //     navigation.navigate("Pantry");
+            } else if (step.actionLabel?.includes("despensa")) {
+                navigation.navigate("Pantry");
         } else if (step.actionLabel?.includes("perfil")) {
             navigation.navigate("Social");
         }

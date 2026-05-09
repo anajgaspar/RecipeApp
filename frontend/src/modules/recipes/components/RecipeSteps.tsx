@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useStepNotes } from "@/src/hooks/useStepNotes";
+import { enableWakeLock, disableWakeLock } from "@/src/services/wakeLock";
 
 type RecipeStepsProps = {
     navigation: any;
@@ -26,6 +27,14 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
     const [noteInput, setNoteInput] = useState("");
     const { notes, saveNote, deleteNote } = useStepNotes(recipe.id);
     const currentNote = notes[step.stepNumber];
+
+    useEffect(() => {
+        enableWakeLock();
+
+        return () => {
+            disableWakeLock();
+        };
+    }, []);
 
     useEffect(() => {
         setIsRunning(false);
