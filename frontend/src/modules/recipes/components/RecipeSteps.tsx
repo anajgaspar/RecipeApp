@@ -1,5 +1,5 @@
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Pressable, View, Text, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { Pressable, View, Text, TextInput, Platform } from "react-native";
 import { Recipe } from "@/src/services/recipeService";
 import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -168,16 +168,13 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
                     </Text>
                 </Pressable>
             </View>
-            <Modal visible={isNoteOpen} transparent animationType="slide">
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="flex-1 bg-black/40 justify-end"
-                >
+            {isNoteOpen && (
+                <View className="absolute inset-0 z-50 bg-black/40 justify-center" pointerEvents="box-none">
                     <Pressable
                         className="absolute inset-0"
                         onPress={() => setIsNoteOpen(false)}
                     />
-                    <View className="bg-white rounded-t-2xl px-4 pt-4 pb-10">
+                    <View className="bg-white rounded-t-2xl px-4 pt-4 pb-10 w-full">
                         <View className="flex flex-row justify-between items-center mb-4">
                             <Text className="font-bold text-lg">Minha anotação</Text>
                             {currentNote && (
@@ -192,8 +189,8 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
                             placeholder="Ex: Substituir açúcar por adoçante..."
                             placeholderTextColor="#9ca3af"
                             multiline
+                            textAlignVertical="top"
                             className="border border-gray-200 rounded-md p-3 text-base min-h-24 text-gray-700"
-                            autoFocus
                         />
                         <Pressable
                             onPress={handleSaveNote}
@@ -202,8 +199,8 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
                             <Text className="text-white font-semibold">Salvar</Text>
                         </Pressable>
                     </View>
-                </KeyboardAvoidingView>
-            </Modal>
+                </View>
+            )}
         </View>
     )
 }

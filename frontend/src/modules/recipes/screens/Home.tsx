@@ -194,14 +194,32 @@ export default function Home({ navigation }: { navigation: any }) {
                 try {
                     setIsLoading(true);
                     setErrorMessage(null);
-                    const [suggestedRecipes, favorites] = await Promise.all([
+                    const [suggestedRecipesResult, favoritesResult] = await Promise.allSettled([
                         getSuggestedRecipes(20),
                         listFavoriteRecipes(),
                     ]);
 
                     if (isActive) {
-                        setRecipes(suggestedRecipes);
-                        setFavoriteIds(favorites.map((item) => item.recipe?.id).filter((recipeId): recipeId is string => Boolean(recipeId)));
+                        if (suggestedRecipesResult.status === "fulfilled") {
+                            setRecipes(suggestedRecipesResult.value);
+                        } else {
+                            const message =
+                                suggestedRecipesResult.reason instanceof Error
+                                    ? suggestedRecipesResult.reason.message
+                                    : "Não foi possível carregar as receitas.";
+
+                            setErrorMessage(message);
+                        }
+
+                        if (favoritesResult.status === "fulfilled") {
+                            setFavoriteIds(
+                                favoritesResult.value
+                                    .map((item) => item.recipe?.id)
+                                    .filter((recipeId): recipeId is string => Boolean(recipeId)),
+                            );
+                        } else {
+                            console.warn("Falha ao carregar favoritos, mas o feed será exibido mesmo assim:", favoritesResult.reason);
+                        }
                     }
                 } catch (error) {
                     const message = error instanceof Error ? error.message : "Não foi possível carregar as receitas.";

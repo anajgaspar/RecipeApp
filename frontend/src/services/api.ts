@@ -47,7 +47,7 @@ const AUTH_URL = resolveAuthUrl();
 
 const api = axios.create({
 	baseURL: AUTH_URL,
-	timeout: 10000,
+	timeout: 25000,
 	headers: {
 		"Content-Type": "application/json",
 	},

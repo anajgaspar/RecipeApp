@@ -46,7 +46,7 @@ export default function BasicTutorialModal({
   onAction,
 }: BasicTutorialModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+    <Modal visible={visible} transparent statusBarTranslucent>
       <View className="flex-1 bg-black/75 px-4 py-6">
         <LinearGradient
           colors={["rgba(249,115,22,0.16)", "rgba(0,0,0,0)"]}

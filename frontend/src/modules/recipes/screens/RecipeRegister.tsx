@@ -420,7 +420,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
                     onPress={() => void handleSubmit()}
                 />
             </ScrollView>
-            <Modal visible={isDifficultyOpen} transparent animationType="fade" onRequestClose={() => setIsDifficultyOpen(false)}>
+            <Modal visible={isDifficultyOpen} transparent onRequestClose={() => setIsDifficultyOpen(false)}>
                 <Pressable onPress={() => setIsDifficultyOpen(false)} className="flex-1 bg-black/40 items-center justify-center px-6">
                     <Pressable className="w-full bg-white rounded-2xl p-4" onPress={() => { }}>
                         <Text className="text-lg font-semibold mb-4">Selecione a dificuldade</Text>
@@ -442,7 +442,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
                     </Pressable>
                 </Pressable>
             </Modal>
-            <Modal visible={isCategoryOpen} transparent animationType="fade" onRequestClose={() => setIsCategoryOpen(false)}>
+            <Modal visible={isCategoryOpen} transparent onRequestClose={() => setIsCategoryOpen(false)}>
                 <Pressable onPress={() => setIsCategoryOpen(false)} className="flex-1 bg-black/40 items-center justify-center px-6">
                     <Pressable className="w-full bg-white rounded-2xl p-4" onPress={() => { }}>
                         <Text className="text-lg font-semibold mb-2">Selecione as categorias</Text>

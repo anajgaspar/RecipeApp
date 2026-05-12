@@ -67,7 +67,7 @@ export default function BarcodeScanner({ visible, onClose, onDetected }: Barcode
     if (!visible) return null;
 
     return (
-        <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+        <Modal visible={visible} onRequestClose={onClose}>
             <View style={{ flex: 1, backgroundColor: 'black' }}>
                 <View style={{ flex: 1 }}>
                     {hasPermission === false ? (
