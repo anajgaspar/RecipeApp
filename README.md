@@ -26,7 +26,7 @@ Sprint | Previsão | Status | Documentação |
 |------|----------|--------|--------------|
 |01| 16/03/2026 - 12/04/2026 |✅ Concluído| [Ver Documento](./docs/sprint1.md) |
 |02|  13/04/2026 - 10/05/2026 |✅ Concluído| [Ver Documento](./docs/sprint2.md) |
-|03| 11/05/2026 - 07/06/2026 |⏳ A iniciar| [Ver Documento]() |
+|03| 11/05/2026 - 07/06/2026 |🚧 Em andamento| [Ver Documento](./docs/sprint3.md) |
 
 ---
 <span id="tecnologias">
