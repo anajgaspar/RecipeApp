@@ -2,6 +2,8 @@ import * as SecureStore from "expo-secure-store";
 
 const ACCESS_TOKEN_KEY = "auth.accessToken";
 const USER_KEY = "auth.user";
+const ACTIVE_PROFILE_KEY = "auth.activeProfileId";
+const SOCIAL_NOTIFICATIONS_SEEN_AT_KEY = "social.notificationsSeenAt";
 
 export type StoredUser = {
   id: string;
@@ -12,7 +14,7 @@ export type StoredUser = {
   updatedAt?: string;
 };
 
-type PersistedUser = Omit<StoredUser, "avatarDataUrl">;
+type PersistedUser = StoredUser;
 
 export async function saveAccessToken(token: string): Promise<void> {
   await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token);
@@ -31,6 +33,7 @@ export async function saveStoredUser(user: StoredUser): Promise<void> {
     id: user.id,
     name: user.name,
     email: user.email,
+    avatarDataUrl: user.avatarDataUrl ?? null,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -55,6 +58,30 @@ export async function clearStoredUser(): Promise<void> {
   await SecureStore.deleteItemAsync(USER_KEY);
 }
 
+export async function saveActiveProfileId(profileId: string): Promise<void> {
+  await SecureStore.setItemAsync(ACTIVE_PROFILE_KEY, profileId);
+}
+
+export async function getActiveProfileId(): Promise<string | null> {
+  return SecureStore.getItemAsync(ACTIVE_PROFILE_KEY);
+}
+
+export async function clearActiveProfileId(): Promise<void> {
+  await SecureStore.deleteItemAsync(ACTIVE_PROFILE_KEY);
+}
+
+export async function saveSocialNotificationsSeenAt(seenAtIso: string): Promise<void> {
+  await SecureStore.setItemAsync(SOCIAL_NOTIFICATIONS_SEEN_AT_KEY, seenAtIso);
+}
+
+export async function getSocialNotificationsSeenAt(): Promise<string | null> {
+  return SecureStore.getItemAsync(SOCIAL_NOTIFICATIONS_SEEN_AT_KEY);
+}
+
+export async function clearSocialNotificationsSeenAt(): Promise<void> {
+  await SecureStore.deleteItemAsync(SOCIAL_NOTIFICATIONS_SEEN_AT_KEY);
+}
+
 export async function clearSessionStorage(): Promise<void> {
-  await Promise.all([clearAccessToken(), clearStoredUser()]);
+  await Promise.all([clearAccessToken(), clearStoredUser(), clearActiveProfileId(), clearSocialNotificationsSeenAt()]);
 }

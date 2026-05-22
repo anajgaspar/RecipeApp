@@ -6,6 +6,7 @@ import crypto from "crypto";
 type FavoritesDocument = z.infer<typeof UserFavoritesSchema>;
 type CreateFavoritesParams = {
     userId: string;
+    profileId: string;
     recipeId: string;
 };
 
@@ -22,39 +23,40 @@ export const FavoritesRepository = {
         return parsedFavorite.success ? parsedFavorite.data : null;
     },
 
-    async findByUserAndRecipe(userId: string, recipeId: string): Promise<FavoritesDocument | null> {
+    async findByUserAndRecipe(userId: string, profileId: string, recipeId: string): Promise<FavoritesDocument | null> {
         const documents = await db
             .collection(favoritesCollection)
             .where("userId", "==", userId)
-            .where("recipeId", "==", recipeId)
-            .limit(1)
             .get();
 
-        if (documents.empty) {
-            return null;
-        }
+        const matchingFavorite = documents.docs
+            .map((doc) => UserFavoritesSchema.safeParse(doc.data()))
+            .filter((result) => result.success)
+            .map((result) => result.data)
+            .find((favorite) => (favorite.profileId ?? favorite.userId) === profileId && favorite.recipeId === recipeId);
 
-        const parsedFavorite = UserFavoritesSchema.safeParse(documents.docs[0].data());
-        return parsedFavorite.success ? parsedFavorite.data : null;
+        return matchingFavorite ?? null;
     },
 
-    async listByUserId(userId: string): Promise<FavoritesDocument[]> {
+    async listByUserId(userId: string, profileId = userId): Promise<FavoritesDocument[]> {
         const documents = await db
             .collection(favoritesCollection)
             .where("userId", "==", userId)
-            .orderBy("createdAt", "desc")
             .get();
 
         return documents.docs
             .map((doc) => UserFavoritesSchema.safeParse(doc.data()))
             .filter((result) => result.success)
-            .map((result) => result.data);
+            .map((result) => result.data)
+            .filter((favorite) => (favorite.profileId ?? favorite.userId) === profileId)
+            .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
     },
 
     async create(params: CreateFavoritesParams): Promise<FavoritesDocument> {
         const document: FavoritesDocument = {
             id: crypto.randomUUID(),
             userId: params.userId,
+            profileId: params.profileId,
             recipeId: params.recipeId,
             createdAt: new Date().toISOString(),
         };
@@ -63,11 +65,10 @@ export const FavoritesRepository = {
         return document;
     },
 
-    async deleteByUserAndRecipe(userId: string, recipeId: string): Promise<void> {
+    async deleteByUserAndRecipe(userId: string, profileId: string, recipeId: string): Promise<void> {
         const documents = await db
             .collection(favoritesCollection)
             .where("userId", "==", userId)
-            .where("recipeId", "==", recipeId)
             .get();
 
         if (documents.empty) {
@@ -75,7 +76,16 @@ export const FavoritesRepository = {
         }
 
         const batch = db.batch();
-        documents.docs.forEach((doc) => batch.delete(doc.ref));
+        documents.docs.forEach((doc) => {
+            const data = UserFavoritesSchema.safeParse(doc.data());
+            if (!data.success) {
+                return;
+            }
+
+            if ((data.data.profileId ?? data.data.userId) === profileId && data.data.recipeId === recipeId) {
+                batch.delete(doc.ref);
+            }
+        });
         await batch.commit();
     },
 };

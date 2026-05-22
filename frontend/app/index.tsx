@@ -9,8 +9,12 @@ import RecipeDetails from "@/src/modules/recipes/screens/RecipeDetails";
 import RecipeRegister from "@/src/modules/recipes/screens/RecipeRegister";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import EditProfileForm from "@/src/modules/social/screens/EditProfileForm";
+import EditFamilyProfile from "@/src/modules/social/screens/EditFamilyProfile";
 import MyRecipesList from "@/src/modules/social/screens/MyRecipesList";
 import MyFavoritesList from "@/src/modules/social/screens/MyFavoritesList";
+import FamilyProfiles from "@/src/modules/social/screens/FamilyProfiles";
+import Notifications from "@/src/modules/social/screens/Notifications";
+import SocialConnections from "@/src/modules/social/screens/SocialConnections";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -37,6 +41,10 @@ export default function App() {
             <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
             <Stack.Screen name="MyFavorites" component={MyFavoritesList} options={{ headerShown: false }} />
             <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
+            <Stack.Screen name="EditFamilyProfile" component={EditFamilyProfile} options={{ headerShown: false }} />
+            <Stack.Screen name="FamilyProfiles" component={FamilyProfiles} options={{ headerShown: false }} />
+            <Stack.Screen name="Notifications" component={Notifications} options={{ headerShown: false }} />
+            <Stack.Screen name="SocialConnections" component={SocialConnections} options={{ headerShown: false }} />
           </>
         ) : (
           <>

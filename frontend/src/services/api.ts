@@ -62,4 +62,13 @@ export function setAuthToken(token: string | null): void {
 	delete api.defaults.headers.common.Authorization;
 }
 
+export function setProfileId(profileId: string | null): void {
+	if (profileId) {
+		api.defaults.headers.common["X-Profile-Id"] = profileId;
+		return;
+	}
+
+	delete api.defaults.headers.common["X-Profile-Id"];
+}
+
 export default api;

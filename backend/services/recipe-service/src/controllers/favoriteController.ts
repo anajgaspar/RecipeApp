@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { FavoriteService } from "../services/favoriteService";
-import { getUserIdFromRequest } from "../utils/requestContext";
+import { getProfileIdFromRequest, getUserIdFromRequest } from "../utils/requestContext";
 
 const recipeIdParamSchema = z.object({
     recipeId: z.string().min(1),
@@ -15,6 +15,8 @@ export const FavoriteController = {
                 return res.status(401).json({ error: "Usuário não autenticado." });
             }
 
+            const profileId = getProfileIdFromRequest(req) ?? userId;
+
             const validated = recipeIdParamSchema.safeParse(req.params);
             if (!validated.success) {
                 return res.status(400).json({
@@ -23,7 +25,7 @@ export const FavoriteController = {
                 });
             }
 
-            const result = await FavoriteService.toggleFavorite(userId, validated.data.recipeId);
+            const result = await FavoriteService.toggleFavorite(userId, profileId, validated.data.recipeId);
             return res.status(200).json({
                 message: result.favorited ? "Receita favoritada." : "Receita removida dos favoritos.",
                 ...result,
@@ -41,7 +43,9 @@ export const FavoriteController = {
                 return res.status(401).json({ error: "Usuário não autenticado." });
             }
 
-            const favorites = await FavoriteService.listFavoriteRecipes(userId);
+            const profileId = getProfileIdFromRequest(req) ?? userId;
+
+            const favorites = await FavoriteService.listFavoriteRecipes(userId, profileId);
             return res.status(200).json({ favorites });
         } catch (error) {
             const message = error instanceof Error ? error.message : "Erro desconhecido";

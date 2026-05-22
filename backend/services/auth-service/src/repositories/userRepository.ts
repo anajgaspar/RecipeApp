@@ -38,6 +38,15 @@ export const UserRepository = {
         return parsedUser.success ? parsedUser.data : null;
     },
 
+    async findByIds(ids: string[]): Promise<z.infer<typeof UserSchema>[]> {
+        if (ids.length === 0) {
+            return [];
+        }
+
+        const users = await Promise.all(ids.map((id) => this.findById(id)));
+        return users.filter((user): user is z.infer<typeof UserSchema> => Boolean(user));
+    },
+
     async create(params: CreateUserParams): Promise<z.infer<typeof UserSchema> | null> {
         const document: z.infer<typeof UserSchema> = {
             id: params.id,

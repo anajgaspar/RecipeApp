@@ -1,5 +1,5 @@
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Pressable, View, Text, TextInput, Platform } from "react-native";
+import { Pressable, View, Text, TextInput } from "react-native";
 import { Recipe } from "@/src/services/recipeService";
 import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -12,9 +12,11 @@ type RecipeStepsProps = {
     recipe: Recipe;
     steps: Recipe["steps"];
     onClose: () => void;
+    onCompleteRecipe?: () => Promise<void>;
+    isCompleted?: boolean;
 };
 
-export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps) {
+export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, isCompleted = false }: RecipeStepsProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const isFirst = currentStep === 0;
     const isLast = currentStep === steps.length - 1;
@@ -25,6 +27,7 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
 
     const [isNoteOpen, setIsNoteOpen] = useState(false);
     const [noteInput, setNoteInput] = useState("");
+    const [isCompleting, setIsCompleting] = useState(false);
     const { notes, saveNote, deleteNote } = useStepNotes(recipe.id);
     const currentNote = notes[step.stepNumber];
 
@@ -72,6 +75,28 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
             await deleteNote(step.stepNumber);
         }
         setIsNoteOpen(false);
+    }
+
+    async function handlePrimaryAction() {
+        if (!isLast) {
+            setCurrentStep((prev) => prev + 1);
+            return;
+        }
+
+        if (isCompleted) {
+            onClose();
+            return;
+        }
+
+        try {
+            setIsCompleting(true);
+            if (onCompleteRecipe) {
+                await onCompleteRecipe();
+            }
+            onClose();
+        } finally {
+            setIsCompleting(false);
+        }
     }
 
     return (
@@ -160,11 +185,12 @@ export default function RecipeSteps({ recipe, steps, onClose }: RecipeStepsProps
                     </Pressable>
                 )}
                 <Pressable
-                    onPress={() => isLast ? onClose() : setCurrentStep(prev => prev + 1)}
+                    onPress={() => void handlePrimaryAction()}
+                    disabled={isCompleting}
                     className="flex-1 bg-[#f97316] py-4 rounded-md items-center"
                 >
                     <Text className="text-white font-semibold">
-                        {isLast ? "Concluir" : "Próximo"}
+                        {isLast ? (isCompleted ? "Fechar" : "Marcar como concluída") : "Próximo"}
                     </Text>
                 </Pressable>
             </View>

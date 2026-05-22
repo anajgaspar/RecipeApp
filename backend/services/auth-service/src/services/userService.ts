@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import { UserRepository } from "../repositories/userRepository";
 import { UpdateProfileSchema } from "../schemas/authSchema";
 import { z } from "zod";
+import { UserProfileRepository } from "../repositories/userProfileRepository";
+import { UserProfileService } from "./userProfileService";
 
 type AvatarInput = string | null | undefined;
 
@@ -65,9 +67,33 @@ export const UserService = {
             throw new Error('Usuário não encontrado')
         }
 
+        await UserProfileService.ensureDefaultProfileForUser(userId).catch(() => null);
+        const profiles = await UserProfileRepository.listByUserId(userId);
+
         return {
-            user: toPublicUser(user)
+            user: toPublicUser(user),
+            profiles,
         }
+    },
+
+    async listProfiles(userId: string) {
+        await UserProfileService.ensureDefaultProfileForUser(userId).catch(() => null);
+        return UserProfileRepository.listByUserId(userId);
+    },
+
+    async createProfile(userId: string, name?: string, avatarDataUrl?: string | null) {
+        return UserProfileService.createProfile(userId, {
+            name,
+            avatarDataUrl,
+        });
+    },
+
+    async updateFamilyProfile(userId: string, profileId: string, data: { name?: string; avatarDataUrl?: string | null }) {
+        return UserProfileService.updateProfile(userId, profileId, data);
+    },
+
+    async deleteFamilyProfile(userId: string, profileId: string) {
+        return UserProfileService.deleteProfile(userId, profileId);
     },
 
     async updateProfile(userId: string, data: z.infer<typeof UpdateProfileSchema>) {

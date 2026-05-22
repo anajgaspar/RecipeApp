@@ -12,6 +12,7 @@ import crypto from "crypto";
 import { EmailService } from "./emailService";
 import { TokenBlacklistRepository } from "../repositories/tokenBlacklistRepository";
 import { adminAuth } from "../config/firebase";
+import { UserProfileService } from "./userProfileService";
 
 const jwtSecret = process.env.JWT_SECRET as string;
 const jwtExpiresIn = (process.env.JWT_EXPIRES_IN ?? "1h") as jwt.SignOptions["expiresIn"];
@@ -77,6 +78,8 @@ export const AuthService = {
             throw new Error("Falha ao criar usuário.");
         }
 
+        await UserProfileService.ensureDefaultProfileForUser(newUser.id);
+
         let emailVerificationSent = true;
         try {
             await EmailService.sendEmailVerification({
@@ -114,6 +117,8 @@ export const AuthService = {
         if (!user.emailVerified) {
             throw new Error("Email não verificado");
         }
+
+        await UserProfileService.ensureDefaultProfileForUser(user.id);
 
         const token = signAccessToken(user.id);
 
@@ -163,6 +168,8 @@ export const AuthService = {
         if (!user) {
             throw new Error("Falha ao criar usuário.");
         }
+
+        await UserProfileService.ensureDefaultProfileForUser(user.id);
 
         if (!user.emailVerified) {
             await UserRepository.updateById(user.id, {

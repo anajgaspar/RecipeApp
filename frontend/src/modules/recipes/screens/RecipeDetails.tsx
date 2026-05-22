@@ -4,15 +4,15 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import RecipeList from "../components/RecipeList";
 import RecipeComments from "../components/RecipeComments";
-import { getRecipeById, listFavoriteRecipes, Recipe, toggleFavorite } from "@/src/services/recipeService";
+import { getRecipeById, getRecipeCompletionStatus, listFavoriteRecipes, markRecipeCompleted, Recipe, toggleFavorite } from "@/src/services/recipeService";
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
-import { getPublicUserProfile } from "@/src/services/authService";
+import { getFollowStatus, getPublicUserProfile, toggleFollow } from "@/src/services/authService";
 import LoadingState from "@/src/components/LoadingState";
 import InlineError from "@/src/components/InlineError";
 import RecipeSteps from "../components/RecipeSteps";
 
 export default function RecipeDetails({ navigation, route }: { navigation: any; route: any }) {
-    const { user } = useAuth();
+    const { user, activeProfileId } = useAuth();
     const recipeId = route?.params?.recipeId as string | undefined;
     const routeRecipe = route?.params?.recipe as Recipe | undefined;
     const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -24,6 +24,9 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [isFavorited, setIsFavorited] = useState(false);
     const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
     const [isStepsOpen, setIsStepsOpen] = useState(false);
+    const [hasCompletedRecipe, setHasCompletedRecipe] = useState(false);
+    const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
+    const [isFollowLoading, setIsFollowLoading] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -107,6 +110,34 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     }, [recipe, user?.id]);
 
     useEffect(() => {
+        let isMounted = true;
+
+        async function loadCompletionState() {
+            if (!recipe || !user?.id) {
+                setHasCompletedRecipe(false);
+                return;
+            }
+
+            try {
+                const status = await getRecipeCompletionStatus(recipe.id);
+                if (isMounted) {
+                    setHasCompletedRecipe(status.completed);
+                }
+            } catch {
+                if (isMounted) {
+                    setHasCompletedRecipe(false);
+                }
+            }
+        }
+
+        loadCompletionState();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [recipe, activeProfileId, user?.id]);
+
+    useEffect(() => {
         setIsRecipeImageError(false);
     }, [recipe?.imageUrl]);
 
@@ -138,6 +169,34 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
         return () => {
             isMounted = false;
         };
+    }, [recipe, activeProfileId, user?.id]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadFollowState() {
+            if (!recipe || !user?.id || recipe.authorId === user.id) {
+                setIsFollowingAuthor(false);
+                return;
+            }
+
+            try {
+                const status = await getFollowStatus(recipe.authorId);
+                if (isMounted) {
+                    setIsFollowingAuthor(status.isFollowing);
+                }
+            } catch {
+                if (isMounted) {
+                    setIsFollowingAuthor(false);
+                }
+            }
+        }
+
+        loadFollowState();
+
+        return () => {
+            isMounted = false;
+        };
     }, [recipe, user?.id]);
 
     async function handleToggleFavorite() {
@@ -154,6 +213,37 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
             Alert.alert("Favoritos", message);
         } finally {
             setIsFavoriteLoading(false);
+        }
+    }
+
+    async function handleToggleFollow() {
+        if (!recipe || recipe.authorId === user?.id) {
+            return;
+        }
+
+        try {
+            setIsFollowLoading(true);
+            const result = await toggleFollow(recipe.authorId);
+            setIsFollowingAuthor(result.isFollowing);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Não foi possível atualizar o vínculo.";
+            Alert.alert("Seguidores", message);
+        } finally {
+            setIsFollowLoading(false);
+        }
+    }
+
+    async function handleMarkRecipeCompleted() {
+        if (!recipe) {
+            return;
+        }
+
+        try {
+            const result = await markRecipeCompleted(recipe.id);
+            setHasCompletedRecipe(result.completed);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Não foi possível registrar a conclusão.";
+            Alert.alert("Concluir receita", message);
         }
     }
 
@@ -221,6 +311,9 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                                 <Text className="text-[#9ca3af] mt-2">Imagem indisponível</Text>
                             </View>
                         )}
+                        <View className="absolute top-12 right-[8.5rem] bg-white rounded-full p-2 flex justify-center items-center">
+                            <Ionicons name="checkmark-done-outline" size={24} color={hasCompletedRecipe ? "#1cc406" : "black"} />
+                        </View>
                         <Pressable
                             onPress={() => void handleToggleFavorite()}
                             disabled={isFavoriteLoading}
@@ -276,11 +369,21 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                                 <FontAwesome6 name="user" size={18} color="#6b7280" />
                             </View>
                         )}
-                        <Text className="pt-2">{authorName}</Text>
+                        <View className="pt-2">
+                            <Text>{authorName}</Text>
+                        </View>
                     </View>
-                    {/* <Pressable className="flex justify-center border border-[#9ca3af]/80 rounded-md h-10 px-2">
-                        <Text>Seguir</Text>
-                    </Pressable> */}
+                    {recipe.authorId !== user?.id ? (
+                        <Pressable
+                            onPress={() => void handleToggleFollow()}
+                            disabled={isFollowLoading}
+                            className={`flex justify-center border rounded-md h-10 px-3 ${isFollowingAuthor ? "border-[#f97316] bg-orange-50" : "border-[#9ca3af]/80"}`}
+                        >
+                            <Text className={isFollowingAuthor ? "text-[#f97316] font-semibold" : "text-black"}>
+                                {isFollowingAuthor ? "Seguindo" : "Seguir"}
+                            </Text>
+                        </Pressable>
+                    ) : null}
                 </View>
                 <View className="flex-1 h-px bg-gray-200" />
                 <RecipeList ingredients={recipe.ingredients} steps={recipe.steps} />
@@ -297,6 +400,8 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                     navigation={navigation}
                     recipe={recipe}
                     steps={recipe.steps}
+                    isCompleted={hasCompletedRecipe}
+                    onCompleteRecipe={handleMarkRecipeCompleted}
                     onClose={() => setIsStepsOpen(false)}
                 />
             </Modal>

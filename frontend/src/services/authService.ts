@@ -11,6 +11,16 @@ export type AuthUser = {
   updatedAt?: string;
 };
 
+export type FamilyProfile = {
+  id: string;
+  userId: string;
+  name: string;
+  avatarDataUrl?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type RegisterPayload = {
   name: string;
   email: string;
@@ -71,6 +81,11 @@ export type UpdateProfilePayload = {
   newPassword?: string;
 };
 
+export type UpdateFamilyProfilePayload = {
+  name?: string;
+  avatarDataUrl?: string | null;
+};
+
 type UpdateProfileResponse = {
   message: string;
   user: AuthUser;
@@ -78,6 +93,39 @@ type UpdateProfileResponse = {
 
 type GetProfileResponse = {
   user: AuthUser;
+  profiles: FamilyProfile[];
+};
+
+type CreateProfileResponse = {
+  message: string;
+  profile: FamilyProfile;
+  profiles: FamilyProfile[];
+};
+
+type UpdateFamilyProfileResponse = {
+  message: string;
+  profile: FamilyProfile;
+  profiles: FamilyProfile[];
+};
+
+type DeleteFamilyProfileResponse = {
+  message: string;
+  deletedProfileId: string;
+  profiles: FamilyProfile[];
+};
+
+type SocialSummaryResponse = {
+  followersCount: number;
+  followingCount: number;
+};
+
+type FollowStatusResponse = {
+  isFollowing: boolean;
+};
+
+type ToggleFollowResponse = {
+  message: string;
+  isFollowing: boolean;
 };
 
 export type PublicAuthorProfile = {
@@ -86,8 +134,20 @@ export type PublicAuthorProfile = {
   avatarDataUrl?: string | null;
 };
 
+export type SocialConnectionUser = PublicAuthorProfile;
+
+export type SocialConnectionItem = {
+  user: SocialConnectionUser;
+  followedAt: string;
+  isFollowingBack: boolean;
+};
+
 type GetPublicProfileResponse = {
   user: PublicAuthorProfile;
+};
+
+type GetSocialConnectionsResponse = {
+  items: SocialConnectionItem[];
 };
 
 function getErrorMessage(error: unknown): string {
@@ -167,6 +227,87 @@ export async function getProfile(): Promise<AuthUser> {
   try {
     const { data } = await api.get<GetProfileResponse>("/user");
     return data.user;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getProfileWithProfiles(): Promise<GetProfileResponse> {
+  try {
+    const { data } = await api.get<GetProfileResponse>("/user");
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function createFamilyProfile(payload: { name?: string; avatarDataUrl?: string | null }): Promise<CreateProfileResponse> {
+  try {
+    const { data } = await api.post<CreateProfileResponse>("/user/profiles", payload);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function updateFamilyProfile(profileId: string, payload: UpdateFamilyProfilePayload): Promise<UpdateFamilyProfileResponse> {
+  try {
+    const { data } = await api.put<UpdateFamilyProfileResponse>(`/user/profiles/${profileId}`, payload);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function deleteFamilyProfile(profileId: string): Promise<DeleteFamilyProfileResponse> {
+  try {
+    const { data } = await api.delete<DeleteFamilyProfileResponse>(`/user/profiles/${profileId}`);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMySocialSummary(): Promise<SocialSummaryResponse> {
+  try {
+    const { data } = await api.get<SocialSummaryResponse>("/user/social/me");
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyFollowers(): Promise<SocialConnectionItem[]> {
+  try {
+    const { data } = await api.get<GetSocialConnectionsResponse>("/user/social/followers");
+    return data.items;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyFollowing(): Promise<SocialConnectionItem[]> {
+  try {
+    const { data } = await api.get<GetSocialConnectionsResponse>("/user/social/following");
+    return data.items;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getFollowStatus(userId: string): Promise<FollowStatusResponse> {
+  try {
+    const { data } = await api.get<FollowStatusResponse>(`/user/social/${userId}/status`);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function toggleFollow(userId: string): Promise<ToggleFollowResponse> {
+  try {
+    const { data } = await api.post<ToggleFollowResponse>(`/user/social/${userId}/toggle`);
+    return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

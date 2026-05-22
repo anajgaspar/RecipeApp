@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { FavoriteController } from "../controllers/favoriteController";
+import { RecipeCompletionController } from "../controllers/recipeCompletionController";
 import { RecipeController } from "../controllers/recipeController";
 import { SearchHistoryController } from "../controllers/searchHistoryController";
 import { UserPreferencesController } from "../controllers/userPreferencesController";
@@ -18,6 +19,10 @@ router.get("/recipes/:recipeId", RecipeController.getRecipeById);
 router.post("/recipes", AuthMiddleware.authenticateUser, RecipeController.createRecipe);
 router.put("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.updateRecipe);
 router.delete("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.deleteRecipe);
+
+router.get("/recipes/:recipeId/completion-status", AuthMiddleware.authenticateUser, RecipeCompletionController.getStatus);
+router.post("/recipes/:recipeId/complete", AuthMiddleware.authenticateUser, RecipeCompletionController.markCompleted);
+router.get("/recipes/completions", AuthMiddleware.authenticateUser, RecipeCompletionController.listCompleted);
 
 router.post("/comments", AuthMiddleware.authenticateUser, CommentsController.addComment);
 router.get("/comments/:recipeId", AuthMiddleware.authenticateUser, CommentsController.getRecipeComments);

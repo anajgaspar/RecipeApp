@@ -20,7 +20,7 @@ export default function CardOption() {
         {
             icon: "users",
             title: "Membros da Família",
-            route: null
+            route: "FamilyProfiles"
         },
         {
             icon: "settings",

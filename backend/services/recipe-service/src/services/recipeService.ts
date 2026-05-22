@@ -151,7 +151,7 @@ export const RecipeService = {
         return RecipeRepository.findByAuthorId(authorId, limit);
     },
 
-    async getSuggestedFeed(userId?: string, limit = 20): Promise<RecipeDocument[]> {
+    async getSuggestedFeed(userId?: string, profileId?: string, limit = 20): Promise<RecipeDocument[]> {
         const fetchLimit = Math.max(limit * 6, 120);
         const allRecipes = await RecipeRepository.findAll(fetchLimit);
 
@@ -159,7 +159,7 @@ export const RecipeService = {
             return allRecipes.slice(0, limit);
         }
 
-        const favorites = await FavoritesRepository.listByUserId(userId);
+        const favorites = await FavoritesRepository.listByUserId(userId, profileId ?? userId);
         if (favorites.length === 0) {
             return allRecipes.slice(0, limit);
         }

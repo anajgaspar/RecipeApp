@@ -94,6 +94,7 @@ type GetRecipeResponse = {
 export type FavoriteRecord = {
   id: string;
   userId: string;
+  profileId?: string;
   recipeId: string;
   createdAt: string;
 };
@@ -111,6 +112,25 @@ type ToggleFavoriteResponse = {
 
 type ListFavoritesResponse = {
   favorites: FavoriteRecipeEntry[];
+};
+
+export type RecipeCompletionRecord = {
+  id: string;
+  userId: string;
+  profileId: string;
+  recipeId: string;
+  completedAt: string;
+  createdAt: string;
+};
+
+type CompletionStatusResponse = {
+  completed: boolean;
+  completion: RecipeCompletionRecord | null;
+};
+
+type ListCompletionsResponse = {
+  completions: RecipeCompletionRecord[];
+  completedRecipeIds: string[];
 };
 
 export type SearchRecipesParams = {
@@ -202,6 +222,33 @@ export async function listFavoriteRecipes(): Promise<FavoriteRecipeEntry[]> {
 export async function toggleFavorite(recipeId: string): Promise<ToggleFavoriteResponse> {
   try {
     const { data } = await api.post<ToggleFavoriteResponse>(`${RECIPE_API_URL}/api/favorites/${recipeId}/toggle`);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getRecipeCompletionStatus(recipeId: string): Promise<CompletionStatusResponse> {
+  try {
+    const { data } = await api.get<CompletionStatusResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}/completion-status`);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function markRecipeCompleted(recipeId: string): Promise<CompletionStatusResponse> {
+  try {
+    const { data } = await api.post<CompletionStatusResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}/complete`);
+    return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function listCompletedRecipes(): Promise<ListCompletionsResponse> {
+  try {
+    const { data } = await api.get<ListCompletionsResponse>(`${RECIPE_API_URL}/api/recipes/completions`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));

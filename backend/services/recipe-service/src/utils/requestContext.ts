@@ -17,3 +17,16 @@ export function getUserIdFromRequest(req: Request): string | null {
 
     return headerValue.trim() || null;
 }
+
+export function getProfileIdFromRequest(req: Request): string | null {
+    if (typeof req.header !== "function") {
+        return null;
+    }
+
+    const headerValue = req.header("x-profile-id");
+    if (!headerValue) {
+        return null;
+    }
+
+    return headerValue.trim() || null;
+}

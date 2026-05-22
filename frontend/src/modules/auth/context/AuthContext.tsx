@@ -1,8 +1,12 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AuthUser,
+  FamilyProfile,
   FirebaseLoginPayload,
-  getProfile as getProfileRequest,
+  createFamilyProfile as createFamilyProfileRequest,
+  updateFamilyProfile as updateFamilyProfileRequest,
+  deleteFamilyProfile as deleteFamilyProfileRequest,
+  getProfileWithProfiles as getProfileRequest,
   LoginPayload,
   RegisterPayload,
   login as loginRequest,
@@ -12,12 +16,15 @@ import {
   updateProfile as updateProfileRequest,
   UpdateProfilePayload,
 } from "@/src/services/authService";
-import { setAuthToken } from "@/src/services/api";
+import { setAuthToken, setProfileId } from "@/src/services/api";
 import {
   clearSessionStorage,
   getAccessToken,
+  getActiveProfileId,
   getStoredUser,
+  clearActiveProfileId,
   saveAccessToken,
+  saveActiveProfileId,
   saveStoredUser,
 } from "@/src/services/tokenStorage";
 
@@ -26,11 +33,17 @@ type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
   isLoadingSession: boolean;
+  profiles: FamilyProfile[];
+  activeProfileId: string | null;
   signIn: (payload: LoginPayload) => Promise<void>;
   signInWithGoogle: (payload: FirebaseLoginPayload) => Promise<void>;
   signUp: (payload: RegisterPayload) => Promise<AuthUser>;
   signOut: () => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<AuthUser>;
+  createProfile: (payload: { name?: string; avatarDataUrl?: string | null }) => Promise<FamilyProfile>;
+  updateFamilyProfile: (profileId: string, payload: { name?: string; avatarDataUrl?: string | null }) => Promise<FamilyProfile>;
+  deleteFamilyProfile: (profileId: string) => Promise<void>;
+  setActiveProfile: (profileId: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -42,7 +55,30 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profiles, setProfiles] = useState<FamilyProfile[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  const syncProfileContext = useCallback(async (nextProfiles: FamilyProfile[], fallbackProfileId: string | null = null) => {
+    const storedActiveProfileId = await getActiveProfileId();
+    const candidateProfileId = storedActiveProfileId ?? fallbackProfileId;
+    const resolvedProfileId =
+      candidateProfileId && nextProfiles.some((profile) => profile.id === candidateProfileId)
+        ? candidateProfileId
+        : nextProfiles[0]?.id ?? fallbackProfileId;
+
+    setProfiles(nextProfiles);
+    setActiveProfileId(resolvedProfileId ?? null);
+    setProfileId(resolvedProfileId ?? null);
+
+    if (resolvedProfileId) {
+      await saveActiveProfileId(resolvedProfileId);
+    } else {
+      await clearActiveProfileId();
+    }
+
+    return resolvedProfileId ?? null;
+  }, []);
 
   useEffect(() => {
     async function hydrateSession() {
@@ -58,16 +94,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           try {
-            const freshUser = await getProfileRequest();
-            setUser(freshUser);
-            await saveStoredUser(freshUser);
+            const freshSession = await getProfileRequest();
+            setUser(freshSession.user);
+            await saveStoredUser(freshSession.user);
+            await syncProfileContext(freshSession.profiles ?? [], freshSession.user.id);
           } catch {
+            await syncProfileContext([], storedUser?.id ?? null);
           }
           return;
         }
 
         if (storedUser) {
           setUser(storedUser);
+          await syncProfileContext([], storedUser.id);
         }
       } finally {
         setIsLoadingSession(false);
@@ -75,7 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     hydrateSession();
-  }, []);
+  }, [syncProfileContext]);
 
   const signIn = useCallback(async (payload: LoginPayload) => {
     const { token: receivedToken, user: receivedUser } = await loginRequest(payload);
@@ -85,7 +124,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthToken(receivedToken);
     setToken(receivedToken);
     setUser(receivedUser);
-  }, []);
+
+    try {
+      const session = await getProfileRequest();
+      setUser(session.user);
+      await saveStoredUser(session.user);
+      await syncProfileContext(session.profiles ?? [], session.user.id);
+    } catch {
+      await syncProfileContext([], receivedUser.id);
+    }
+  }, [syncProfileContext]);
 
   const signInWithGoogle = useCallback(async (payload: FirebaseLoginPayload) => {
     const { token: receivedToken, user: receivedUser } = await loginWithFirebaseRequest(payload);
@@ -95,7 +143,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthToken(receivedToken);
     setToken(receivedToken);
     setUser(receivedUser);
-  }, []);
+
+    try {
+      const session = await getProfileRequest();
+      setUser(session.user);
+      await saveStoredUser(session.user);
+      await syncProfileContext(session.profiles ?? [], session.user.id);
+    } catch {
+      await syncProfileContext([], receivedUser.id);
+    }
+  }, [syncProfileContext]);
 
   const signUp = useCallback(async (payload: RegisterPayload) => {
     return registerRequest(payload);
@@ -110,8 +167,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await clearSessionStorage();
 
     setAuthToken(null);
+    setProfileId(null);
     setToken(null);
     setUser(null);
+    setProfiles([]);
+    setActiveProfileId(null);
   }, []);
 
   const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
@@ -123,19 +183,73 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return updatedUser;
   }, []);
 
+  const createProfile = useCallback(async (payload: { name?: string; avatarDataUrl?: string | null }) => {
+    const result = await createFamilyProfileRequest(payload);
+
+    setProfiles(result.profiles);
+    setActiveProfileId(result.profile.id);
+    setProfileId(result.profile.id);
+    await saveActiveProfileId(result.profile.id);
+
+    return result.profile;
+  }, []);
+
+  const updateFamilyProfile = useCallback(async (profileId: string, payload: { name?: string; avatarDataUrl?: string | null }) => {
+    const result = await updateFamilyProfileRequest(profileId, payload);
+
+    setProfiles(result.profiles);
+
+    if (result.profile.id === activeProfileId) {
+      setActiveProfileId(result.profile.id);
+      setProfileId(result.profile.id);
+      await saveActiveProfileId(result.profile.id);
+    }
+
+    return result.profile;
+  }, [activeProfileId]);
+
+  const deleteFamilyProfile = useCallback(async (profileId: string) => {
+    const result = await deleteFamilyProfileRequest(profileId);
+    setProfiles(result.profiles);
+
+    if (activeProfileId === result.deletedProfileId) {
+      const fallbackProfileId = result.profiles[0]?.id ?? null;
+      setActiveProfileId(fallbackProfileId);
+      setProfileId(fallbackProfileId);
+
+      if (fallbackProfileId) {
+        await saveActiveProfileId(fallbackProfileId);
+      } else {
+        await clearActiveProfileId();
+      }
+    }
+  }, [activeProfileId]);
+
+  const setActiveProfile = useCallback(async (profileId: string) => {
+    setActiveProfileId(profileId);
+    setProfileId(profileId);
+    await saveActiveProfileId(profileId);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       token,
       isAuthenticated: Boolean(token),
       isLoadingSession,
+      profiles,
+      activeProfileId,
       signIn,
       signInWithGoogle,
       signUp,
       signOut,
       updateProfile,
+      createProfile,
+      updateFamilyProfile,
+      deleteFamilyProfile,
+      setActiveProfile,
     }),
-    [isLoadingSession, signIn, signInWithGoogle, signOut, signUp, token, updateProfile, user],
+    [activeProfileId, createProfile, deleteFamilyProfile, isLoadingSession, profiles, setActiveProfile, signIn, signInWithGoogle, signOut, signUp, token, updateFamilyProfile, updateProfile, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

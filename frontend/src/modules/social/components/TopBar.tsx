@@ -16,7 +16,7 @@ export default function TopBar() {
                 <Pressable onPress={handleLogout}>
                     <MaterialCommunityIcons name="logout" size={22} color="black" />
                 </Pressable>
-            </View>
+            </View>         
         </View>
     )
 }
