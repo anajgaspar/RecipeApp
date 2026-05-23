@@ -133,6 +133,11 @@ type ListCompletionsResponse = {
   completedRecipeIds: string[];
 };
 
+export type MyRecipeBadgeProgress = {
+  firstHighRating: boolean;
+  recipeSavedByAnotherUser: boolean;
+};
+
 export type SearchRecipesParams = {
   query?: string;
   category?: RecipeCategory;
@@ -250,6 +255,15 @@ export async function listCompletedRecipes(): Promise<ListCompletionsResponse> {
   try {
     const { data } = await api.get<ListCompletionsResponse>(`${RECIPE_API_URL}/api/recipes/completions`);
     return data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyBadgeProgress(): Promise<MyRecipeBadgeProgress> {
+  try {
+    const { data } = await api.get<{ badges: MyRecipeBadgeProgress }>(`${RECIPE_API_URL}/api/recipes/badges/me`);
+    return data.badges;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

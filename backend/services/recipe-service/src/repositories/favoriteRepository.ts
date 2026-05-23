@@ -13,6 +13,15 @@ type CreateFavoritesParams = {
 const favoritesCollection = "favorites";
 
 export const FavoritesRepository = {
+    async findAll(): Promise<FavoritesDocument[]> {
+        const documents = await db.collection(favoritesCollection).orderBy("createdAt", "desc").get();
+
+        return documents.docs
+            .map((doc) => UserFavoritesSchema.safeParse(doc.data()))
+            .filter((result) => result.success)
+            .map((result) => result.data);
+    },
+
     async findById(id: string): Promise<FavoritesDocument | null> {
         const document = await db.collection(favoritesCollection).doc(id).get();
         if (!document.exists) {

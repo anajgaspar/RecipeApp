@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { FavoritesRepository } from "../repositories/favoriteRepository";
 import { z } from "zod";
+import { CommentsRepository } from "../repositories/commentsRepository";
 import { RecipeRepository } from "../repositories/recipeRepository";
 import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
 
@@ -35,6 +36,11 @@ function buildSearchableText(recipe: RecipeDocument): string {
 type RecommendationProfile = {
     categoryWeights: Map<string, number>;
     ingredientWeights: Map<string, number>;
+};
+
+type MyRecipeBadgeProgress = {
+    firstHighRating: boolean;
+    recipeSavedByAnotherUser: boolean;
 };
 
 function buildRecommendationProfile(recipes: RecipeDocument[]): RecommendationProfile {
@@ -149,6 +155,29 @@ export const RecipeService = {
 
     async getMyRecipes(authorId: string, limit = 50): Promise<RecipeDocument[]> {
         return RecipeRepository.findByAuthorId(authorId, limit);
+    },
+
+    async getMyBadgeProgress(authorId: string): Promise<MyRecipeBadgeProgress> {
+        const [recipes, comments, favorites] = await Promise.all([
+            RecipeRepository.findByAuthorId(authorId),
+            CommentsRepository.findAll(),
+            FavoritesRepository.findAll(),
+        ]);
+
+        const myRecipeIds = new Set(recipes.map((recipe) => recipe.id));
+
+        const firstHighRating = comments.some((comment) => {
+            return myRecipeIds.has(comment.recipeId) && comment.authorId !== authorId && comment.rating >= 4;
+        });
+
+        const recipeSavedByAnotherUser = favorites.some((favorite) => {
+            return favorite.userId !== authorId && myRecipeIds.has(favorite.recipeId);
+        });
+
+        return {
+            firstHighRating,
+            recipeSavedByAnotherUser,
+        };
     },
 
     async getSuggestedFeed(userId?: string, profileId?: string, limit = 20): Promise<RecipeDocument[]> {

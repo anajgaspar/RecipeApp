@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getMySocialSummary } from "@/src/services/authService";
 import { getMyRecipes } from "@/src/services/recipeService";
+import { getMyBadgeProgress } from "@/src/services/recipeService";
+import ProfileAchievements, { ProfileAchievementStatus } from "./ProfileAchievements";
 
 export default function ProfileInfo() {
     const { user, profiles, activeProfileId, setActiveProfile, createProfile } = useAuth();
@@ -13,75 +15,68 @@ export default function ProfileInfo() {
     const [recipeCount, setRecipeCount] = useState<number | null>(null);
     const [followersCount, setFollowersCount] = useState<number | null>(null);
     const [followingCount, setFollowingCount] = useState<number | null>(null);
+    const [badgeProgress, setBadgeProgress] = useState({
+        firstHighRating: false,
+        recipeSavedByAnotherUser: false,
+    });
 
     const activeProfile = useMemo(
         () => profiles.find((profile) => profile.id === activeProfileId) ?? profiles[0] ?? null,
         [activeProfileId, profiles],
     );
 
-    useEffect(() => {
+    const loadProfileData = useCallback(() => {
         let isMounted = true;
 
-        async function loadCount() {
+        async function loadData() {
             try {
-                const recipes = await getMyRecipes(100);
-                if (isMounted) {
-                    setRecipeCount(recipes.length);
-                }
-            } catch {
-                if (isMounted) {
-                    setRecipeCount(null);
-                }
-            }
-        }
-
-        loadCount();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [activeProfileId]);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadSummary() {
-            try {
-                const [socialSummary] = await Promise.all([
+                const [recipes, socialSummary, progress] = await Promise.all([
+                    getMyRecipes(100),
                     getMySocialSummary(),
+                    getMyBadgeProgress(),
                 ]);
 
                 if (!isMounted) {
                     return;
                 }
 
+                setRecipeCount(recipes.length);
                 setFollowersCount(socialSummary.followersCount);
                 setFollowingCount(socialSummary.followingCount);
+                setBadgeProgress(progress);
             } catch {
                 if (!isMounted) {
                     return;
                 }
 
+                setRecipeCount(null);
                 setFollowersCount(null);
                 setFollowingCount(null);
+                setBadgeProgress({
+                    firstHighRating: false,
+                    recipeSavedByAnotherUser: false,
+                });
             }
         }
 
-        loadSummary();
+        loadData();
 
         return () => {
             isMounted = false;
         };
     }, [activeProfileId]);
 
-    async function handleCreateProfile() {
-        try {
-            await createProfile({});
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Não foi possível criar o perfil.";
-            Alert.alert("Perfis", message);
-        }
-    }
+    useFocusEffect(loadProfileData);
+
+    const achievementStatus: ProfileAchievementStatus = useMemo(() => {
+        return {
+            firstRecipe: (recipeCount ?? 0) > 0,
+            firstHighRating: badgeProgress.firstHighRating,
+            recipeSavedByAnotherUser: badgeProgress.recipeSavedByAnotherUser,
+            firstFollower: (followersCount ?? 0) > 0,
+            gastronomicConnections: (followingCount ?? 0) >= 10,
+        };
+    }, [badgeProgress, followersCount, followingCount, recipeCount]);
 
     return (
         <View className="w-full flex flex-col items-center gap-4 px-4 py-6">
@@ -120,6 +115,7 @@ export default function ProfileInfo() {
                     <Text className="text-[#9ca3af] text-sm">Seguindo</Text>
                 </Pressable>
             </View>
+            <ProfileAchievements badges={achievementStatus} />
         </View>
     )
 }

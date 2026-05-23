@@ -57,12 +57,16 @@ export const RecipeRepository = {
             .map((result) => result.data);
     },
 
-    async findByAuthorId(authorId: string, limit = 50): Promise<RecipeDocument[]> {
-        const documents = await db
+    async findByAuthorId(authorId: string, limit?: number): Promise<RecipeDocument[]> {
+        let query = db
             .collection(recipesCollection)
-            .where("authorId", "==", authorId)
-            .limit(limit)
-            .get();
+            .where("authorId", "==", authorId);
+
+        if (limit !== undefined) {
+            query = query.limit(limit);
+        }
+
+        const documents = await query.get();
 
         return documents.docs
             .map((doc) => RecipeDocumentSchema.safeParse(doc.data()))

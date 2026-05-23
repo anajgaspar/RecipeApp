@@ -168,6 +168,21 @@ export const RecipeController = {
         }
     },
 
+    async getMyBadgeProgress(req: Request, res: Response) {
+        try {
+            const userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return res.status(401).json({ error: "Usuário não autenticado." });
+            }
+
+            const badges = await RecipeService.getMyBadgeProgress(userId);
+            return res.status(200).json({ badges });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro desconhecido";
+            return res.status(500).json({ error: message });
+        }
+    },
+
     async getSuggestedFeed(req: Request, res: Response) {
         try {
             const validated = listQuerySchema.safeParse(req.query);
