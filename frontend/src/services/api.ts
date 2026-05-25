@@ -10,10 +10,7 @@ function getExpoHost(): string | null {
     const expoGoDebuggerHost = (Constants.expoGoConfig as { debuggerHost?: string } | undefined)?.debuggerHost;
     const hostUri = expoConfigHost || expoGoDebuggerHost;
 
-    if (!hostUri) {
-        return null;
-    }
-
+    if (!hostUri) return null;
     return hostUri.split(":")[0] || null;
 }
 
@@ -21,18 +18,14 @@ function resolveAuthUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_API_AUTH_URL?.trim();
 
     if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("172.") && !envUrl.includes("192.")) {
-        return envUrl; 
+        return envUrl;
     }
 
     const expoHost = getExpoHost();
-    if (expoHost) {
-        return `http://${expoHost}:${DEFAULT_AUTH_PORT}`;
-    }
+    if (expoHost) return `http://${expoHost}:${DEFAULT_AUTH_PORT}`;
 
-    if (Platform.OS === "android") {
-        if (!envUrl) {
-            return `http://10.0.2.2:${DEFAULT_AUTH_PORT}`;
-        }
+    if (Platform.OS === "android" && !envUrl) {
+        return `http://10.0.2.2:${DEFAULT_AUTH_PORT}`;
     }
 
     return envUrl || `http://localhost:${DEFAULT_AUTH_PORT}`;
@@ -46,63 +39,45 @@ function resolveRecipeUrl(): string {
     }
 
     const expoHost = getExpoHost();
-    if (expoHost) {
-        return `http://${expoHost}:${DEFAULT_RECIPE_PORT}`;
-    }
+    if (expoHost) return `http://${expoHost}:${DEFAULT_RECIPE_PORT}`;
 
-    if (Platform.OS === "android") {
-        if (!envUrl) {
-            return `http://10.0.2.2:${DEFAULT_RECIPE_PORT}`;
-        }
+    if (Platform.OS === "android" && !envUrl) {
+        return `http://10.0.2.2:${DEFAULT_RECIPE_PORT}`;
     }
 
     return envUrl || `http://localhost:${DEFAULT_RECIPE_PORT}`;
 }
 
-const AUTH_URL = resolveAuthUrl();
-const RECIPE_URL = resolveRecipeUrl();
-
-if (__DEV__) {
-    console.log("Mapeamento de Rotas - Auth:", AUTH_URL);
-    console.log("Mapeamento de Rotas - Recipes:", RECIPE_URL);
-}
-
 export const apiAuth = axios.create({
-    baseURL: AUTH_URL,
+    baseURL: resolveAuthUrl(),
     timeout: 25000,
-    headers: {
-        "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
 });
 
 export const apiRecipe = axios.create({
-    baseURL: RECIPE_URL,
+    baseURL: resolveRecipeUrl(),
     timeout: 25000,
-    headers: {
-        "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
 });
 
 export function setAuthToken(token: string | null): void {
     if (token) {
         apiAuth.defaults.headers.common.Authorization = `Bearer ${token}`;
         apiRecipe.defaults.headers.common.Authorization = `Bearer ${token}`;
-        return;
+    } else {
+        delete apiAuth.defaults.headers.common.Authorization;
+        delete apiRecipe.defaults.headers.common.Authorization;
     }
-
-    delete apiAuth.defaults.headers.common.Authorization;
-    delete apiRecipe.defaults.headers.common.Authorization;
 }
 
 export function setProfileId(profileId: string | null): void {
     if (profileId) {
         apiAuth.defaults.headers.common["X-Profile-Id"] = profileId;
         apiRecipe.defaults.headers.common["X-Profile-Id"] = profileId;
-        return;
+    } else {
+        delete apiAuth.defaults.headers.common["X-Profile-Id"];
+        delete apiRecipe.defaults.headers.common["X-Profile-Id"];
     }
-
-    delete apiAuth.defaults.headers.common["X-Profile-Id"];
-    delete apiRecipe.defaults.headers.common["X-Profile-Id"];
 }
 
 const api = apiAuth;
