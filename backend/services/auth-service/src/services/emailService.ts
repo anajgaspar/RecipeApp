@@ -13,15 +13,15 @@ const getTransporter = () => {
     if (!transporter) {
         transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
+            port: 587,
+            secure: false,
             auth: {
                 user: gmailUser,
                 pass: gmailAppPassword,
             },
             tls: {
                 rejectUnauthorized: false,
-                ciphers: "SSLv3"
+                minVersion: "TLSv1.2"
             }
         });
     }
