@@ -12,11 +12,16 @@ const getTransporter = () => {
     
     if (!transporter) {
         transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
             auth: {
                 user: gmailUser,
                 pass: gmailAppPassword,
             },
+            tls: {
+                rejectUnauthorized: false
+            }
         });
     }
     
@@ -58,4 +63,4 @@ export const EmailService = {
             throw error;
         }
     }
-}
+};
