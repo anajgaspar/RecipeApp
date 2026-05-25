@@ -17,17 +17,26 @@ jest.mock("../../src/repositories/favoriteRepository", () => ({
     },
 }));
 
+jest.mock("../../src/repositories/commentsRepository", () => ({
+    CommentsRepository: {
+        findAll: jest.fn(),
+    },
+}));
+
 import crypto from "crypto";
 import { RecipeService } from "../../src/services/recipeService";
 import { RecipeRepository } from "../../src/repositories/recipeRepository";
 import { FavoritesRepository } from "../../src/repositories/favoriteRepository";
+import { CommentsRepository } from "../../src/repositories/commentsRepository";
 
 const mockRecipeRepository = RecipeRepository as jest.Mocked<typeof RecipeRepository>;
 const mockFavoritesRepository = FavoritesRepository as jest.Mocked<typeof FavoritesRepository>;
+const mockCommentsRepository = CommentsRepository as jest.Mocked<typeof CommentsRepository>;
 
 describe("Serviço de receitas", () => {
     beforeEach(() => {
         jest.spyOn(crypto, "randomUUID").mockImplementation(() => "recipe-id-123" as ReturnType<typeof crypto.randomUUID>);
+        mockCommentsRepository.findAll.mockResolvedValue([]);
     });
 
     afterEach(() => {
@@ -163,7 +172,9 @@ describe("Serviço de receitas", () => {
             },
         ]);
 
-        const result = await RecipeService.getSuggestedFeed("user-1", 10);
+        const result = await RecipeService.getSuggestedFeed("user-1", "user-1", 10);
+
+        expect(mockFavoritesRepository.listByUserId).toHaveBeenCalledWith("user-1", "user-1");
 
         expect(result[0].id).toBe("2");
         expect(result.some((recipe) => recipe.id === "fav-recipe")).toBe(true);

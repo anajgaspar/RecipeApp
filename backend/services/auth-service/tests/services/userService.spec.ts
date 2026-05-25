@@ -8,6 +8,27 @@ jest.mock("firebase-admin", () => ({
   },
 }));
 
+jest.mock("../../src/repositories/userProfileRepository", () => ({
+  UserProfileRepository: {
+    ensureDefaultProfile: jest.fn(),
+    listByUserId: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    deleteById: jest.fn(),
+    findById: jest.fn(),
+  },
+}));
+
+jest.mock("../../src/services/userProfileService", () => ({
+  UserProfileService: {
+    ensureDefaultProfileForUser: jest.fn(),
+    listProfiles: jest.fn(),
+    createProfile: jest.fn(),
+    updateProfile: jest.fn(),
+    deleteProfile: jest.fn(),
+  },
+}));
+
 jest.mock("../../src/repositories/userRepository", () => ({
   UserRepository: {
     findById: jest.fn(),
@@ -19,9 +40,13 @@ jest.mock("../../src/repositories/userRepository", () => ({
 
 import { UserService } from "../../src/services/userService";
 import { UserRepository } from "../../src/repositories/userRepository";
+import { UserProfileRepository } from "../../src/repositories/userProfileRepository";
+import { UserProfileService } from "../../src/services/userProfileService";
 
 describe("UserService", () => {
   const mockedUserRepository = UserRepository as jest.Mocked<typeof UserRepository>;
+  const mockedUserProfileRepository = UserProfileRepository as jest.Mocked<typeof UserProfileRepository>;
+  const mockedUserProfileService = UserProfileService as jest.Mocked<typeof UserProfileService>;
 
   test("getUser deve retornar dados publicos do usuario", async () => {
     mockedUserRepository.findById.mockResolvedValue({
@@ -36,6 +61,8 @@ describe("UserService", () => {
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });
+    mockedUserProfileService.ensureDefaultProfileForUser.mockResolvedValue({} as never);
+    mockedUserProfileRepository.listByUserId.mockResolvedValue([]);
 
     const result = await UserService.getUser("user-1");
 
@@ -49,7 +76,8 @@ describe("UserService", () => {
         emailVerified: true,
         createdAt: "2026-01-01T00:00:00.000Z",
         updatedAt: "2026-01-01T00:00:00.000Z"
-      }
+      },
+      profiles: []
     });
   });
 

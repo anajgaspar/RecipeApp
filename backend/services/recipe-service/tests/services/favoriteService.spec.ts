@@ -36,9 +36,9 @@ describe("Serviço de favoritos", () => {
             createdAt: "2026-04-03T00:00:00.000Z",
         });
 
-        const result = await FavoriteService.toggleFavorite("user-1", "recipe-1");
+        const result = await FavoriteService.toggleFavorite("user-1", "profile-1", "recipe-1");
 
-        expect(mockFavoritesRepository.deleteByUserAndRecipe).toHaveBeenCalledWith("user-1", "recipe-1");
+        expect(mockFavoritesRepository.deleteByUserAndRecipe).toHaveBeenCalledWith("user-1", "profile-1", "recipe-1");
         expect(result).toEqual({ favorited: false });
     });
 
@@ -51,9 +51,9 @@ describe("Serviço de favoritos", () => {
             createdAt: "2026-04-03T00:00:00.000Z",
         });
 
-        const result = await FavoriteService.toggleFavorite("user-1", "recipe-2");
+        const result = await FavoriteService.toggleFavorite("user-1", "profile-1", "recipe-2");
 
-        expect(mockFavoritesRepository.create).toHaveBeenCalledWith({ userId: "user-1", recipeId: "recipe-2" });
+        expect(mockFavoritesRepository.create).toHaveBeenCalledWith({ userId: "user-1", profileId: "profile-1", recipeId: "recipe-2" });
         expect(result.favorited).toBe(true);
     });
 
@@ -88,7 +88,7 @@ describe("Serviço de favoritos", () => {
             })
             .mockResolvedValueOnce(null);
 
-        const result = await FavoriteService.listFavoriteRecipes("user-1");
+        const result = await FavoriteService.listFavoriteRecipes("user-1", "profile-1");
 
         expect(result).toHaveLength(1);
         expect(result[0].recipe?.id).toBe("recipe-1");

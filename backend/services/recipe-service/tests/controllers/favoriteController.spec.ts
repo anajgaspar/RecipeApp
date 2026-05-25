@@ -36,18 +36,30 @@ describe("Controlador de favoritos", () => {
 
     it("deve alternar favorito com sucesso", async () => {
         mockFavoriteService.toggleFavorite.mockResolvedValueOnce({ favorited: true, favorite: { id: "fav-1" } as any });
-        const req: any = { userId: "user-1", params: { recipeId: "recipe-1" }, body: {}, query: {} };
+        const req: any = {
+            userId: "user-1",
+            params: { recipeId: "recipe-1" },
+            body: {},
+            query: {},
+            header: (name: string) => (name === "x-profile-id" ? "profile-1" : null),
+        };
         const res = createResponse();
 
         await FavoriteController.toggleFavorite(req, res);
 
         expect(res.status).toHaveBeenCalledWith(200);
-        expect(mockFavoriteService.toggleFavorite).toHaveBeenCalledWith("user-1", "recipe-1");
+        expect(mockFavoriteService.toggleFavorite).toHaveBeenCalledWith("user-1", "profile-1", "recipe-1");
     });
 
     it("deve listar favoritos do usuário", async () => {
         mockFavoriteService.listFavoriteRecipes.mockResolvedValueOnce([]);
-        const req: any = { userId: "user-1", params: {}, body: {}, query: {} };
+        const req: any = {
+            userId: "user-1",
+            params: {},
+            body: {},
+            query: {},
+            header: (name: string) => (name === "x-profile-id" ? "profile-1" : null),
+        };
         const res = createResponse();
 
         await FavoriteController.listFavorites(req, res);

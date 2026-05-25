@@ -43,6 +43,12 @@ jest.mock("../../src/services/emailService", () => ({
   },
 }));
 
+jest.mock("../../src/services/userProfileService", () => ({
+  UserProfileService: {
+    ensureDefaultProfileForUser: jest.fn(),
+  },
+}));
+
 jest.mock("../../src/repositories/tokenBlacklistRepository", () => ({
   TokenBlacklistRepository: {
     isTokenRevoked: jest.fn(),
@@ -53,6 +59,7 @@ jest.mock("../../src/repositories/tokenBlacklistRepository", () => ({
 import { AuthService } from "../../src/services/authService";
 import { UserRepository } from "../../src/repositories/userRepository";
 import { EmailService } from "../../src/services/emailService";
+import { UserProfileService } from "../../src/services/userProfileService";
 
 describe("AuthService", () => {
   const mockedUserRepository = UserRepository as jest.Mocked<typeof UserRepository>;
@@ -71,6 +78,7 @@ describe("AuthService", () => {
   };
 
   const mockedEmailService = EmailService as jest.Mocked<typeof EmailService>;
+  const mockedUserProfileService = UserProfileService as jest.Mocked<typeof UserProfileService>;
 
   test("register deve criar usuario e retornar dados publicos", async () => {
     mockedUserRepository.findByEmail.mockResolvedValue(null);
@@ -85,6 +93,7 @@ describe("AuthService", () => {
       emailVerificationTokenHash: "hashed-token",
       emailVerificationExpiresAt: "2026-01-01T01:00:00.000Z",
     });
+    mockedUserProfileService.ensureDefaultProfileForUser.mockResolvedValue({} as never);
     mockedEmailService.sendEmailVerification.mockResolvedValue(true);
 
     const result = await AuthService.register({
@@ -147,6 +156,7 @@ describe("AuthService", () => {
     mockedUserRepository.findByEmail.mockResolvedValue(baseUser);
     jest.spyOn(bcrypt, "compare").mockResolvedValue(true as never);
     jest.spyOn(jwt, "sign").mockReturnValue("jwt-token" as never);
+    mockedUserProfileService.ensureDefaultProfileForUser.mockResolvedValue({} as never);
 
     const result = await AuthService.login({ email: "ana@mail.com", password: "123456" });
 
