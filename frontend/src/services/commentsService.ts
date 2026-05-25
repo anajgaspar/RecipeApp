@@ -1,11 +1,6 @@
-import api from "@/src/services/api";
+import { apiRecipe } from "@/src/services/api";
 import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
 import { ApiEntityResponse, ApiMessageResponse } from "./apiTypes";
-
-const AUTH_API_URL = process.env.EXPO_PUBLIC_API_AUTH_URL;
-const RECIPE_API_URL =
-    process.env.EXPO_PUBLIC_API_RECIPE_URL ??
-    (AUTH_API_URL ? AUTH_API_URL.replace(":3001", ":3002") : "http://localhost:3002");
 
 export type AddCommentPayload = {
     text: string;
@@ -40,7 +35,7 @@ function getErrorMessage(error: unknown): string {
 
 export async function addComment(payload: AddCommentPayload): Promise<void> {
     try {
-        await api.post<AddCommentResponse>(`${RECIPE_API_URL}/api/comments`, payload);
+        await apiRecipe.post<AddCommentResponse>("/api/comments", payload);
     } catch (error) {
         throw new Error(getErrorMessage(error));
     }
@@ -48,7 +43,7 @@ export async function addComment(payload: AddCommentPayload): Promise<void> {
 
 export async function getRecipeComments(recipeId: string): Promise<Comment[]> {
     try {
-        const { data } = await api.get<GetCommentsResponse>(`${RECIPE_API_URL}/api/comments/${recipeId}`);
+        const { data } = await apiRecipe.get<GetCommentsResponse>(`/api/comments/${recipeId}`);
         return data.comments;
     } catch (error) {
         throw new Error(getErrorMessage(error));
@@ -57,7 +52,7 @@ export async function getRecipeComments(recipeId: string): Promise<Comment[]> {
 
 export async function updateComment(commentId: string, payload: AddCommentPayload): Promise<void> {
     try {
-        await api.put<UpdateCommentResponse>(`${RECIPE_API_URL}/api/comments/${commentId}`, payload);
+        await apiRecipe.put<UpdateCommentResponse>(`/api/comments/${commentId}`, payload);
     } catch (error) {
         throw new Error(getErrorMessage(error));
     }
@@ -65,7 +60,7 @@ export async function updateComment(commentId: string, payload: AddCommentPayloa
 
 export async function deleteComment(commentId: string): Promise<void> {
     try {
-        await api.delete<DeleteCommentResponse>(`${RECIPE_API_URL}/api/comments/${commentId}`);
+        await apiRecipe.delete<DeleteCommentResponse>(`/api/comments/${commentId}`);
     } catch (error) {
         throw new Error(getErrorMessage(error));
     }

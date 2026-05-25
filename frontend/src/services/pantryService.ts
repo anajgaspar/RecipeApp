@@ -1,9 +1,5 @@
-import api from "@/src/services/api";
+import { apiRecipe } from "@/src/services/api";
 import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
-
-const AUTH_API_URL = process.env.EXPO_PUBLIC_API_AUTH_URL;
-const RECIPE_API_URL =
-  process.env.EXPO_PUBLIC_API_RECIPE_URL ?? (AUTH_API_URL ? AUTH_API_URL.replace(":3001", ":3002") : "http://localhost:3002");
 
 export type PantryItem = {
   id: string;
@@ -21,7 +17,7 @@ function getErrorMessage(error: unknown): string {
 
 export async function listPantryItems(): Promise<PantryItem[]> {
   try {
-    const { data } = await api.get<{ items: PantryItem[] }>(`${RECIPE_API_URL}/api/pantry`);
+    const { data } = await apiRecipe.get<{ items: PantryItem[] }>("/api/pantry");
     return data.items;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -30,7 +26,7 @@ export async function listPantryItems(): Promise<PantryItem[]> {
 
 export async function addPantryItem(payload: { name: string; quantity?: string; expirationDate?: string }): Promise<PantryItem> {
   try {
-    const { data } = await api.post<{ item: PantryItem }>(`${RECIPE_API_URL}/api/pantry`, payload);
+    const { data } = await apiRecipe.post<{ item: PantryItem }>("/api/pantry", payload);
     return data.item;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -39,7 +35,7 @@ export async function addPantryItem(payload: { name: string; quantity?: string; 
 
 export async function updatePantryItem(itemId: string, updates: Partial<PantryItem>): Promise<PantryItem> {
   try {
-    const { data } = await api.put<{ item: PantryItem }>(`${RECIPE_API_URL}/api/pantry/${itemId}`, updates);
+    const { data } = await apiRecipe.put<{ item: PantryItem }>(`/api/pantry/${itemId}`, updates);
     return data.item;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -48,7 +44,7 @@ export async function updatePantryItem(itemId: string, updates: Partial<PantryIt
 
 export async function removePantryItem(itemId: string): Promise<void> {
   try {
-    await api.delete(`${RECIPE_API_URL}/api/pantry/${itemId}`);
+    await apiRecipe.delete(`/api/pantry/${itemId}`);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -56,7 +52,7 @@ export async function removePantryItem(itemId: string): Promise<void> {
 
 export async function clearPantry(): Promise<void> {
   try {
-    await api.delete(`${RECIPE_API_URL}/api/pantry`);
+    await apiRecipe.delete("/api/pantry");
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

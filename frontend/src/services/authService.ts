@@ -1,4 +1,4 @@
-import api from "@/src/services/api";
+import { apiAuth } from "@/src/services/api";
 import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
 
 export type AuthUser = {
@@ -156,7 +156,7 @@ function getErrorMessage(error: unknown): string {
 
 export async function register(payload: RegisterPayload): Promise<AuthUser> {
   try {
-    const { data } = await api.post<RegisterResponse>("/auth/register", payload);
+    const { data } = await apiAuth.post<RegisterResponse>("/register", payload);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -165,7 +165,7 @@ export async function register(payload: RegisterPayload): Promise<AuthUser> {
 
 export async function login(payload: LoginPayload): Promise<{ token: string; user: AuthUser }> {
   try {
-    const { data } = await api.post<LoginResponse>("/auth/login", payload);
+    const { data } = await apiAuth.post<LoginResponse>("/login", payload);
     return {
       token: data.token,
       user: data.user,
@@ -177,7 +177,7 @@ export async function login(payload: LoginPayload): Promise<{ token: string; use
 
 export async function loginWithFirebase(payload: FirebaseLoginPayload): Promise<{ token: string; user: AuthUser }> {
   try {
-    const { data } = await api.post<LoginResponse>("/auth/firebase-login", payload);
+    const { data } = await apiAuth.post<LoginResponse>("/firebase-login", payload);
     return {
       token: data.token,
       user: data.user,
@@ -189,7 +189,7 @@ export async function loginWithFirebase(payload: FirebaseLoginPayload): Promise<
 
 export async function verifyEmail(payload: VerifyEmailPayload): Promise<VerifyEmailResponse["user"]> {
   try {
-    const { data } = await api.post<VerifyEmailResponse>("/auth/verify-email", payload);
+    const { data } = await apiAuth.post<VerifyEmailResponse>("/verify-email", payload);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -198,7 +198,7 @@ export async function verifyEmail(payload: VerifyEmailPayload): Promise<VerifyEm
 
 export async function resendVerification(payload: ResendVerificationPayload): Promise<string> {
   try {
-    const { data } = await api.post<ResendVerificationResponse>("/auth/resend-verification", payload);
+    const { data } = await apiAuth.post<ResendVerificationResponse>("/resend-verification", payload);
     return data.message;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -207,7 +207,7 @@ export async function resendVerification(payload: ResendVerificationPayload): Pr
 
 export async function logout(): Promise<string> {
   try {
-    const { data } = await api.post<LogoutResponse>("/auth/logout");
+    const { data } = await apiAuth.post<LogoutResponse>("/logout");
     return data.message;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -216,7 +216,7 @@ export async function logout(): Promise<string> {
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
   try {
-    const { data } = await api.put<UpdateProfileResponse>("/user", payload);
+    const { data } = await apiAuth.put<UpdateProfileResponse>("/user", payload);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -225,7 +225,7 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Auth
 
 export async function getProfile(): Promise<AuthUser> {
   try {
-    const { data } = await api.get<GetProfileResponse>("/user");
+    const { data } = await apiAuth.get<GetProfileResponse>("/user");
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -234,7 +234,7 @@ export async function getProfile(): Promise<AuthUser> {
 
 export async function getProfileWithProfiles(): Promise<GetProfileResponse> {
   try {
-    const { data } = await api.get<GetProfileResponse>("/user");
+    const { data } = await apiAuth.get<GetProfileResponse>("/user");
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -243,7 +243,7 @@ export async function getProfileWithProfiles(): Promise<GetProfileResponse> {
 
 export async function createFamilyProfile(payload: { name?: string; avatarDataUrl?: string | null }): Promise<CreateProfileResponse> {
   try {
-    const { data } = await api.post<CreateProfileResponse>("/user/profiles", payload);
+    const { data } = await apiAuth.post<CreateProfileResponse>("/user/profiles", payload);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -252,7 +252,7 @@ export async function createFamilyProfile(payload: { name?: string; avatarDataUr
 
 export async function updateFamilyProfile(profileId: string, payload: UpdateFamilyProfilePayload): Promise<UpdateFamilyProfileResponse> {
   try {
-    const { data } = await api.put<UpdateFamilyProfileResponse>(`/user/profiles/${profileId}`, payload);
+    const { data } = await apiAuth.put<UpdateFamilyProfileResponse>(`/user/profiles/${profileId}`, payload);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -261,7 +261,7 @@ export async function updateFamilyProfile(profileId: string, payload: UpdateFami
 
 export async function deleteFamilyProfile(profileId: string): Promise<DeleteFamilyProfileResponse> {
   try {
-    const { data } = await api.delete<DeleteFamilyProfileResponse>(`/user/profiles/${profileId}`);
+    const { data } = await apiAuth.delete<DeleteFamilyProfileResponse>(`/user/profiles/${profileId}`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -270,7 +270,7 @@ export async function deleteFamilyProfile(profileId: string): Promise<DeleteFami
 
 export async function getMySocialSummary(): Promise<SocialSummaryResponse> {
   try {
-    const { data } = await api.get<SocialSummaryResponse>("/user/social/me");
+    const { data } = await apiAuth.get<SocialSummaryResponse>("/user/social/me");
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -279,7 +279,7 @@ export async function getMySocialSummary(): Promise<SocialSummaryResponse> {
 
 export async function getMyFollowers(): Promise<SocialConnectionItem[]> {
   try {
-    const { data } = await api.get<GetSocialConnectionsResponse>("/user/social/followers");
+    const { data } = await apiAuth.get<GetSocialConnectionsResponse>("/user/social/followers");
     return data.items;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -288,7 +288,7 @@ export async function getMyFollowers(): Promise<SocialConnectionItem[]> {
 
 export async function getMyFollowing(): Promise<SocialConnectionItem[]> {
   try {
-    const { data } = await api.get<GetSocialConnectionsResponse>("/user/social/following");
+    const { data } = await apiAuth.get<GetSocialConnectionsResponse>("/user/social/following");
     return data.items;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -297,7 +297,7 @@ export async function getMyFollowing(): Promise<SocialConnectionItem[]> {
 
 export async function getFollowStatus(userId: string): Promise<FollowStatusResponse> {
   try {
-    const { data } = await api.get<FollowStatusResponse>(`/user/social/${userId}/status`);
+    const { data } = await apiAuth.get<FollowStatusResponse>(`/user/social/${userId}/status`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -306,7 +306,7 @@ export async function getFollowStatus(userId: string): Promise<FollowStatusRespo
 
 export async function toggleFollow(userId: string): Promise<ToggleFollowResponse> {
   try {
-    const { data } = await api.post<ToggleFollowResponse>(`/user/social/${userId}/toggle`);
+    const { data } = await apiAuth.post<ToggleFollowResponse>(`/user/social/${userId}/toggle`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -315,7 +315,7 @@ export async function toggleFollow(userId: string): Promise<ToggleFollowResponse
 
 export async function getPublicUserProfile(userId: string): Promise<PublicAuthorProfile> {
   try {
-    const { data } = await api.get<GetPublicProfileResponse>(`/user/public/${userId}`);
+    const { data } = await apiAuth.get<GetPublicProfileResponse>(`/user/public/${userId}`);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));

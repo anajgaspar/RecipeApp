@@ -1,11 +1,6 @@
-import api from "@/src/services/api";
+import { apiRecipe } from "@/src/services/api";
 import { getFriendlyHttpErrorMessage } from "@/src/services/httpError";
 import { ApiEntityResponse, ApiMessageResponse } from "./apiTypes";
-
-const AUTH_API_URL = process.env.EXPO_PUBLIC_API_AUTH_URL;
-const RECIPE_API_URL =
-  process.env.EXPO_PUBLIC_API_RECIPE_URL ??
-  (AUTH_API_URL ? AUTH_API_URL.replace(":3001", ":3002") : "http://localhost:3002");
 
 export type RecipeDifficulty = "Fácil" | "Médio" | "Difícil";
 
@@ -160,7 +155,7 @@ function buildSearchParams(params: SearchRecipesParams): Record<string, string |
 
 export async function createRecipe(payload: CreateRecipePayload): Promise<void> {
   try {
-    await api.post<CreateRecipeResponse>(`${RECIPE_API_URL}/api/recipes`, payload);
+    await apiRecipe.post<CreateRecipeResponse>("/api/recipes", payload);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -168,7 +163,7 @@ export async function createRecipe(payload: CreateRecipePayload): Promise<void> 
 
 export async function getSuggestedRecipes(limit = 20): Promise<Recipe[]> {
   try {
-    const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/feed/suggested`, {
+    const { data } = await apiRecipe.get<ListRecipesResponse>("/api/recipes/feed/suggested", {
       params: { limit },
     });
 
@@ -180,7 +175,7 @@ export async function getSuggestedRecipes(limit = 20): Promise<Recipe[]> {
 
 export async function getRecipeById(recipeId: string): Promise<Recipe> {
   try {
-    const { data } = await api.get<GetRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`);
+    const { data } = await apiRecipe.get<GetRecipeResponse>(`/api/recipes/${recipeId}`);
     return data.recipe;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -189,7 +184,7 @@ export async function getRecipeById(recipeId: string): Promise<Recipe> {
 
 export async function getMyRecipes(limit = 50): Promise<Recipe[]> {
   try {
-    const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/me`, {
+    const { data } = await apiRecipe.get<ListRecipesResponse>("/api/recipes/me", {
       params: { limit },
     });
 
@@ -201,7 +196,7 @@ export async function getMyRecipes(limit = 50): Promise<Recipe[]> {
 
 export async function updateRecipe(recipeId: string, payload: CreateRecipePayload): Promise<void> {
   try {
-    await api.put<UpdateRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`, payload);
+    await apiRecipe.put<UpdateRecipeResponse>(`/api/recipes/${recipeId}`, payload);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -209,7 +204,7 @@ export async function updateRecipe(recipeId: string, payload: CreateRecipePayloa
 
 export async function deleteRecipe(recipeId: string): Promise<void> {
   try {
-    await api.delete<DeleteRecipeResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}`);
+    await apiRecipe.delete<DeleteRecipeResponse>(`/api/recipes/${recipeId}`);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -217,7 +212,7 @@ export async function deleteRecipe(recipeId: string): Promise<void> {
 
 export async function listFavoriteRecipes(): Promise<FavoriteRecipeEntry[]> {
   try {
-    const { data } = await api.get<ListFavoritesResponse>(`${RECIPE_API_URL}/api/favorites`);
+    const { data } = await apiRecipe.get<ListFavoritesResponse>("/api/favorites");
     return data.favorites;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -226,7 +221,7 @@ export async function listFavoriteRecipes(): Promise<FavoriteRecipeEntry[]> {
 
 export async function toggleFavorite(recipeId: string): Promise<ToggleFavoriteResponse> {
   try {
-    const { data } = await api.post<ToggleFavoriteResponse>(`${RECIPE_API_URL}/api/favorites/${recipeId}/toggle`);
+    const { data } = await apiRecipe.post<ToggleFavoriteResponse>(`/api/favorites/${recipeId}/toggle`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -235,7 +230,7 @@ export async function toggleFavorite(recipeId: string): Promise<ToggleFavoriteRe
 
 export async function getRecipeCompletionStatus(recipeId: string): Promise<CompletionStatusResponse> {
   try {
-    const { data } = await api.get<CompletionStatusResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}/completion-status`);
+    const { data } = await apiRecipe.get<CompletionStatusResponse>(`/api/recipes/${recipeId}/completion-status`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -244,7 +239,7 @@ export async function getRecipeCompletionStatus(recipeId: string): Promise<Compl
 
 export async function markRecipeCompleted(recipeId: string): Promise<CompletionStatusResponse> {
   try {
-    const { data } = await api.post<CompletionStatusResponse>(`${RECIPE_API_URL}/api/recipes/${recipeId}/complete`);
+    const { data } = await apiRecipe.post<CompletionStatusResponse>(`/api/recipes/${recipeId}/complete`);
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -253,7 +248,7 @@ export async function markRecipeCompleted(recipeId: string): Promise<CompletionS
 
 export async function listCompletedRecipes(): Promise<ListCompletionsResponse> {
   try {
-    const { data } = await api.get<ListCompletionsResponse>(`${RECIPE_API_URL}/api/recipes/completions`);
+    const { data } = await apiRecipe.get<ListCompletionsResponse>("/api/recipes/completions");
     return data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -262,7 +257,7 @@ export async function listCompletedRecipes(): Promise<ListCompletionsResponse> {
 
 export async function getMyBadgeProgress(): Promise<MyRecipeBadgeProgress> {
   try {
-    const { data } = await api.get<{ badges: MyRecipeBadgeProgress }>(`${RECIPE_API_URL}/api/recipes/badges/me`);
+    const { data } = await apiRecipe.get<{ badges: MyRecipeBadgeProgress }>("/api/recipes/badges/me");
     return data.badges;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -281,7 +276,7 @@ export async function searchRecipesByIngredients(ingredients: string[]): Promise
 
     await Promise.all(
       normalizedIngredients.map(async (ingredient) => {
-        const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/search`, {
+        const { data } = await apiRecipe.get<ListRecipesResponse>("/api/recipes/search", {
           params: { q: ingredient, limit: 100 },
         });
 
@@ -302,7 +297,7 @@ export async function searchRecipesByIngredients(ingredients: string[]): Promise
 
 export async function searchRecipes(params: SearchRecipesParams): Promise<Recipe[]> {
   try {
-    const { data } = await api.get<ListRecipesResponse>(`${RECIPE_API_URL}/api/recipes/search`, {
+    const { data } = await apiRecipe.get<ListRecipesResponse>("/api/recipes/search", {
       params: buildSearchParams(params),
     });
 
