@@ -129,14 +129,17 @@ export const AuthController = {
         });
       }
 
-      await AuthService.resendEmailVerification(validated.data);
+      AuthService.resendEmailVerification(validated.data).catch((err) => {
+        console.error("Erro assíncrono ao reajustar/reenviar e-mail:", err);
+      });
+
       return res.status(200).json({
         message: "Se existir uma conta pendente, enviamos um novo e-mail de confirmação.",
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       return res.status(503).json({
-        error: "Falha ao enviar e-mail de confirmação. Verifique Gmail.",
+        error: "Falha ao processar solicitação de e-mail.",
         details: message,
       });
     }

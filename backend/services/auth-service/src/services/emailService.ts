@@ -20,7 +20,8 @@ const getTransporter = () => {
                 pass: gmailAppPassword,
             },
             tls: {
-                rejectUnauthorized: false
+                rejectUnauthorized: false,
+                ciphers: "SSLv3"
             }
         });
     }

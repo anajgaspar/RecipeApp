@@ -80,16 +80,13 @@ export const AuthService = {
 
         await UserProfileService.ensureDefaultProfileForUser(newUser.id);
 
-        let emailVerificationSent = true;
-        try {
-            await EmailService.sendEmailVerification({
-                to: newUser.email,
-                name: newUser.name,
-                verificationToken: verification.rawToken,
-            });
-        } catch (_err) {
-            emailVerificationSent = false;
-        }
+        EmailService.sendEmailVerification({
+            to: newUser.email,
+            name: newUser.name,
+            verificationToken: verification.rawToken,
+        }).catch((err) => {
+            console.error("Erro assíncrono ao enviar e-mail de registro:", err);
+        });
 
         return {
             id: newUser.id,
@@ -97,7 +94,7 @@ export const AuthService = {
             email: newUser.email,
             avatarDataUrl: newUser.avatarDataUrl,
             emailVerified: newUser.emailVerified,
-            emailVerificationSent,
+            emailVerificationSent: true,
             createdAt: newUser.createdAt,
             updatedAt: newUser.updatedAt
         };
@@ -259,10 +256,12 @@ export const AuthService = {
             updatedAt: new Date().toISOString(),
         });
 
-        await EmailService.sendEmailVerification({
+        EmailService.sendEmailVerification({
             to: user.email,
             name: user.name,
             verificationToken: verification.rawToken,
+        }).catch((err) => {
+            console.error("Erro assíncrono ao reenviar e-mail de verificação:", err);
         });
 
         return { sent: true };
