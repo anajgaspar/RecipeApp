@@ -21,48 +21,42 @@ function resolveAuthUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_API_AUTH_URL?.trim();
 
     if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("172.") && !envUrl.includes("192.")) {
-        return `${envUrl}/auth`;
+        return envUrl; 
     }
 
     const expoHost = getExpoHost();
     if (expoHost) {
-        return `http://${expoHost}:${DEFAULT_AUTH_PORT}/auth`;
+        return `http://${expoHost}:${DEFAULT_AUTH_PORT}`;
     }
 
     if (Platform.OS === "android") {
-        if (envUrl?.includes("localhost") && Constants.isDevice) {
-            console.warn(
-                "EXPO_PUBLIC_API_AUTH_URL aponta para localhost no Android físico. Use o IP da sua máquina.",
-            );
-        }
-
         if (!envUrl) {
-            return `http://10.0.2.2:${DEFAULT_AUTH_PORT}/auth`;
+            return `http://10.0.2.2:${DEFAULT_AUTH_PORT}`;
         }
     }
 
-    return envUrl ? `${envUrl}/auth` : `http://localhost:${DEFAULT_AUTH_PORT}/auth`;
+    return envUrl || `http://localhost:${DEFAULT_AUTH_PORT}`;
 }
 
 function resolveRecipeUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_API_RECIPE_URL?.trim();
 
     if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("172.") && !envUrl.includes("192.")) {
-        return `${envUrl}/recipes`;
+        return envUrl;
     }
 
     const expoHost = getExpoHost();
     if (expoHost) {
-        return `http://${expoHost}:${DEFAULT_RECIPE_PORT}/recipes`;
+        return `http://${expoHost}:${DEFAULT_RECIPE_PORT}`;
     }
 
     if (Platform.OS === "android") {
         if (!envUrl) {
-            return `http://10.0.2.2:${DEFAULT_RECIPE_PORT}/recipes`;
+            return `http://10.0.2.2:${DEFAULT_RECIPE_PORT}`;
         }
     }
 
-    return envUrl ? `${envUrl}/recipes` : `http://localhost:${DEFAULT_RECIPE_PORT}/recipes`;
+    return envUrl || `http://localhost:${DEFAULT_RECIPE_PORT}`;
 }
 
 const AUTH_URL = resolveAuthUrl();

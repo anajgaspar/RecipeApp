@@ -156,7 +156,7 @@ function getErrorMessage(error: unknown): string {
 
 export async function register(payload: RegisterPayload): Promise<AuthUser> {
   try {
-    const { data } = await apiAuth.post<RegisterResponse>("/register", payload);
+    const { data } = await apiAuth.post<RegisterResponse>("/auth/register", payload);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -165,7 +165,7 @@ export async function register(payload: RegisterPayload): Promise<AuthUser> {
 
 export async function login(payload: LoginPayload): Promise<{ token: string; user: AuthUser }> {
   try {
-    const { data } = await apiAuth.post<LoginResponse>("/login", payload);
+    const { data } = await apiAuth.post<LoginResponse>("/auth/login", payload);
     return {
       token: data.token,
       user: data.user,
@@ -177,7 +177,7 @@ export async function login(payload: LoginPayload): Promise<{ token: string; use
 
 export async function loginWithFirebase(payload: FirebaseLoginPayload): Promise<{ token: string; user: AuthUser }> {
   try {
-    const { data } = await apiAuth.post<LoginResponse>("/firebase-login", payload);
+    const { data } = await apiAuth.post<LoginResponse>("/auth/firebase-login", payload);
     return {
       token: data.token,
       user: data.user,
@@ -189,7 +189,7 @@ export async function loginWithFirebase(payload: FirebaseLoginPayload): Promise<
 
 export async function verifyEmail(payload: VerifyEmailPayload): Promise<VerifyEmailResponse["user"]> {
   try {
-    const { data } = await apiAuth.post<VerifyEmailResponse>("/verify-email", payload);
+    const { data } = await apiAuth.post<VerifyEmailResponse>("/auth/verify-email", payload);
     return data.user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -198,7 +198,7 @@ export async function verifyEmail(payload: VerifyEmailPayload): Promise<VerifyEm
 
 export async function resendVerification(payload: ResendVerificationPayload): Promise<string> {
   try {
-    const { data } = await apiAuth.post<ResendVerificationResponse>("/resend-verification", payload);
+    const { data } = await apiAuth.post<ResendVerificationResponse>("/auth/resend-verification", payload);
     return data.message;
   } catch (error) {
     throw new Error(getErrorMessage(error));
@@ -207,7 +207,7 @@ export async function resendVerification(payload: ResendVerificationPayload): Pr
 
 export async function logout(): Promise<string> {
   try {
-    const { data } = await apiAuth.post<LogoutResponse>("/logout");
+    const { data } = await apiAuth.post<LogoutResponse>("/auth/logout");
     return data.message;
   } catch (error) {
     throw new Error(getErrorMessage(error));
