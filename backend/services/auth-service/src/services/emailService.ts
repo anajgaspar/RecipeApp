@@ -1,48 +1,22 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const gmailUser = process.env.GMAIL_USER;
-const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
-
-let transporter: nodemailer.Transporter | null = null;
-
-const getTransporter = () => {
-    if (!gmailUser || !gmailAppPassword) {
-        throw new Error("GMAIL_USER ou GMAIL_APP_PASSWORD não configurados. Configure as variáveis de ambiente para usar o email service.");
-    }
-    
-    if (!transporter) {
-        transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            auth: {
-                user: gmailUser,
-                pass: gmailAppPassword,
-            },
-            tls: {
-                rejectUnauthorized: false,
-                minVersion: "TLSv1.2"
-            }
-        });
-    }
-    
-    return transporter;
-};
+const resendApiKey = process.env.RESEND_API_KEY;
 
 export const EmailService = {
     async sendEmailVerification({ to, name, verificationToken }: { to: string; name: string; verificationToken: string }) {
         try {
-            if (!gmailUser) {
-                console.warn("GMAIL_USER não definido. Email não será enviado (modo teste).");
+            if (!resendApiKey) {
+                console.warn("RESEND_API_KEY não configurada. E-mail não será enviado.");
                 return false;
             }
-            
-            console.log(`Enviando email de confirmação para: ${to}`);
-            const mailer = getTransporter();
-            
-            await mailer.sendMail({
-                from: `"Receita Na Mão" <${gmailUser}>`,
-                to,
+
+            const resend = new Resend(resendApiKey);
+
+            console.log(`Enviando e-mail de confirmação via HTTP para: ${to}`);
+
+            await resend.emails.send({
+                from: "Receita Na Mao <onboarding@resend.dev>",
+                to: [to],
                 subject: "Receita Na Mão - Confirmação de e-mail",
                 html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
                     <h2>Confirmação de e-mail</h2>
@@ -54,13 +28,13 @@ export const EmailService = {
                         Se você não criou esta conta, ignore este e-mail.
                     </p>
                 </div>`,
-                text: `Olá, ${name}.\n\nSeu token de confirmação é: ${verificationToken}\n\nDigite esse código na tela de confirmação do app.\n\nSe você não criou esta conta, ignore esta mensagem.`,
+                text: `Olá, ${name}.\n\nSeu token de confirmação é: ${verificationToken}\n\nDigite esse código na tela de confirmação do app.`,
             });
 
-            console.log(`Email de confirmação enviado com sucesso para: ${to}`);
+            console.log(`E-mail enviado com sucesso via Resend para: ${to}`);
             return true;
         } catch (error) {
-            console.error("Erro ao enviar email de confirmação:", error);
+            console.error("Erro ao enviar e-mail via Resend:", error);
             throw error;
         }
     }
