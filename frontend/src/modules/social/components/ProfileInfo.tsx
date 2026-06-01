@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getMySocialSummary } from "@/src/services/authService";
-import { getMyRecipes } from "@/src/services/recipeService";
-import { getMyBadgeProgress } from "@/src/services/recipeService";
+import { getMyRecipes, getMyBadgeProgress } from "@/src/services/recipeService";
 import ProfileAchievements, { ProfileAchievementStatus } from "./ProfileAchievements";
 
 export default function ProfileInfo() {
-    const { user, profiles, activeProfileId, setActiveProfile, createProfile } = useAuth();
+    const { user, profiles, activeProfileId } = useAuth();
     const navigation = useNavigation<any>();
     const avatarSource = user?.avatarDataUrl ? { uri: user.avatarDataUrl } : null;
     const [recipeCount, setRecipeCount] = useState<number | null>(null);
@@ -64,7 +63,7 @@ export default function ProfileInfo() {
         return () => {
             isMounted = false;
         };
-    }, [activeProfileId]);
+    }, []);
 
     useFocusEffect(loadProfileData);
 

@@ -1,6 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Alert, FlatList, Image, Pressable, Text, View } from "react-native";
+import { FlatList, Image, Pressable, Text, View } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { getMyFollowers, SocialConnectionItem } from "@/src/services/authService";
 import { getSocialNotificationsSeenAt, saveSocialNotificationsSeenAt } from "@/src/services/tokenStorage";

@@ -1,11 +1,12 @@
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Pressable, View, Text, TextInput } from "react-native";
+import { Pressable, View, Text, TextInput, Modal, ActivityIndicator } from "react-native";
 import { Recipe } from "@/src/services/recipeService";
 import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useStepNotes } from "@/src/hooks/useStepNotes";
 import { enableWakeLock, disableWakeLock } from "@/src/services/wakeLock";
+import { shareRecipeProgress } from "@/src/services/shareService";
 
 type RecipeStepsProps = {
     navigation: any;
@@ -28,12 +29,15 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
     const [isNoteOpen, setIsNoteOpen] = useState(false);
     const [noteInput, setNoteInput] = useState("");
     const [isCompleting, setIsCompleting] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+    
+    const [isCongratulationOpen, setIsCongratulationOpen] = useState(false);
+
     const { notes, saveNote, deleteNote } = useStepNotes(recipe.id);
     const currentNote = notes[step.stepNumber];
 
     useEffect(() => {
         enableWakeLock();
-
         return () => {
             disableWakeLock();
         };
@@ -84,7 +88,7 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
         }
 
         if (isCompleted) {
-            onClose();
+            setIsCongratulationOpen(true);
             return;
         }
 
@@ -93,10 +97,38 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
             if (onCompleteRecipe) {
                 await onCompleteRecipe();
             }
-            onClose();
+            setIsCongratulationOpen(true);
+        } catch (error) {
+            console.error(error);
         } finally {
             setIsCompleting(false);
         }
+    }
+
+    async function handleShareProgress() {
+        try {
+            setIsSharing(true);
+            await shareRecipeProgress({
+                recipeTitle: recipe.title,
+                imageUrl: recipe.imageUrl
+            });
+            
+            setIsCongratulationOpen(false);
+            setTimeout(() => {
+                onClose();
+            }, 300);
+        } catch (error) {
+            console.error("Erro ao compartilhar:", error);
+        } finally {
+            setIsSharing(false);
+        }
+    }
+
+    function handleJustClose() {
+        setIsCongratulationOpen(false);
+        setTimeout(() => {
+            onClose();
+        }, 300);
     }
 
     return (
@@ -116,6 +148,7 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
                     />
                 </Pressable>
             </View>
+            
             <View className="flex flex-col gap-2">
                 <Text className="text-gray-400">
                     Passo {currentStep + 1} de {steps.length}
@@ -129,6 +162,7 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
                     ))}
                 </View>
             </View>
+            
             <View className="absolute inset-0 items-center justify-center px-4 gap-4">
                 <Text className="text-center text-gray-600 text-xl">
                     {step.instruction}
@@ -175,6 +209,7 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
                     </Pressable>
                 )}
             </View>
+            
             <View className="absolute bottom-6 left-4 right-4 flex flex-row gap-3">
                 {!isFirst && (
                     <Pressable
@@ -187,19 +222,21 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
                 <Pressable
                     onPress={() => void handlePrimaryAction()}
                     disabled={isCompleting}
-                    className="flex-1 bg-[#f97316] py-4 rounded-md items-center"
+                    className="flex-1 bg-[#f97316] py-4 rounded-md items-center justify-center flex-row gap-2"
                 >
-                    <Text className="text-white font-semibold">
-                        {isLast ? (isCompleted ? "Fechar" : "Marcar como concluída") : "Próximo"}
-                    </Text>
+                    {isCompleting ? (
+                        <ActivityIndicator color="white" size="small" />
+                    ) : (
+                        <Text className="text-white font-semibold">
+                            {isLast ? (isCompleted ? "Ver Opções" : "Marcar como concluída") : "Próximo"}
+                        </Text>
+                    )}
                 </Pressable>
             </View>
+            
             {isNoteOpen && (
                 <View className="absolute inset-0 z-50 bg-black/40 justify-center" pointerEvents="box-none">
-                    <Pressable
-                        className="absolute inset-0"
-                        onPress={() => setIsNoteOpen(false)}
-                    />
+                    <Pressable className="absolute inset-0" onPress={() => setIsNoteOpen(false)} />
                     <View className="bg-white rounded-t-2xl px-4 pt-4 pb-10 w-full">
                         <View className="flex flex-row justify-between items-center mb-4">
                             <Text className="font-bold text-lg">Minha anotação</Text>
@@ -218,15 +255,56 @@ export default function RecipeSteps({ recipe, steps, onClose, onCompleteRecipe, 
                             textAlignVertical="top"
                             className="border border-gray-200 rounded-md p-3 text-base min-h-24 text-gray-700"
                         />
-                        <Pressable
-                            onPress={handleSaveNote}
-                            className="mt-4 bg-[#f97316] py-4 rounded-md items-center"
-                        >
+                        <Pressable onPress={handleSaveNote} className="mt-4 bg-[#f97316] py-4 rounded-md items-center">
                             <Text className="text-white font-semibold">Salvar</Text>
                         </Pressable>
                     </View>
                 </View>
             )}
+            <Modal
+                visible={isCongratulationOpen}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsCongratulationOpen(false)}
+            >
+                <View className="flex-1 bg-black/60 justify-center items-center px-4">
+                    <View className="w-[90%] bg-white rounded-2xl p-6 items-center shadow-xl">
+                        <View className="bg-green-100 p-4 rounded-full mb-4">
+                            <Ionicons name="trophy" size={40} color="#22c55e" />
+                        </View>
+                        
+                        <Text className="text-2xl font-bold text-gray-800 text-center mb-2">
+                            Parabéns!
+                        </Text>
+                        <Text className="text-base text-gray-500 text-center mb-6 px-2">
+                            Você concluiu perfeitamente a preparação de {recipe.title}. O que deseja fazer agora?
+                        </Text>
+
+                        <View className="w-full flex flex-col gap-3">
+                            <Pressable 
+                                onPress={() => void handleShareProgress()}
+                                disabled={isSharing}
+                                className="bg-[#f97316] py-4 rounded-xl flex-row justify-center items-center gap-2 active:bg-orange-600"
+                            >
+                                {isSharing ? (
+                                    <ActivityIndicator color="white" size="small" />
+                                ) : (
+                                    <>
+                                        <Ionicons name="share-social-outline" size={20} color="white" />
+                                        <Text className="text-white font-bold text-base">Compartilhar Progresso</Text>
+                                    </>
+                                )}
+                            </Pressable>
+                            <Pressable 
+                                onPress={handleJustClose}
+                                className="border border-gray-200 py-4 rounded-xl items-center active:bg-gray-50"
+                            >
+                                <Text className="text-gray-700 font-semibold text-base">Apenas Fechar</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
-    )
+    );
 }

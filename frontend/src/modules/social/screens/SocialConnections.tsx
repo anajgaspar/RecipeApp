@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Image, Pressable, Text, View } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import { getMyFollowers, getMyFollowing, SocialConnectionItem, toggleFollow } from "@/src/services/authService";
 import LoadingState from "@/src/components/LoadingState";
 import InlineError from "@/src/components/InlineError";
@@ -18,7 +17,6 @@ type SocialConnectionsProps = {
 };
 
 export default function SocialConnections({ navigation, route }: SocialConnectionsProps) {
-    const { user } = useAuth();
     const initialTab = route.params?.initialTab ?? "followers";
     const [activeTab, setActiveTab] = useState<"followers" | "following">(initialTab);
     const [followers, setFollowers] = useState<SocialConnectionItem[]>([]);

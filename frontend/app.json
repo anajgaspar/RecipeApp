@@ -17,6 +17,7 @@
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Permitir acesso ao reconhecimento de fala para buscar por voz",
         "NSMicrophoneUsageDescription": "Permitir acesso ao microfone para buscar por voz",
+        "NSPhotoLibraryUsageDescription": "Permitir acesso à galeria para salvar ou compartilhar fotos das receitas concluídas",
         "ITSAppUsesNonExemptEncryption": false
       },
       "runtimeVersion": {
@@ -36,7 +37,16 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ],
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "intentFilters": [
+        {
+          "action": "SEND",
+          "category": [
+            "DEFAULT"
+          ],
+          "mimeType": "image/*"
+        }
+      ]
     },
     "web": {
       "output": "static",

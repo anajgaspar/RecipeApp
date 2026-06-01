@@ -2,6 +2,7 @@ import { ScrollView, View, Image, Text, Pressable, Alert, Modal } from "react-na
 import { useEffect, useMemo, useState } from "react";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import QRCode from 'react-native-qrcode-svg';
 import RecipeList from "../components/RecipeList";
 import RecipeComments from "../components/RecipeComments";
 import { getRecipeById, getRecipeCompletionStatus, listFavoriteRecipes, markRecipeCompleted, Recipe, toggleFavorite } from "@/src/services/recipeService";
@@ -27,6 +28,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
     const [hasCompletedRecipe, setHasCompletedRecipe] = useState(false);
     const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
     const [isFollowLoading, setIsFollowLoading] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -293,6 +295,8 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
         ? (user?.avatarDataUrl ?? recipe.authorAvatarDataUrl ?? null)
         : (authorProfileAvatar ?? recipe.authorAvatarDataUrl ?? null);
 
+    const qrCodeValue = `recipeID:${recipe.id}`;
+
     return (
         <View className="flex-1 bg-white">
             <ScrollView className="w-full" contentContainerStyle={{ paddingBottom: 96 }}>
@@ -306,7 +310,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                                 onError={() => setIsRecipeImageError(true)}
                             />
                         ) : (
-                            <View className="w-full h-80 rounded-t-xl bg-[#f3f4f6] items-center justify-center">
+                            <View className="w-full h-80 rounded-t-xl bg-gray-100 items-center justify-center">
                                 <FontAwesome6 name="image" size={28} color="#9ca3af" />
                                 <Text className="text-[#9ca3af] mt-2">Imagem indisponível</Text>
                             </View>
@@ -321,9 +325,13 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                         >
                             <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "#ef4444" : "black"} />
                         </Pressable>
-                        <View className="absolute top-12 right-6 bg-white rounded-full p-2">
+                        <Pressable
+                            onPress={() => setIsShareModalOpen(true)}
+                            className="absolute top-12 right-6 bg-white rounded-full p-2"
+                        >
                             <Ionicons name="share-social-outline" size={24} color="black" />
-                        </View>
+                        </Pressable>
+
                         <Pressable onPress={() => navigation.goBack()} className="absolute top-12 left-6 bg-white rounded-full p-2">
                             <FontAwesome6 name="arrow-left" size={24} color="black" />
                         </Pressable>
@@ -343,19 +351,19 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                     </View>
                 </View>
                 <View className="flex flex-row justify-between p-4">
-                    <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
                         <FontAwesome6 name="clock" size={16} color="#f97316" />
                         <Text>{recipe.prepTimeMinutes}min</Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
                         <FontAwesome6 name="arrow-trend-up" size={16} color="#f97316" />
                         <Text>{recipe.difficulty}</Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
                         <Ionicons name="people-outline" size={16} color="#f97316" />
                         <Text>{recipe.servings ?? "-"} porções</Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-[#9ca3af]/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
                         <Ionicons name="cash-outline" size={16} color="#f97316" />
                         <Text>{recipeCost ? `R$${recipeCost}` : "-"}</Text>
                     </View>
@@ -365,7 +373,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                         {authorAvatar ? (
                             <Image source={{ uri: authorAvatar }} className="rounded-full w-14 h-14" />
                         ) : (
-                            <View className="rounded-full w-14 h-14 bg-[#9ca3af]/20 items-center justify-center">
+                            <View className="rounded-full w-14 h-14 bg-gray-500/20 items-center justify-center">
                                 <FontAwesome6 name="user" size={18} color="#6b7280" />
                             </View>
                         )}
@@ -377,7 +385,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                         <Pressable
                             onPress={() => void handleToggleFollow()}
                             disabled={isFollowLoading}
-                            className={`flex justify-center border rounded-md h-10 px-3 ${isFollowingAuthor ? "border-[#f97316] bg-orange-50" : "border-[#9ca3af]/80"}`}
+                            className={`flex justify-center border rounded-md h-10 px-3 ${isFollowingAuthor ? "border-[#f97316] bg-orange-50" : "border-gray-400/80"}`}
                         >
                             <Text className={isFollowingAuthor ? "text-[#f97316] font-semibold" : "text-black"}>
                                 {isFollowingAuthor ? "Seguindo" : "Seguir"}
@@ -405,6 +413,35 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                     onClose={() => setIsStepsOpen(false)}
                 />
             </Modal>
+            <Modal
+                visible={isShareModalOpen}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsShareModalOpen(false)}
+            >
+                <View className="flex-1 bg-black/60 justify-center items-center">
+                    <View className="w-[85%] bg-white rounded-2xl p-6 items-center shadow-lg">
+                        <Text className="text-xl font-bold text-gray-800 mb-2">Compartilhar Receita</Text>
+                        <Text className="text-sm text-gray-500 text-center mb-5 px-2">
+                            Escaneie este código para abrir a receita {recipe.title}!
+                        </Text>
+                        <View className="p-4 bg-white rounded-lg border border-gray-200 mb-6">
+                            <QRCode
+                                value={qrCodeValue}
+                                size={200}
+                                backgroundColor="white"
+                                color="black"
+                            />
+                        </View>
+                        <Pressable
+                            onPress={() => setIsShareModalOpen(false)}
+                            className="bg-[#f97316] py-3 px-8 rounded-lg w-full items-center active:bg-orange-600"
+                        >
+                            <Text className="text-white font-bold text-size-16">Fechar</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
         </View>
-    )
+    );
 }
