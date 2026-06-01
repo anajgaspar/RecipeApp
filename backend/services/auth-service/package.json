@@ -19,13 +19,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "firebase-admin": "^10.3.0",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^8.0.10",
     "zod": "^4.3.6"
   },
   "devDependencies": {
