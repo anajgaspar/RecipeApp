@@ -1,5 +1,6 @@
 import { StatusBar } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer, NavigationIndependentTree } from "@react-navigation/native";
 import SplashScreen from "../src/modules/SplashScreen";
 import LoginPage from "../src/modules/auth/screens/LoginPage";
 import SignupPage from "@/src/modules/auth/screens/SignupPage";
@@ -16,9 +17,19 @@ import FamilyProfiles from "@/src/modules/social/screens/FamilyProfiles";
 import Notifications from "@/src/modules/social/screens/Notifications";
 import SocialConnections from "@/src/modules/social/screens/SocialConnections";
 
+const Stack = createNativeStackNavigator();
+
 export default function App() {
-  const Stack = createNativeStackNavigator();
   const { isAuthenticated, isLoadingSession } = useAuth();
+
+  const linking = {
+    prefixes: ["receitanamao://"],
+    config: {
+      screens: {
+        RecipeDetails: "recipe/:recipeId",
+      },
+    },
+  };
 
   if (isLoadingSession) {
     return (
@@ -30,30 +41,32 @@ export default function App() {
   }
 
   return (
-    <>
-      <StatusBar barStyle="light-content" />
-      <Stack.Navigator initialRouteName={isAuthenticated ? "Feed" : "Login"}>
-        {isAuthenticated ? (
-          <>
-            <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />
-            <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }} />
-            <Stack.Screen name="RecipeRegister" component={RecipeRegister} options={{ headerShown: false }} />
-            <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
-            <Stack.Screen name="MyFavorites" component={MyFavoritesList} options={{ headerShown: false }} />
-            <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
-            <Stack.Screen name="EditFamilyProfile" component={EditFamilyProfile} options={{ headerShown: false }} />
-            <Stack.Screen name="FamilyProfiles" component={FamilyProfiles} options={{ headerShown: false }} />
-            <Stack.Screen name="Notifications" component={Notifications} options={{ headerShown: false }} />
-            <Stack.Screen name="SocialConnections" component={SocialConnections} options={{ headerShown: false }} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
-            <Stack.Screen name="Signup" component={SignupPage} options={{ headerShown: false }} />
-            <Stack.Screen name="ConfirmEmail" component={ConfirmEmail} options={{ headerShown: false }} />
-          </>
-        )}
-      </Stack.Navigator>
-    </>
+    <NavigationIndependentTree>
+      <NavigationContainer linking={linking}>
+        <StatusBar barStyle="light-content" />
+        <Stack.Navigator initialRouteName={isAuthenticated ? "Feed" : "Login"}>
+          {isAuthenticated ? (
+            <>
+              <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />
+              <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }} />
+              <Stack.Screen name="RecipeRegister" component={RecipeRegister} options={{ headerShown: false }} />
+              <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
+              <Stack.Screen name="MyFavorites" component={MyFavoritesList} options={{ headerShown: false }} />
+              <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
+              <Stack.Screen name="EditFamilyProfile" component={EditFamilyProfile} options={{ headerShown: false }} />
+              <Stack.Screen name="FamilyProfiles" component={FamilyProfiles} options={{ headerShown: false }} />
+              <Stack.Screen name="Notifications" component={Notifications} options={{ headerShown: false }} />
+              <Stack.Screen name="SocialConnections" component={SocialConnections} options={{ headerShown: false }} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
+              <Stack.Screen name="Signup" component={SignupPage} options={{ headerShown: false }} />
+              <Stack.Screen name="ConfirmEmail" component={ConfirmEmail} options={{ headerShown: false }} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </NavigationIndependentTree>
   );
 }

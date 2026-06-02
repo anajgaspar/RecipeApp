@@ -37,16 +37,7 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ],
-      "runtimeVersion": "1.0.0",
-      "intentFilters": [
-        {
-          "action": "SEND",
-          "category": [
-            "DEFAULT"
-          ],
-          "mimeType": "image/*"
-        }
-      ]
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "output": "static",

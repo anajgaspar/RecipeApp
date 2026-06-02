@@ -14,8 +14,10 @@ import RecipeSteps from "../components/RecipeSteps";
 
 export default function RecipeDetails({ navigation, route }: { navigation: any; route: any }) {
     const { user, activeProfileId } = useAuth();
-    const recipeId = route?.params?.recipeId as string | undefined;
+
+    const recipeId = (route?.params?.recipeId || route?.params?.id) as string | undefined;
     const routeRecipe = route?.params?.recipe as Recipe | undefined;
+
     const [recipe, setRecipe] = useState<Recipe | null>(null);
     const [isLoading, setIsLoading] = useState(!routeRecipe);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -295,7 +297,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
         ? (user?.avatarDataUrl ?? recipe.authorAvatarDataUrl ?? null)
         : (authorProfileAvatar ?? recipe.authorAvatarDataUrl ?? null);
 
-    const qrCodeValue = `recipeID:${recipe.id}`;
+    const qrCodeValue = `receitanamao://recipe/${recipe.id}`;
 
     return (
         <View className="flex-1 bg-white">
@@ -393,9 +395,9 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                         </Pressable>
                     ) : null}
                 </View>
-                <View className="flex-1 h-px bg-gray-200" />
+                <View className="w-full h-px bg-gray-200" />
                 <RecipeList ingredients={recipe.ingredients} steps={recipe.steps} />
-                <View className="flex-1 h-px mt-2 bg-gray-200" />
+                <View className="w-full h-px mt-2 bg-gray-200" />
                 <RecipeComments recipe={recipe} />
             </ScrollView>
             <Pressable onPress={() => setIsStepsOpen(true)}
@@ -437,7 +439,7 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                             onPress={() => setIsShareModalOpen(false)}
                             className="bg-[#f97316] py-3 px-8 rounded-lg w-full items-center active:bg-orange-600"
                         >
-                            <Text className="text-white font-bold text-size-16">Fechar</Text>
+                            <Text className="text-white font-bold text-[16px]">Fechar</Text>
                         </Pressable>
                     </View>
                 </View>

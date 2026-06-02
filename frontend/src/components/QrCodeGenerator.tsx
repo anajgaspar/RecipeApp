@@ -7,7 +7,7 @@ type GenerateQrCodeProps = {
 };
 
 export default function QrCodeGenerator({ recipeId, recipeTitle }: GenerateQrCodeProps) {
-    const qrCodeValue = `recipeID:${recipeId}`;
+    const qrCodeValue = `receitanamao://recipe/${recipeId}`;
 
     return (
         <View>
