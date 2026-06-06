@@ -106,19 +106,7 @@ export default function Home({ navigation }: { navigation: any }) {
         setIsTutorialVisible(false);
     }, [user?.id]);
 
-    const handleTutorialAction = useCallback(() => {
-        const step = tutorialSteps[tutorialStepIndex];
-        if (step.actionLabel?.includes("Busca")) {
-            searchInputRef.current?.focus();
-        } else if (step.actionLabel?.includes("cadastro")) {
-            navigation.navigate("RecipeRegister");
-        } else if (step.actionLabel?.includes("despensa")) {
-            navigation.navigate("Pantry");
-        } else if (step.actionLabel?.includes("perfil")) {
-            navigation.navigate("Social");
-        }
-        setTutorialStepIndex((current) => Math.min(current + 1, tutorialSteps.length - 1));
-    }, [navigation, tutorialStepIndex]);
+    
 
     useFocusEffect(
         useCallback(() => {

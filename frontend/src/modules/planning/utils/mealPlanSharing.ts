@@ -23,7 +23,7 @@ export type SharedMealPlanPayload = {
   weekStart: string;
   weekEnd: string;
   generatedAt: string;
-  days: Array<{ date: string; label: string }>;
+  days: { date: string; label: string }[];
   mealTypes: MealType[];
   plan: Record<string, Record<string, SharedMealPlanSlot | null>>;
 };
@@ -77,7 +77,7 @@ function wrapText(value: string, maxChars: number, maxLines: number) {
   return lines;
 }
 
-export function getWeekRangeLabel(days: Array<{ date: string }>) {
+export function getWeekRangeLabel(days: { date: string }[]) {
   if (days.length === 0) return "";
 
   const monday = new Date(days[0].date);
