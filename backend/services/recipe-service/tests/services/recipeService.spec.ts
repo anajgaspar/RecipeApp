@@ -5,6 +5,7 @@ jest.mock("../../src/repositories/recipeRepository", () => ({
         create: jest.fn(),
         findById: jest.fn(),
         findAll: jest.fn(),
+        findAllLight: jest.fn(),
         findSuggested: jest.fn(),
         updateById: jest.fn(),
         findByAuthorId: jest.fn(),
@@ -130,7 +131,7 @@ describe("Serviço de receitas", () => {
             updatedAt: "2026-04-03T08:00:00.000Z",
         });
 
-        mockRecipeRepository.findAll.mockResolvedValueOnce([
+        mockRecipeRepository.findAllLight.mockResolvedValueOnce([
             {
                 id: "fav-recipe",
                 authorId: "a",
@@ -175,6 +176,7 @@ describe("Serviço de receitas", () => {
         const result = await RecipeService.getSuggestedFeed("user-1", "user-1", 10);
 
         expect(mockFavoritesRepository.listByUserId).toHaveBeenCalledWith("user-1", "user-1");
+        expect(mockRecipeRepository.findAllLight).toHaveBeenCalledWith(120);
 
         expect(result[0].id).toBe("2");
         expect(result.some((recipe) => recipe.id === "fav-recipe")).toBe(true);
