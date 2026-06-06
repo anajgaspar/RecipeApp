@@ -182,7 +182,7 @@ export const RecipeService = {
 
     async getSuggestedFeed(userId?: string, profileId?: string, limit = 20): Promise<RecipeDocument[]> {
         const fetchLimit = Math.max(limit * 6, 120);
-        const allRecipes = await RecipeRepository.findAll(fetchLimit);
+        const allRecipes = await RecipeRepository.findAllLight(fetchLimit);
 
         if (!userId) {
             return allRecipes.slice(0, limit);

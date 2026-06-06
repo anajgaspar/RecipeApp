@@ -22,31 +22,31 @@ const ACHIEVEMENTS: AchievementCard[] = [
         key: "firstRecipe",
         title: "Primeira Receita",
         description: "Adicionou sua primeira receita.",
-        icon: "book-open",
+        icon: "🏆",
     },
     {
         key: "firstHighRating",
         title: "Primeiro Gostei",
         description: "Recebeu sua primeira avaliação >= 4.",
-        icon: "star",
+        icon: "⭐",
     },
     {
         key: "recipeSavedByAnotherUser",
         title: "Receita Favorita",
         description: "Uma receita sua foi salva por outro usuário.",
-        icon: "bookmark",
+        icon: "🔖",
     },
     {
         key: "firstFollower",
         title: "Primeiro Seguidor",
         description: "Ganhou seu primeiro seguidor.",
-        icon: "user-plus",
+        icon: "🙋",
     },
     {
         key: "gastronomicConnections",
         title: "Conexões Gastronômicas",
         description: "Seguiu 10 usuários.",
-        icon: "users",
+        icon: "👨‍🍳",
     },
 ];
 
@@ -63,13 +63,12 @@ export default function ProfileAchievements({ badges }: ProfileAchievementsProps
         <View className="w-full">
             <Pressable
                 onPress={() => setIsExpanded((current) => !current)}
-                className="flex-row items-center justify-between p-4 mx-2 border border-gray-200 rounded-md"
+                className="flex-row items-center justify-between"
             >
-                <View className="flex flex-row items-center gap-2">
+                <View className="flex flex-row items-center gap-2 mt-2">
                     <Text className="font-semibold">Conquistas</Text>
-                    <Text className="mt-1 text-sm text-gray-500">({unlockedCount}/{ACHIEVEMENTS.length} conquistas)</Text>
+                    <Text className="text-sm bg-orange-50 p-2 rounded-full">{unlockedCount}/{ACHIEVEMENTS.length}</Text>
                 </View>
-
                 <FontAwesome6
                     name="chevron-down"
                     size={16}
@@ -86,28 +85,19 @@ export default function ProfileAchievements({ badges }: ProfileAchievementsProps
                         return (
                             <View
                                 key={achievement.key}
-                                className={`mb-3 w-[31%] rounded-2xl border p-2 items-center justify-start ${isUnlocked ? "border-orange-200 bg-orange-50" : "border-gray-200 bg-gray-100"}`}
+                                className={`mb-3 w-[31%] rounded-2xl border p-2 items-center justify-start ${isUnlocked ? "border-orange-200 bg-orange-50" : "border-0 opacity-25"}`}
                             >
-                                <View className={`h-14 w-14 rounded-full items-center justify-center ${isUnlocked ? "bg-white" : "bg-gray-200"}`}>
-                                    {isUnlocked ? (
-                                        <FontAwesome6 name={achievement.icon as any} size={20} color="#f97316" />
-                                    ) : (
-                                        <Text className="text-2xl font-black text-gray-400">?</Text>
-                                    )}
+                                <View className="h-14 w-14 rounded-full items-center justify-center">
+                                    <Text className="text-3xl">{achievement.icon}</Text>
                                 </View>
-
-                                {isUnlocked ? (
-                                    <>
-                                        <Text className="mt-2 text-center text-[11px] font-semibold leading-4 text-gray-900">
-                                            {achievement.title}
-                                        </Text>
-                                        <Text className="mt-1 text-center text-[10px] leading-3 text-gray-600">
-                                            {achievement.description}
-                                        </Text>
-                                    </>
-                                ) : (
-                                    <Text className="mt-3 text-center text-xl font-bold text-gray-400">?</Text>
-                                )}
+                                <>
+                                    <Text className="mt-1 text-center text-[11px] font-semibold text-gray-900">
+                                        {achievement.title}
+                                    </Text>
+                                    <Text className="mt-1 text-center text-[10px] text-gray-600">
+                                        {achievement.description}
+                                    </Text>
+                                </>
                             </View>
                         );
                     })}

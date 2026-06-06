@@ -1,12 +1,11 @@
-import { View, ScrollView, ActivityIndicator } from "react-native";
+import { View, ScrollView, ActivityIndicator, Alert } from "react-native";
 import TopBar from "../components/TopBar";
 import ExpirationAlert from "../components/ExpirationAlert";
 import IngredientCard from "../components/IngredientCard";
 import IngredientRegister from "../components/IngredientRegister";
 import BarcodeScanner from "@/src/components/BarcodeScanner";
 import { useCallback, useEffect, useState } from "react";
-import ActionButton from "@/src/components/ActionButton";
-import { listPantryItems, addPantryItem, removePantryItem, PantryItem, clearPantry } from "@/src/services/pantryService";
+import { listPantryItems, addPantryItem, removePantryItem, PantryItem } from "@/src/services/pantryService";
 
 export default function Pantry() {
     const [items, setItems] = useState<PantryItem[]>([]);
@@ -45,28 +44,31 @@ export default function Pantry() {
         }
     }
 
-    async function handleRemove(itemId: string) {
-        setLoading(true);
-        try {
-            await removePantryItem(itemId);
-            await load();
-        } catch (err) {
-            console.warn(err);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleClear() {
-        setLoading(true);
-        try {
-            await clearPantry();
-            await load();
-        } catch (err) {
-            console.warn(err);
-        } finally {
-            setLoading(false);
-        }
+    async function handleRemove(item: PantryItem) {
+        Alert.alert(
+            "Excluir item",
+            `Tem certeza que deseja excluir \"${item.name}\"? Esta ação não pode ser desfeita.`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel",
+                },
+                {
+                    text: "Excluir",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await removePantryItem(item.id);
+                            await load();
+                            Alert.alert("Item excluído", "O item foi removido com sucesso.");
+                        } catch (error) {
+                            const message = error instanceof Error ? error.message : "Não foi possível excluir o item.";
+                            Alert.alert("Erro ao excluir", message);
+                        }
+                    },
+                },
+            ]
+        );
     }
 
     function parseDateFromBR(dateStr?: string) {
@@ -119,29 +121,19 @@ export default function Pantry() {
                                     name={it.name}
                                     quantity={it.quantity}
                                     expirationDate={it.expirationDate}
-                                    onDelete={() => handleRemove(it.id)}
+                                    onDelete={() => handleRemove(it)}
                                 />
                             ))}
                         </View>
                     )}
-
-                    {items.length > 0 && (
-                        <ActionButton 
-                            label="Limpar despensa" 
-                            onPress={handleClear} 
-                            variant="outline"
-                        />
-                    )}
                 </View>
             </ScrollView>
-
             <IngredientRegister
                 visible={registerVisible}
                 onClose={() => { setRegisterVisible(false); setRegisterInitial(undefined); }}
                 onSubmit={handleRegisterSubmit}
                 initial={registerInitial}
             />
-
             <BarcodeScanner visible={scannerVisible} onClose={() => setScannerVisible(false)} onDetected={handleScanDetected} />
         </View>
     );

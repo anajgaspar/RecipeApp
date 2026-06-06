@@ -17,35 +17,35 @@ function getExpoHost(): string | null {
 function resolveAuthUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_API_AUTH_URL?.trim();
 
-    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("172.") && !envUrl.includes("192.")) {
+    if (envUrl && (envUrl.startsWith("https://") || envUrl.startsWith("http://") && !envUrl.includes("localhost"))) {
         return envUrl;
     }
 
     const expoHost = getExpoHost();
     if (expoHost) return `http://${expoHost}:${DEFAULT_AUTH_PORT}`;
 
-    if (Platform.OS === "android" && !envUrl) {
+    if (Platform.OS === "android") {
         return `http://10.0.2.2:${DEFAULT_AUTH_PORT}`;
     }
 
-    return envUrl || `http://localhost:${DEFAULT_AUTH_PORT}`;
+    return `http://localhost:${DEFAULT_AUTH_PORT}`;
 }
 
 function resolveRecipeUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_API_RECIPE_URL?.trim();
 
-    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("172.") && !envUrl.includes("192.")) {
+    if (envUrl && (envUrl.startsWith("https://") || envUrl.startsWith("http://") && !envUrl.includes("localhost"))) {
         return envUrl;
     }
 
     const expoHost = getExpoHost();
     if (expoHost) return `http://${expoHost}:${DEFAULT_RECIPE_PORT}`;
 
-    if (Platform.OS === "android" && !envUrl) {
+    if (Platform.OS === "android") {
         return `http://10.0.2.2:${DEFAULT_RECIPE_PORT}`;
     }
 
-    return envUrl || `http://localhost:${DEFAULT_RECIPE_PORT}`;
+    return `http://localhost:${DEFAULT_RECIPE_PORT}`;
 }
 
 export const apiAuth = axios.create({

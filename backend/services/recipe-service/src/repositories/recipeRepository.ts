@@ -57,6 +57,31 @@ export const RecipeRepository = {
             .map((result) => result.data);
     },
 
+    async findAllLight(limit = 50): Promise<RecipeDocument[]> {
+        const documents = await db
+            .collection(recipesCollection)
+            .orderBy("createdAt", "desc")
+            .limit(limit)
+            .select(
+                "id",
+                "authorId",
+                "authorName",
+                "title",
+                "imageUrl",
+                "prepTimeMinutes",
+                "difficulty",
+                "category",
+                "servings",
+                "createdAt",
+            )
+            .get();
+
+        return documents.docs
+            .map((doc) => RecipeDocumentSchema.safeParse({ ...doc.data(), ingredients: [], steps: [] }))
+            .filter((result) => result.success)
+            .map((result) => result.data);
+    },
+
     async findByAuthorId(authorId: string, limit?: number): Promise<RecipeDocument[]> {
         let query = db
             .collection(recipesCollection)

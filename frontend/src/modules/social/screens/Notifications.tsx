@@ -49,7 +49,7 @@ export default function Notifications({ navigation }: { navigation: any }) {
                 <Pressable onPress={() => navigation.goBack()}>
                     <FontAwesome6 name="arrow-left" size={24} color="black" />
                 </Pressable>
-                <Text className="font-robotoSemibold text-xl">Novos seguidores</Text>
+                <Text className="font-robotoSemibold text-xl">Notificações</Text>
             </View>
 
             <View className="flex-1 p-4">

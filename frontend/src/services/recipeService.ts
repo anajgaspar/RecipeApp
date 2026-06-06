@@ -161,10 +161,10 @@ export async function createRecipe(payload: CreateRecipePayload): Promise<void> 
   }
 }
 
-export async function getSuggestedRecipes(limit = 20): Promise<Recipe[]> {
+export async function getSuggestedRecipes(limit = 20, offset = 0): Promise<Recipe[]> {
   try {
     const { data } = await apiRecipe.get<ListRecipesResponse>("/api/recipes/feed/suggested", {
-      params: { limit },
+      params: { limit, offset },
     });
 
     return data.recipes;

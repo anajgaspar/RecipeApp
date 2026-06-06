@@ -1,11 +1,10 @@
-import { View, ScrollView, ActivityIndicator } from "react-native";
+import { View, ScrollView, ActivityIndicator, Alert } from "react-native";
 import TopBar from "../components/TopBar";
 import IngredientCard from "../components/IngredientCard";
 import IngredientRegister from "../components/IngredientRegister";
 import BarcodeScanner from "@/src/components/BarcodeScanner";
 import { useCallback, useEffect, useState } from "react";
-import ActionButton from "@/src/components/ActionButton";
-import { listShoppingItems, addShoppingItem, updateShoppingItem, removeShoppingItem, ShoppingListItem, clearShoppingList } from "@/src/services/shoppingListService";
+import { listShoppingItems, addShoppingItem, updateShoppingItem, removeShoppingItem, ShoppingListItem } from "@/src/services/shoppingListService";
 
 export default function ShoppingList() {
     const [items, setItems] = useState<ShoppingListItem[]>([]);
@@ -45,7 +44,6 @@ export default function ShoppingList() {
     }
 
     async function handleToggle(item: ShoppingListItem) {
-        setLoading(true);
         try {
             await updateShoppingItem(item.id, { checked: !item.checked });
             await load();
@@ -56,28 +54,31 @@ export default function ShoppingList() {
         }
     }
 
-    async function handleRemove(itemId: string) {
-        setLoading(true);
-        try {
-            await removeShoppingItem(itemId);
-            await load();
-        } catch (err) {
-            console.warn(err);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleClear() {
-        setLoading(true);
-        try {
-            await clearShoppingList();
-            await load();
-        } catch (err) {
-            console.warn(err);
-        } finally {
-            setLoading(false);
-        }
+    async function handleRemove(item: ShoppingListItem) {
+        Alert.alert(
+            "Excluir item",
+            `Tem certeza que deseja excluir \"${item.name}\"? Esta ação não pode ser desfeita.`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel",
+                },
+                {
+                    text: "Excluir",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await removeShoppingItem(item.id);
+                            await load();
+                            Alert.alert("Item excluído", "O item foi removido com sucesso.");
+                        } catch (error) {
+                            const message = error instanceof Error ? error.message : "Não foi possível excluir o item.";
+                            Alert.alert("Erro ao excluir", message);
+                        }
+                    },
+                },
+            ]
+        );
     }
 
     function handleScanDetected(barcode: string, productName?: string) {
@@ -102,29 +103,19 @@ export default function ShoppingList() {
                                     quantity={it.quantity}
                                     checked={it.checked}
                                     onToggle={() => handleToggle(it)}
-                                    onDelete={() => handleRemove(it.id)}
+                                    onDelete={() => handleRemove(it)}
                                 />
                             ))}
                         </View>
                     )}
-
-                    {items.length > 0 && (
-                        <ActionButton
-                            label="Limpar lista de compras"
-                            onPress={handleClear}
-                            variant="outline"
-                        />
-                    )}
                 </View>
             </ScrollView>
-
             <IngredientRegister
                 visible={registerVisible}
                 onClose={() => setRegisterVisible(false)}
                 onSubmit={handleRegisterSubmit}
                 initial={registerInitial}
             />
-
             <BarcodeScanner visible={scannerVisible} onClose={() => setScannerVisible(false)} onDetected={handleScanDetected} />
         </View>
     );
