@@ -1,4 +1,4 @@
-import { View, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, ScrollView, ActivityIndicator, Alert, Text } from "react-native";
 import TopBar from "../components/TopBar";
 import ExpirationAlert from "../components/ExpirationAlert";
 import IngredientCard from "../components/IngredientCard";
@@ -113,6 +113,17 @@ export default function Pantry() {
 
                     {loading ? (
                         <ActivityIndicator size="large" color="#f97316" />
+                    ) : items.length === 0 ? (
+                        <View className="items-center justify-center gap-2">
+                            <Text className="text-lg font-semibold text-center">
+                                Sua despensa está vazia!
+                            </Text>
+                            <Text className="text-gray-400 text-center px-8">
+                                Adicione um ingrediente tocando no{" "}
+                                <Text className="text-orange-400 font-semibold">+</Text>{" "}
+                                ou escaneando um produto.
+                            </Text>
+                        </View>
                     ) : (
                         <View className="flex flex-col gap-3">
                             {items.map((it) => (

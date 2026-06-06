@@ -16,7 +16,7 @@ import MyFavoritesList from "@/src/modules/social/screens/MyFavoritesList";
 import FamilyProfiles from "@/src/modules/social/screens/FamilyProfiles";
 import Notifications from "@/src/modules/social/screens/Notifications";
 import SocialConnections from "@/src/modules/social/screens/SocialConnections";
-
+import SharedMealPlan from "../src/modules/planning/components/SharedMealPlan";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -27,6 +27,7 @@ export default function App() {
     config: {
       screens: {
         RecipeDetails: "recipe/:recipeId",
+        SharedMealPlan: "shared-meal-plan",
       },
     },
   };
@@ -45,6 +46,7 @@ export default function App() {
       <NavigationContainer linking={linking}>
         <StatusBar barStyle="light-content" />
         <Stack.Navigator initialRouteName={isAuthenticated ? "Feed" : "Login"}>
+          <Stack.Screen name="SharedMealPlan" component={SharedMealPlan} options={{ headerShown: false }} />
           {isAuthenticated ? (
             <>
               <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />

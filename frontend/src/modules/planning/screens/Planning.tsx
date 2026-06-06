@@ -1,11 +1,19 @@
-import { View, Text, ScrollView } from "react-native";
+import { View } from "react-native";
+import TopBar from "../components/TopBar";
+import MealPlanning from "../components/Planner";
+import { useState } from "react";
 
 export default function Planning() {
+    const [sharePlanningHandler, setSharePlanningHandler] = useState<(() => void) | undefined>();
+
     return (
-        <ScrollView className="flex-1 bg-white">
-            <View className="p-4">
-                <Text className="text-2xl font-bold mb-4">Planejamento de Refeições</Text>
-            </View>
-        </ScrollView>
+        <View className="flex-1 bg-white">
+            <TopBar onPressShare={sharePlanningHandler} />
+            <MealPlanning
+                onSharePlanningReady={(handler) => {
+                    setSharePlanningHandler(() => handler);
+                }}
+            />
+        </View>
     )
 }

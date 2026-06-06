@@ -1,4 +1,4 @@
-import { View, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, ScrollView, ActivityIndicator, Alert, Text } from "react-native";
 import TopBar from "../components/TopBar";
 import IngredientCard from "../components/IngredientCard";
 import IngredientRegister from "../components/IngredientRegister";
@@ -87,6 +87,9 @@ export default function ShoppingList() {
         setRegisterVisible(true);
     }
 
+    const checkedCount = items.filter((it) => it.checked).length;
+    const allChecked = items.length > 0 && checkedCount === items.length;
+
     return (
         <View className="flex-1 bg-white">
             <ScrollView className="flex-1 bg-white">
@@ -94,19 +97,41 @@ export default function ShoppingList() {
                 <View className="p-4 gap-4">
                     {loading ? (
                         <ActivityIndicator size="large" color="#f97316" />
-                    ) : (
-                        <View className="flex flex-col gap-3">
-                            {items.map((it) => (
-                                <IngredientCard
-                                    key={it.id}
-                                    name={it.name}
-                                    quantity={it.quantity}
-                                    checked={it.checked}
-                                    onToggle={() => handleToggle(it)}
-                                    onDelete={() => handleRemove(it)}
-                                />
-                            ))}
+                    ) : items.length === 0 ? (
+                        <View className="items-center justify-center gap-2">
+                            <Text className="text-lg font-semibold text-center">
+                                Sua lista de compras está vazia!
+                            </Text>
+                            <Text className="text-gray-400 text-center px-8">
+                                Adicione um ingrediente tocando no{" "}
+                                <Text className="text-orange-400 font-semibold">+</Text>{" "}
+                                ou escaneando um produto.
+                            </Text>
                         </View>
+                    ) : (
+                        <>
+                            {allChecked && (
+                                <View className="flex-row items-center gap-2 bg-green-50 border border-green-100 rounded-2xl px-4 py-3">
+                                    <Text className="text-xl">🎉</Text>
+                                    <Text className="text-sm text-green-700 font-medium flex-1">
+                                        Tudo comprado!
+                                    </Text>
+                                </View>
+                            )}
+
+                            <View className="flex flex-col gap-3">
+                                {items.map((it) => (
+                                    <IngredientCard
+                                        key={it.id}
+                                        name={it.name}
+                                        quantity={it.quantity}
+                                        checked={it.checked}
+                                        onToggle={() => handleToggle(it)}
+                                        onDelete={() => handleRemove(it)}
+                                    />
+                                ))}
+                            </View>
+                        </>
                     )}
                 </View>
             </ScrollView>
