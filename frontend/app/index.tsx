@@ -17,6 +17,8 @@ import FamilyProfiles from "@/src/modules/social/screens/FamilyProfiles";
 import Notifications from "@/src/modules/social/screens/Notifications";
 import SocialConnections from "@/src/modules/social/screens/SocialConnections";
 import SharedMealPlan from "../src/modules/planning/components/SharedMealPlan";
+import MyReportsChart from "@/src/modules/social/screens/MyReportsScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -54,6 +56,7 @@ export default function App() {
               <Stack.Screen name="RecipeRegister" component={RecipeRegister} options={{ headerShown: false }} />
               <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
               <Stack.Screen name="MyFavorites" component={MyFavoritesList} options={{ headerShown: false }} />
+              <Stack.Screen name="MyReports" component={MyReportsChart} options={{ headerShown: false }} />
               <Stack.Screen name="EditProfile" component={EditProfileForm} options={{ headerShown: false }} />
               <Stack.Screen name="EditFamilyProfile" component={EditFamilyProfile} options={{ headerShown: false }} />
               <Stack.Screen name="FamilyProfiles" component={FamilyProfiles} options={{ headerShown: false }} />

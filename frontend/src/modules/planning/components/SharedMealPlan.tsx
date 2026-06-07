@@ -31,10 +31,16 @@ function getPayloadDescription(payload: SharedMealPlanPayload) {
 export default function SharedMealPlan() {
   const route = useRoute<RouteProp<SharedMealPlanRouteParams, "SharedMealPlan">>();
 
+  const hasData = !!route.params?.data;
+
   const payload = useMemo(
-    () => decodeSharedMealPlanPayload(route.params?.data),
-    [route.params?.data]
+    () => hasData ? decodeSharedMealPlanPayload(route.params?.data) : null,
+    [route.params?.data, hasData]
   );
+
+  if (!hasData) {
+    return null;
+  }
 
   if (!payload) {
     return (

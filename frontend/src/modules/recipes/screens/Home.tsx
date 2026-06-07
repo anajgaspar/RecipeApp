@@ -106,15 +106,13 @@ export default function Home({ navigation }: { navigation: any }) {
         setIsTutorialVisible(false);
     }, [user?.id]);
 
-    
-
     useFocusEffect(
         useCallback(() => {
-            if (isSearching) return;
-
             let isActive = true;
 
             async function loadRecipes() {
+                if (isSearching) return;
+
                 try {
                     setIsLoading(true);
                     setErrorMessage(null);
@@ -143,14 +141,11 @@ export default function Home({ navigation }: { navigation: any }) {
                         setErrorMessage(message);
                         return;
                     }
-
                     const allRecipes = recipesResult.value;
                     const PAGE_SIZE = 5;
                     for (let i = 0; i < allRecipes.length; i += PAGE_SIZE) {
                         if (!isActive) break;
                         setRecipes((prev) => [...prev, ...allRecipes.slice(i, i + PAGE_SIZE)]);
-                        setIsLoading(false);
-                        await new Promise((resolve) => setTimeout(resolve, 16));
                     }
                 } catch (error) {
                     const message =
@@ -165,7 +160,7 @@ export default function Home({ navigation }: { navigation: any }) {
 
             void loadRecipes();
             return () => { isActive = false; };
-        }, [isSearching]),
+        }, []),
     );
 
     useEffect(() => {
@@ -323,7 +318,7 @@ export default function Home({ navigation }: { navigation: any }) {
                                         <LoadingState label="Carregando receitas..." compact />
                                     ) : null}
                                     {!expiringIngredientsLoading &&
-                                    recipesByExpiringIngredients.length === 0 ? (
+                                        recipesByExpiringIngredients.length === 0 ? (
                                         <Text className="text-[#6b7280]">
                                             Nenhum ingrediente vencendo esta semana
                                         </Text>
