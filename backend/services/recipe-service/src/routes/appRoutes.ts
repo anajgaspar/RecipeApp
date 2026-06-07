@@ -15,15 +15,15 @@ router.get("/recipes/feed/suggested", AuthMiddleware.authenticateUser, RecipeCon
 router.get("/recipes/search", RecipeController.searchRecipes);
 router.get("/recipes/me", AuthMiddleware.authenticateUser, RecipeController.getMyRecipes);
 router.get("/recipes/badges/me", AuthMiddleware.authenticateUser, RecipeController.getMyBadgeProgress);
+router.get("/recipes/completions", AuthMiddleware.authenticateUser, RecipeCompletionController.listCompleted);
+
 router.get("/recipes/:recipeId", RecipeController.getRecipeById);
+router.get("/recipes/:recipeId/completion-status", AuthMiddleware.authenticateUser, RecipeCompletionController.getStatus);
+router.post("/recipes/:recipeId/complete", AuthMiddleware.authenticateUser, RecipeCompletionController.markCompleted);
 
 router.post("/recipes", AuthMiddleware.authenticateUser, RecipeController.createRecipe);
 router.put("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.updateRecipe);
 router.delete("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.deleteRecipe);
-
-router.get("/recipes/:recipeId/completion-status", AuthMiddleware.authenticateUser, RecipeCompletionController.getStatus);
-router.post("/recipes/:recipeId/complete", AuthMiddleware.authenticateUser, RecipeCompletionController.markCompleted);
-router.get("/recipes/completions", AuthMiddleware.authenticateUser, RecipeCompletionController.listCompleted);
 
 router.post("/comments", AuthMiddleware.authenticateUser, CommentsController.addComment);
 router.get("/comments/:recipeId", AuthMiddleware.authenticateUser, CommentsController.getRecipeComments);
