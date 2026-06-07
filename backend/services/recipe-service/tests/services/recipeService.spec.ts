@@ -2,28 +2,43 @@ import { beforeEach, afterEach, describe, expect, it, jest } from "@jest/globals
 
 jest.mock("../../src/repositories/recipeRepository", () => ({
     RecipeRepository: {
-        create: jest.fn(),
-        findById: jest.fn(),
-        findAllLight: jest.fn(),
-        findAll: jest.fn(),
-        findSuggested: jest.fn(),
-        updateById: jest.fn(),
-        deleteById: jest.fn(),
-        findByAuthorId: jest.fn(),
+        create: jest.fn() as jest.Mock<any>,
+        findById: jest.fn() as jest.Mock<any>,
+        findAllLight: jest.fn() as jest.Mock<any>,
+        findAll: jest.fn() as jest.Mock<any>,
+        findSuggested: jest.fn() as jest.Mock<any>,
+        updateById: jest.fn() as jest.Mock<any>,
+        deleteById: jest.fn() as jest.Mock<any>,
+        findByAuthorId: jest.fn() as jest.Mock<any>,
     },
 }));
 
 jest.mock("../../src/repositories/favoriteRepository", () => ({
     FavoritesRepository: {
-        listByUserId: jest.fn(),
-        findAll: jest.fn(),
+        listByUserId: jest.fn() as jest.Mock<any>,
+        findAll: jest.fn() as jest.Mock<any>, 
     },
 }));
 
 jest.mock("../../src/repositories/commentsRepository", () => ({
     CommentsRepository: {
-        findAll: jest.fn(),
+        findAll: jest.fn() as jest.Mock<any>,
     },
+}));
+
+jest.mock("../../src/config/firebase", () => ({}));
+
+jest.mock("../../src/repositories/followRepository", () => ({
+    FollowRepository: {
+        listFollowers: jest.fn(() => Promise.resolve([])),
+        listFollowing: jest.fn(() => Promise.resolve([])),
+    }
+}));
+
+jest.mock("../../src/services/notificationService", () => ({
+    NotificationService: {
+        notifyFollowersNewRecipe: jest.fn(() => Promise.resolve()),
+    }
 }));
 
 import crypto from "crypto";
@@ -31,15 +46,18 @@ import { RecipeService } from "../../src/services/recipeService";
 import { RecipeRepository } from "../../src/repositories/recipeRepository";
 import { FavoritesRepository } from "../../src/repositories/favoriteRepository";
 import { CommentsRepository } from "../../src/repositories/commentsRepository";
+import { FollowRepository } from "../../src/repositories/followRepository";
 
 const mockRecipeRepository = RecipeRepository as jest.Mocked<typeof RecipeRepository>;
 const mockFavoritesRepository = FavoritesRepository as jest.Mocked<typeof FavoritesRepository>;
 const mockCommentsRepository = CommentsRepository as jest.Mocked<typeof CommentsRepository>;
+const mockFollowRepository = FollowRepository as jest.Mocked<typeof FollowRepository>;
 
 describe("Serviço de receitas", () => {
     beforeEach(() => {
         jest.spyOn(crypto, "randomUUID").mockImplementation(() => "recipe-id-123" as ReturnType<typeof crypto.randomUUID>);
         mockCommentsRepository.findAll.mockResolvedValue([]);
+        mockFollowRepository.listFollowers.mockResolvedValue([]);
     });
 
     afterEach(() => {
