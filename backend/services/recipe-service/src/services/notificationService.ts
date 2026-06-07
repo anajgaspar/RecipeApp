@@ -1,5 +1,5 @@
 import { getMessaging, MulticastMessage } from "firebase-admin/messaging";
-import { db } from "../../../recipe-service/src/config/firebase";
+import { db } from "../config/firebase";
 
 const FCM_COLLECTION = "fcm_tokens";
 
