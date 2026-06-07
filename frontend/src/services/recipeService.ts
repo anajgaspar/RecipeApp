@@ -82,6 +82,12 @@ type ListRecipesResponse = {
   recipes: Recipe[];
 };
 
+type SeasonalFeedResponse = {
+  recipes: Recipe[];
+  season: string;
+  month: number;
+};
+
 type GetRecipeResponse = {
   recipe: Recipe;
 };
@@ -170,6 +176,37 @@ export async function getSuggestedRecipes(limit = 20, offset = 0): Promise<Recip
     return data.recipes;
   } catch (error) {
     throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getFollowingFeed(limit = 20): Promise<Recipe[]> {
+  try {
+    const { data } = await apiRecipe.get<ListRecipesResponse>(
+      "/api/recipes/feed/following",
+      { params: { limit } }
+    );
+    return data.recipes;
+  } catch (error: any) {
+    console.error("[feed] erro:", error.response?.data);
+    throw new Error(error.response?.data?.error ?? error.message);
+  }
+}
+
+export async function getSeasonalFeed(limit = 20): Promise<{
+  recipes: Recipe[];
+  season: string;
+  month: number;
+}> {
+  try {
+    const { data } = await apiRecipe.get<SeasonalFeedResponse>(
+      "/api/recipes/feed/seasonal",
+      { params: { limit } }
+    );
+    return data;
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Não foi possível carregar receitas sazonais."
+    );
   }
 }
 

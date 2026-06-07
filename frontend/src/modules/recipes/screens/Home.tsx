@@ -5,6 +5,8 @@ import TopBar from "../components/TopBar";
 import RecipeCard from "../components/RecipeCard";
 import {
     getSuggestedRecipes,
+    getFollowingFeed, 
+    getSeasonalFeed,
     listFavoriteRecipes,
     Recipe,
     searchRecipesByIngredients,
@@ -17,6 +19,7 @@ import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import BasicTutorialModal, { TutorialStep } from "@/src/modules/onboarding/components/BasicTutorialModal";
 import { hasSeenAppTutorial, markAppTutorialAsSeen } from "@/src/services/tutorialStorage";
 import HomeSearch from "../components/Search";
+import { getSeasonEmoji, getSeasonName, getCurrentSeasonalIngredients } from "@/src/utils/seasonalityData";
 
 const tutorialSteps: TutorialStep[] = [
     {
@@ -62,25 +65,35 @@ const tutorialSteps: TutorialStep[] = [
 
 export default function Home({ navigation }: { navigation: any }) {
     const { user } = useAuth();
+
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [isTutorialVisible, setIsTutorialVisible] = useState(false);
-    const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
-    const [isCheckingTutorial, setIsCheckingTutorial] = useState(true);
-    const [recipesByExpiringIngredients, setRecipesByExpiringIngredients] = useState<Recipe[]>([]);
-    const [expiringIngredientsLoading, setExpiringIngredientsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<"all" | "followers" | "pantry" | "seasonal">("all");
     const [isSearching, setIsSearching] = useState(false);
 
-    const searchInputRef = useRef<TextInput>(null);
+    const [isTutorialVisible, setIsTutorialVisible] = useState(false);
+    const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+    const [isCheckingTutorial, setIsCheckingTutorial] = useState(true);
 
+    const [recipesByExpiringIngredients, setRecipesByExpiringIngredients] = useState<Recipe[]>([]);
+    const [expiringIngredientsLoading, setExpiringIngredientsLoading] = useState(false);
+
+    const [followingRecipes, setFollowingRecipes] = useState<Recipe[]>([]);
+    const [followingLoading, setFollowingLoading] = useState(false);
+    const [followingError, setFollowingError] = useState<string | null>(null);
+
+    const [seasonalRecipes, setSeasonalRecipes] = useState<Recipe[]>([]);
+    const [seasonalLoading, setSeasonalLoading] = useState(false);
+    const [seasonalError, setSeasonalError] = useState<string | null>(null);
+    const [currentSeason, setCurrentSeason] = useState<string>("");
+
+    const searchInputRef = useRef<TextInput>(null);
     const currentTutorialStep = useMemo(() => tutorialSteps[tutorialStepIndex], [tutorialStepIndex]);
 
     useEffect(() => {
         let isActive = true;
-
         async function loadTutorialState() {
             if (!user?.id) {
                 if (isActive) setIsCheckingTutorial(false);
@@ -96,7 +109,6 @@ export default function Home({ navigation }: { navigation: any }) {
                 if (isActive) setIsCheckingTutorial(false);
             }
         }
-
         void loadTutorialState();
         return () => { isActive = false; };
     }, [user?.id]);
@@ -109,10 +121,8 @@ export default function Home({ navigation }: { navigation: any }) {
     useFocusEffect(
         useCallback(() => {
             let isActive = true;
-
             async function loadRecipes() {
                 if (isSearching) return;
-
                 try {
                     setIsLoading(true);
                     setErrorMessage(null);
@@ -129,7 +139,7 @@ export default function Home({ navigation }: { navigation: any }) {
                         setFavoriteIds(
                             favoritesResult.value
                                 .map((item) => item.recipe?.id)
-                                .filter((id): id is string => Boolean(id)),
+                                .filter((id): id is string => Boolean(id))
                         );
                     }
 
@@ -141,6 +151,7 @@ export default function Home({ navigation }: { navigation: any }) {
                         setErrorMessage(message);
                         return;
                     }
+
                     const allRecipes = recipesResult.value;
                     const PAGE_SIZE = 5;
                     for (let i = 0; i < allRecipes.length; i += PAGE_SIZE) {
@@ -149,43 +160,37 @@ export default function Home({ navigation }: { navigation: any }) {
                     }
                 } catch (error) {
                     const message =
-                        error instanceof Error
-                            ? error.message
-                            : "Não foi possível carregar as receitas.";
+                        error instanceof Error ? error.message : "Não foi possível carregar as receitas.";
                     if (isActive) setErrorMessage(message);
                 } finally {
                     if (isActive) setIsLoading(false);
                 }
             }
-
             void loadRecipes();
             return () => { isActive = false; };
-        }, []),
+        }, [isSearching])
     );
 
     useEffect(() => {
+        if (activeTab !== "pantry") return;
         let isActive = true;
 
         async function loadRecipesByExpiringIngredients() {
             try {
                 setExpiringIngredientsLoading(true);
                 const pantryItems = await listPantryItems();
-
                 const expiringItems = pantryItems.filter((item) => {
                     if (!item.expirationDate) return false;
                     const d = parseDateFromBR(item.expirationDate);
                     if (!d) return false;
-
                     const today = new Date();
                     const dayOfWeek = (today.getDay() + 6) % 7;
                     const startOfWeek = new Date(today);
                     startOfWeek.setDate(today.getDate() - dayOfWeek);
                     startOfWeek.setHours(0, 0, 0, 0);
-
                     const endOfWeek = new Date(startOfWeek);
                     endOfWeek.setDate(startOfWeek.getDate() + 6);
                     endOfWeek.setHours(23, 59, 59, 999);
-
                     return d >= startOfWeek && d <= endOfWeek;
                 });
 
@@ -202,7 +207,60 @@ export default function Home({ navigation }: { navigation: any }) {
             }
         }
 
-        if (activeTab === "pantry") void loadRecipesByExpiringIngredients();
+        void loadRecipesByExpiringIngredients();
+        return () => { isActive = false; };
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab !== "followers") return;
+        let isActive = true;
+
+        async function loadFollowingFeed() {
+            try {
+                setFollowingLoading(true);
+                setFollowingError(null);
+                const data = await getFollowingFeed(25);
+                if (isActive) setFollowingRecipes(data);
+            } catch (error) {
+                if (isActive) {
+                    setFollowingError(
+                        error instanceof Error ? error.message : "Não foi possível carregar o feed."
+                    );
+                }
+            } finally {
+                if (isActive) setFollowingLoading(false);
+            }
+        }
+
+        void loadFollowingFeed();
+        return () => { isActive = false; };
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab !== "seasonal") return;
+        let isActive = true;
+
+        async function loadSeasonalFeed() {
+            try {
+                setSeasonalLoading(true);
+                setSeasonalError(null);
+                const { recipes, season } = await getSeasonalFeed(25);
+                if (isActive) {
+                    setSeasonalRecipes(recipes);
+                    setCurrentSeason(season);
+                }
+            } catch (error) {
+                if (isActive) {
+                    setSeasonalError(
+                        error instanceof Error ? error.message : "Não foi possível carregar receitas sazonais."
+                    );
+                }
+            } finally {
+                if (isActive) setSeasonalLoading(false);
+            }
+        }
+
+        void loadSeasonalFeed();
         return () => { isActive = false; };
     }, [activeTab]);
 
@@ -230,6 +288,11 @@ export default function Home({ navigation }: { navigation: any }) {
         }
     }
 
+    const currentMonth = new Date().getMonth() + 1;
+    const seasonEmoji = getSeasonEmoji(currentMonth);
+    const seasonLabel = currentSeason || getSeasonName(currentMonth);
+    const seasonalIngredients = getCurrentSeasonalIngredients();
+
     return (
         <View className="flex-1 bg-white">
             <ScrollView className="h-full flex" contentContainerStyle={{ paddingBottom: 96 }}>
@@ -246,34 +309,26 @@ export default function Home({ navigation }: { navigation: any }) {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{ alignItems: "center", gap: 8 }}
                         >
-                            <Pressable onPress={() => setActiveTab("all")}>
-                                <Text
-                                    className={`${activeTab === "all" ? "text-white bg-[#f97316]" : "bg-white border border-[#9ca3af]"} p-2 rounded-full`}
-                                >
-                                    Todas as receitas
-                                </Text>
-                            </Pressable>
-                            <Pressable onPress={() => setActiveTab("followers")}>
-                                <Text
-                                    className={`${activeTab === "followers" ? "text-white bg-[#f97316]" : "bg-white border border-[#9ca3af]"} p-2 rounded-full`}
-                                >
-                                    Seguindo
-                                </Text>
-                            </Pressable>
-                            <Pressable onPress={() => setActiveTab("pantry")}>
-                                <Text
-                                    className={`${activeTab === "pantry" ? "text-white bg-[#f97316]" : "bg-white border border-[#9ca3af]"} p-2 rounded-full`}
-                                >
-                                    Despensa
-                                </Text>
-                            </Pressable>
-                            <Pressable onPress={() => setActiveTab("seasonal")}>
-                                <Text
-                                    className={`${activeTab === "seasonal" ? "text-white bg-[#f97316]" : "bg-white border border-[#9ca3af]"} p-2 rounded-full`}
-                                >
-                                    Sazonais
-                                </Text>
-                            </Pressable>
+                            {(
+                                [
+                                    { key: "all", label: "Todas as receitas" },
+                                    { key: "followers", label: "Seguindo" },
+                                    { key: "pantry", label: "Despensa" },
+                                    { key: "seasonal", label: "Sazonais" },
+                                ] as const
+                            ).map(({ key, label }) => (
+                                <Pressable key={key} onPress={() => setActiveTab(key)}>
+                                    <Text
+                                        className={`${
+                                            activeTab === key
+                                                ? "text-white bg-[#f97316]"
+                                                : "bg-white border border-[#9ca3af]"
+                                        } p-2 rounded-full`}
+                                    >
+                                        {label}
+                                    </Text>
+                                </Pressable>
+                            ))}
                         </ScrollView>
                     ) : null}
                     {!isSearching ? (
@@ -309,6 +364,44 @@ export default function Home({ navigation }: { navigation: any }) {
                                     </View>
                                 </View>
                             )}
+                            {activeTab === "followers" && (
+                                <View className="flex flex-col">
+                                    <Text className="text-2xl font-bold mb-4">Receitas de quem você segue</Text>
+                                    {followingLoading ? <LoadingState label="Carregando receitas..." compact /> : null}
+                                    {followingError ? (
+                                        <InlineError message={followingError} title="Não conseguimos carregar o feed" />
+                                    ) : null}
+                                    {!followingLoading && !followingError && followingRecipes.length === 0 ? (
+                                        <View className="flex flex-col gap-2">
+                                            <Text className="text-[#6b7280]">
+                                                Nenhuma receita encontrada.
+                                            </Text>
+                                            <Text className="text-[#9ca3af] text-sm">
+                                                Siga outros cozinheiros para ver as publicações deles aqui.
+                                            </Text>
+                                        </View>
+                                    ) : null}
+                                    <View className="gap-4">
+                                        {followingRecipes.map((recipe) => (
+                                            <Pressable
+                                                key={recipe.id}
+                                                onPress={() =>
+                                                    navigation.navigate("RecipeDetails", {
+                                                        recipeId: recipe.id,
+                                                        recipe,
+                                                    })
+                                                }
+                                            >
+                                                <RecipeCard
+                                                    recipe={recipe}
+                                                    isFavorited={favoriteIds.includes(recipe.id)}
+                                                    onFavorite={() => void handleFavorite(recipe.id)}
+                                                />
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
                             {activeTab === "pantry" && (
                                 <View className="flex flex-col">
                                     <Text className="text-2xl font-bold mb-4">
@@ -317,8 +410,7 @@ export default function Home({ navigation }: { navigation: any }) {
                                     {expiringIngredientsLoading ? (
                                         <LoadingState label="Carregando receitas..." compact />
                                     ) : null}
-                                    {!expiringIngredientsLoading &&
-                                        recipesByExpiringIngredients.length === 0 ? (
+                                    {!expiringIngredientsLoading && recipesByExpiringIngredients.length === 0 ? (
                                         <Text className="text-[#6b7280]">
                                             Nenhum ingrediente vencendo esta semana
                                         </Text>
@@ -345,9 +437,48 @@ export default function Home({ navigation }: { navigation: any }) {
                                 </View>
                             )}
                             {activeTab === "seasonal" && (
-                                <View className="flex flex-col">
-                                    <Text className="text-2xl font-bold mb-4">Receitas sazonais</Text>
-                                    <Text className="text-[#6b7280]">Receitas sazonais em breve</Text>
+                                <View className="flex flex-col gap-4">
+                                    <View>
+                                        <Text className="text-2xl font-bold">
+                                            {seasonEmoji} Receitas de {seasonLabel.toLowerCase()}
+                                        </Text>
+                                        <Text className="text-[#6b7280] text-sm bg-orange-50 p-1 mt-2 rounded-md">
+                                            Ingredientes em safra agora:{" "}
+                                            {seasonalIngredients
+                                                .slice(0, 6)
+                                                .map((i) => i.name)
+                                                .join(", ")}
+                                            {seasonalIngredients.length > 6 ? " e mais…" : ""}
+                                        </Text>
+                                    </View>
+                                    {seasonalLoading ? <LoadingState label="Carregando receitas sazonais..." compact /> : null}
+                                    {seasonalError ? (
+                                        <InlineError message={seasonalError} title="Não conseguimos carregar receitas sazonais" />
+                                    ) : null}
+                                    {!seasonalLoading && !seasonalError && seasonalRecipes.length === 0 ? (
+                                        <Text className="text-[#6b7280]">
+                                            Nenhuma receita sazonal encontrada para esta época.
+                                        </Text>
+                                    ) : null}
+                                    <View className="gap-4">
+                                        {seasonalRecipes.map((recipe) => (
+                                            <Pressable
+                                                key={recipe.id}
+                                                onPress={() =>
+                                                    navigation.navigate("RecipeDetails", {
+                                                        recipeId: recipe.id,
+                                                        recipe,
+                                                    })
+                                                }
+                                            >
+                                                <RecipeCard
+                                                    recipe={recipe}
+                                                    isFavorited={favoriteIds.includes(recipe.id)}
+                                                    onFavorite={() => void handleFavorite(recipe.id)}
+                                                />
+                                            </Pressable>
+                                        ))}
+                                    </View>
                                 </View>
                             )}
                         </View>

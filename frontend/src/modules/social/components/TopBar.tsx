@@ -6,7 +6,11 @@ export default function TopBar() {
     const { signOut } = useAuth();
 
     async function handleLogout() {
-        await signOut();
+        try {
+            await signOut();
+        } catch (err) {
+            console.error("Erro ao deslogar:", err);
+        }
     }
 
     return (
@@ -16,7 +20,7 @@ export default function TopBar() {
                 <Pressable onPress={handleLogout}>
                     <MaterialCommunityIcons name="logout" size={22} color="black" />
                 </Pressable>
-            </View>         
+            </View>
         </View>
     )
 }
