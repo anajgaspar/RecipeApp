@@ -4,6 +4,9 @@ import { z } from "zod";
 import { CommentsRepository } from "../repositories/commentsRepository";
 import { RecipeRepository } from "../repositories/recipeRepository";
 import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
+import { FollowRepository } from "../repositories/followRepository";
+import { getSeasonalIngredientNames, normalizeForComparison } from "../utils/seasonalityData";
+import { NotificationService } from "./notificationService";
 
 type RecipeDocument = z.infer<typeof RecipeDocumentSchema>;
 type CreateRecipeInput = z.infer<typeof CreateRecipeSchema>;
@@ -59,10 +62,7 @@ function buildRecommendationProfile(recipes: RecipeDocument[]): RecommendationPr
         });
     });
 
-    return {
-        categoryWeights,
-        ingredientWeights,
-    };
+    return { categoryWeights, ingredientWeights };
 }
 
 function scoreRecipeForRecommendation(recipe: RecipeDocument, profile: RecommendationProfile): number {
@@ -91,6 +91,24 @@ export const RecipeService = {
             throw new Error("Falha ao criar receita.");
         }
 
+        void (async () => {
+            try {
+                const followers = await FollowRepository.listFollowers(authorId);
+                const followerIds = followers.map((f) => f.followerUserId);
+
+                if (followerIds.length === 0) return;
+
+                await NotificationService.notifyFollowersNewRecipe({
+                    followerUserIds: followerIds,
+                    authorName: createdRecipe.authorName ?? "Um cozinheiro",
+                    recipeTitle: createdRecipe.title,
+                    recipeId: createdRecipe.id,
+                });
+            } catch (err) {
+                console.error("[NotificationService] Erro ao notificar seguidores:", err);
+            }
+        })();
+
         return createdRecipe;
     },
 
@@ -99,7 +117,6 @@ export const RecipeService = {
         if (!recipe) {
             throw new Error("Receita não encontrada");
         }
-
         return recipe;
     },
 
@@ -174,10 +191,7 @@ export const RecipeService = {
             return favorite.userId !== authorId && myRecipeIds.has(favorite.recipeId);
         });
 
-        return {
-            firstHighRating,
-            recipeSavedByAnotherUser,
-        };
+        return { firstHighRating, recipeSavedByAnotherUser };
     },
 
     async getSuggestedFeed(userId?: string, profileId?: string, limit = 20): Promise<RecipeDocument[]> {
@@ -210,10 +224,7 @@ export const RecipeService = {
                 score: scoreRecipeForRecommendation(recipe, profile),
             }))
             .sort((left, right) => {
-                if (right.score !== left.score) {
-                    return right.score - left.score;
-                }
-
+                if (right.score !== left.score) return right.score - left.score;
                 return right.recipe.createdAt.localeCompare(left.recipe.createdAt);
             });
 
@@ -232,6 +243,60 @@ export const RecipeService = {
         return [...recommendations, ...fallbackRecipes].slice(0, limit);
     },
 
+    async getFollowingFeed(viewerUserId: string, limit = 20): Promise<RecipeDocument[]> {
+        const following = await FollowRepository.listFollowing(viewerUserId);
+        const followingIds = following.map((f) => f.followingUserId);
+
+        if (followingIds.length === 0) return [];
+
+        const BATCH = 30;
+        const recipeMap = new Map<string, RecipeDocument>();
+
+        for (let i = 0; i < followingIds.length; i += BATCH) {
+            const chunk = followingIds.slice(i, i + BATCH);
+            const recipes = await RecipeRepository.findByAuthorIds(chunk, limit);
+            recipes.forEach((r) => recipeMap.set(r.id, r));
+        }
+
+        return Array.from(recipeMap.values())
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+            .slice(0, limit);
+    },
+
+    async getSeasonalFeed(limit = 20): Promise<RecipeDocument[]> {
+        const month = new Date().getMonth() + 1;
+        const seasonalNames = getSeasonalIngredientNames(month).map((name): string => normalizeForComparison(name));
+
+        if (seasonalNames.length === 0) return [];
+
+        const recipeMap = new Map<string, { recipe: RecipeDocument; matchCount: number }>();
+
+        await Promise.all(
+            seasonalNames.map(async (ingredient) => {
+                const results = await RecipeService.searchRecipes({ query: ingredient, limit: 100 });
+
+                results.forEach((recipe) => {
+                    const hasIngredient = recipe.ingredients.some(
+                        (ing) => normalizeForComparison(ing.name) === ingredient
+                    );
+                    if (!hasIngredient) return;
+
+                    const existing = recipeMap.get(recipe.id);
+                    if (existing) {
+                        existing.matchCount += 1;
+                    } else {
+                        recipeMap.set(recipe.id, { recipe, matchCount: 1 });
+                    }
+                });
+            })
+        );
+
+        return Array.from(recipeMap.values())
+            .sort((a, b) => b.matchCount - a.matchCount)
+            .slice(0, limit)
+            .map((e) => e.recipe);
+    },
+
     async searchRecipes(params: SearchRecipesParams): Promise<RecipeDocument[]> {
         const recipes = await RecipeRepository.findAll(params.limit ?? 50);
 
@@ -245,25 +310,18 @@ export const RecipeService = {
             }
 
             if (params.servingsMin !== undefined) {
-                if (recipe.servings === undefined || recipe.servings < params.servingsMin) {
-                    return false;
-                }
+                if (recipe.servings === undefined || recipe.servings < params.servingsMin) return false;
             }
 
             if (params.servingsMax !== undefined) {
-                if (recipe.servings === undefined || recipe.servings > params.servingsMax) {
-                    return false;
-                }
+                if (recipe.servings === undefined || recipe.servings > params.servingsMax) return false;
             }
 
             if (params.query) {
                 const query = normalizeText(params.query);
                 const searchableText = buildSearchableText(recipe);
-
                 const queryTokens = query.split(/\s+/).filter(Boolean);
-                if (queryTokens.some((token) => !searchableText.includes(token))) {
-                    return false;
-                }
+                if (queryTokens.some((token) => !searchableText.includes(token))) return false;
             }
 
             return true;

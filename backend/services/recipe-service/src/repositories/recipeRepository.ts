@@ -48,6 +48,22 @@ export const RecipeRepository = {
         return parsedRecipe.success ? parsedRecipe.data : null;
     },
 
+    async findByAuthorIds(authorIds: string[], limit = 20): Promise<RecipeDocument[]> {
+        if (authorIds.length === 0) return [];
+
+        const snap = await db
+            .collection(recipesCollection)
+            .where("authorId", "in", authorIds)
+            .orderBy("createdAt", "desc")
+            .limit(limit)
+            .get();
+
+        return snap.docs
+            .map((doc) => RecipeDocumentSchema.safeParse(doc.data()))
+            .filter((result) => result.success)
+            .map((result) => result.data)
+    },
+
     async findAll(limit = 50): Promise<RecipeDocument[]> {
         const documents = await db.collection(recipesCollection).orderBy("createdAt", "desc").limit(limit).get();
 

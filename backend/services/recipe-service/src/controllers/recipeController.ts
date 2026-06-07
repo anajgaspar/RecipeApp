@@ -3,8 +3,9 @@ import { z } from "zod";
 import { CreateRecipeSchema, RecipeDifficultyOptions } from "../schemas/recipeSchema";
 import { RecipeService } from "../services/recipeService";
 import { getProfileIdFromRequest, getUserIdFromRequest } from "../utils/requestContext";
+import { getSeasonName } from "../utils/seasonalityData";
 
-const listQuerySchema = z.object({
+const feedQuerySchema = z.object({
     limit: z.coerce.number().int().positive().max(100).optional(),
 });
 
@@ -147,7 +148,7 @@ export const RecipeController = {
 
     async getMyRecipes(req: Request, res: Response) {
         try {
-            const validated = listQuerySchema.safeParse(req.query);
+            const validated = feedQuerySchema.safeParse(req.query);
             if (!validated.success) {
                 return res.status(400).json({
                     error: "Query inválida",
@@ -185,7 +186,7 @@ export const RecipeController = {
 
     async getSuggestedFeed(req: Request, res: Response) {
         try {
-            const validated = listQuerySchema.safeParse(req.query);
+            const validated = feedQuerySchema.safeParse(req.query);
             if (!validated.success) {
                 return res.status(400).json({
                     error: "Query inválida",
@@ -203,9 +204,9 @@ export const RecipeController = {
         }
     },
 
-    async searchRecipes(req: Request, res: Response) {
+    async getFollowingFeed(req: Request, res: Response) {
         try {
-            const validated = searchQuerySchema.safeParse(req.query);
+            const validated = feedQuerySchema.safeParse(req.query);
             if (!validated.success) {
                 return res.status(400).json({
                     error: "Query inválida",
@@ -213,19 +214,63 @@ export const RecipeController = {
                 });
             }
 
-            const recipes = await RecipeService.searchRecipes({
-                query: validated.data.q,
-                category: validated.data.category,
-                difficulty: validated.data.difficulty,
-                servingsMin: validated.data.servingsMin,
-                servingsMax: validated.data.servingsMax,
-                limit: validated.data.limit,
-            });
+            const userId = getUserIdFromRequest(req);
+            if (!userId) {
+                return res.status(401).json({ error: "Usuário não autenticado." });
+            }
 
+            const recipes = await RecipeService.getFollowingFeed(userId, validated.data.limit ?? 20);
             return res.status(200).json({ recipes });
         } catch (error) {
             const message = error instanceof Error ? error.message : "Erro desconhecido";
             return res.status(500).json({ error: message });
         }
     },
+
+    async getSeasonalFeed(req: Request, res: Response) {
+        try {
+            const validated = feedQuerySchema.safeParse(req.query);
+            if (!validated.success) {
+                return res.status(400).json({
+                    error: "Query inválida",
+                    details: validated.error.issues,
+                });
+            }
+
+            const month = new Date().getMonth() + 1;
+            const season = getSeasonName(month);
+            const recipes = await RecipeService.getSeasonalFeed(validated.data.limit ?? 20);
+
+            return res.status(200).json({ recipes, season, month });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro desconhecido";
+            return res.status(500).json({ error: message });
+        }
+    },
+
+    async searchRecipes(req: Request, res: Response) {
+    try {
+        const validated = searchQuerySchema.safeParse(req.query);
+        if (!validated.success) {
+            return res.status(400).json({
+                error: "Query inválida",
+                details: validated.error.issues,
+            });
+        }
+
+        const recipes = await RecipeService.searchRecipes({
+            query: validated.data.q,
+            category: validated.data.category,
+            difficulty: validated.data.difficulty,
+            servingsMin: validated.data.servingsMin,
+            servingsMax: validated.data.servingsMax,
+            limit: validated.data.limit,
+        });
+
+        return res.status(200).json({ recipes });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Erro desconhecido";
+        return res.status(500).json({ error: message });
+    }
+},
 };
