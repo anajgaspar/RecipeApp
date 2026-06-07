@@ -1,5 +1,5 @@
 import { db } from "../config/firebase";
-import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
+import { CreateRecipeSchema, RecipeDocumentLightSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -73,11 +73,16 @@ export const RecipeRepository = {
                 "category",
                 "servings",
                 "createdAt",
+                "updatedAt",
             )
             .get();
 
         return documents.docs
-            .map((doc) => RecipeDocumentSchema.safeParse({ ...doc.data(), ingredients: [], steps: [] }))
+            .map((doc) => RecipeDocumentLightSchema.safeParse({
+                ...doc.data(),
+                ingredients: [],
+                steps: [],
+            }))
             .filter((result) => result.success)
             .map((result) => result.data);
     },

@@ -64,6 +64,11 @@ export const RecipeDocumentSchema = z.object({
     updatedAt: z.string(),
 })
 
+export const RecipeDocumentLightSchema = RecipeDocumentSchema.extend({
+    ingredients: z.array(z.any()).default([]),
+    steps: z.array(z.any()).default([]),
+});
+
 export const CreateRecipeSchema = z.object({
     authorName: z.string().trim().optional(),
     authorAvatarDataUrl: z.string().nullable().optional(),
