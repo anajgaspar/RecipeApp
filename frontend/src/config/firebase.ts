@@ -1,8 +1,9 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
-function getEnv(name: string): string | undefined {
+export function getEnv(name: string): string | undefined {
 	const fromProcess = (globalThis as any)?.process?.env?.[name] as string | undefined;
 	const fromExtra = (Constants.expoConfig && (Constants.expoConfig as any).extra && (Constants.expoConfig as any).extra[name]) || undefined;
 	const value = fromProcess ?? fromExtra;
@@ -34,4 +35,15 @@ if (hasRequiredFirebase) {
 	console.warn("Firebase não inicializado — chaves ausentes. Defina EXPO_PUBLIC_FIREBASE_* no build (EAS ou app.json.extra).");
 }
 
-export const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : undefined;
+let auth;
+if (firebaseApp) {
+	try {
+		auth = initializeAuth(firebaseApp, {
+			persistence: getReactNativePersistence(AsyncStorage),
+		});
+	} catch (e) {
+		auth = getAuth(firebaseApp);
+	}
+}
+
+export const firebaseAuth = auth;

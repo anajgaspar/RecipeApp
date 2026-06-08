@@ -7,7 +7,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useAuth } from "@/src/modules/auth/context/AuthContext";
 import ActionButton from "@/src/components/ActionButton";
 import InlineError from "@/src/components/InlineError";
-import { firebaseAuth } from "@/src/config/firebase";
+import { firebaseAuth, getEnv } from "@/src/config/firebase";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { makeRedirectUri } from "expo-auth-session";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -31,8 +31,9 @@ export default function LoginPage({ navigation }: { navigation: any }) {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [request, response, promptAsync] = Google.useAuthRequest({
-        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-        iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+        webClientId: getEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID") || "unconfigured",
+        iosClientId: getEnv("EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID") || "unconfigured",
+        androidClientId: getEnv("EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID") || "unconfigured",
         redirectUri,
     });
 
@@ -183,14 +184,6 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                         <Text className="text-xs text-gray-400">OU</Text>
                         <View className="flex-1 h-px bg-gray-200" />
                     </View>
-                    <Pressable
-                        className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md"
-                        disabled={isGoogleLoading || !request}
-                        onPress={() => void promptAsync()}
-                    >
-                        <FontAwesome6 name="chrome" size={20} color="black" />
-                        <Text className="">{isGoogleLoading ? "Conectando ao Google..." : "Faça login com Google"}</Text>
-                    </Pressable>
                     {isBiometricAvailable && hasBiometricCredentials ? (
                         <Pressable
                             className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md"
