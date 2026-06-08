@@ -4,6 +4,8 @@ const ACCESS_TOKEN_KEY = "auth.accessToken";
 const USER_KEY = "auth.user";
 const ACTIVE_PROFILE_KEY = "auth.activeProfileId";
 const SOCIAL_NOTIFICATIONS_SEEN_AT_KEY = "social.notificationsSeenAt";
+const BIOMETRIC_EMAIL_KEY = "biometric_email";
+const BIOMETRIC_PASSWORD_KEY = "biometric_password";
 
 export type StoredUser = {
   id: string;
@@ -84,4 +86,21 @@ export async function clearSocialNotificationsSeenAt(): Promise<void> {
 
 export async function clearSessionStorage(): Promise<void> {
   await Promise.all([clearAccessToken(), clearStoredUser(), clearActiveProfileId(), clearSocialNotificationsSeenAt()]);
+}
+
+export async function saveBiometricCredentials(email: string, password: string): Promise<void> {
+    await SecureStore.setItemAsync(BIOMETRIC_EMAIL_KEY, email);
+    await SecureStore.setItemAsync(BIOMETRIC_PASSWORD_KEY, password);
+}
+
+export async function getBiometricCredentials(): Promise<{ email: string; password: string } | null> {
+    const email = await SecureStore.getItemAsync(BIOMETRIC_EMAIL_KEY);
+    const password = await SecureStore.getItemAsync(BIOMETRIC_PASSWORD_KEY);
+    if (email && password) return { email, password };
+    return null;
+}
+
+export async function clearBiometricCredentials(): Promise<void> {
+    await SecureStore.deleteItemAsync(BIOMETRIC_EMAIL_KEY);
+    await SecureStore.deleteItemAsync(BIOMETRIC_PASSWORD_KEY);
 }

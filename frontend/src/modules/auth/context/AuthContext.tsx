@@ -27,6 +27,8 @@ import {
   saveActiveProfileId,
   saveStoredUser,
 } from "@/src/services/tokenStorage";
+import { saveBiometricCredentials, getBiometricCredentials } from "@/src/services/tokenStorage";
+import * as LocalAuthentication from "expo-local-authentication";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -44,6 +46,8 @@ type AuthContextValue = {
   updateFamilyProfile: (profileId: string, payload: { name?: string; avatarDataUrl?: string | null }) => Promise<FamilyProfile>;
   deleteFamilyProfile: (profileId: string) => Promise<void>;
   setActiveProfile: (profileId: string) => Promise<void>;
+  signInWithBiometrics: () => Promise<void>;
+  hasBiometricCredentials: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -58,6 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profiles, setProfiles] = useState<FamilyProfile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
 
   const syncProfileContext = useCallback(async (nextProfiles: FamilyProfile[], fallbackProfileId: string | null = null) => {
     const storedActiveProfileId = await getActiveProfileId();
@@ -120,6 +125,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { token: receivedToken, user: receivedUser } = await loginRequest(payload);
 
     await Promise.all([saveAccessToken(receivedToken), saveStoredUser(receivedUser)]);
+    await saveBiometricCredentials(payload.email, payload.password);
+    setHasBiometricCredentials(true);
 
     setAuthToken(receivedToken);
     setToken(receivedToken);
@@ -231,6 +238,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await saveActiveProfileId(profileId);
   }, []);
 
+  useEffect(() => {
+    getBiometricCredentials().then((creds) => {
+      setHasBiometricCredentials(Boolean(creds));
+    });
+  }, []);
+
+  const signInWithBiometrics = useCallback(async () => {
+    const compatible = await LocalAuthentication.hasHardwareAsync();
+    if (!compatible) throw new Error("Dispositivo não suporta biometria.");
+
+    const enrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!enrolled) throw new Error("Nenhuma biometria cadastrada no dispositivo.");
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Use sua impressão digital para entrar",
+      cancelLabel: "Cancelar",
+      disableDeviceFallback: true,
+    });
+
+    if (!result.success) throw new Error("Autenticação biométrica cancelada.");
+
+    const credentials = await getBiometricCredentials();
+    if (!credentials) throw new Error("Nenhuma credencial salva. Faça login com e-mail primeiro.");
+
+    await signIn(credentials);
+  }, [signIn]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -248,8 +282,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       updateFamilyProfile,
       deleteFamilyProfile,
       setActiveProfile,
+      signInWithBiometrics,
+      hasBiometricCredentials,
     }),
-    [activeProfileId, createProfile, deleteFamilyProfile, isLoadingSession, profiles, setActiveProfile, signIn, signInWithGoogle, signOut, signUp, token, updateFamilyProfile, updateProfile, user],
+    [activeProfileId, createProfile, deleteFamilyProfile, isLoadingSession, profiles, setActiveProfile, signIn, signInWithGoogle, signOut, signUp, token, updateFamilyProfile, updateProfile, user, signInWithBiometrics, hasBiometricCredentials],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

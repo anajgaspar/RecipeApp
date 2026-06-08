@@ -210,30 +210,27 @@ export default function MealPlanning({ onSharePlanningReady, navigation, exporte
                                         className="w-28 h-28 border-l border-gray-100 items-center justify-center p-1 overflow-hidden"
                                     >
                                         {recipe ? (
-                                            <View className="w-full h-full rounded-lg overflow-hidden">
-                                                <View className="flex-1 items-center justify-between p-2">
-                                                    <Text
-                                                        className="text-xs text-center text-gray-700 font-medium"
-                                                        numberOfLines={2}
+                                            <View className="w-full h-full rounded-lg bg-orange-50 border border-orange-100 p-2 flex-col justify-between">
+                                                <Text
+                                                    className="text-xs text-center text-gray-700 font-medium"
+                                                    numberOfLines={3}
+                                                >
+                                                    {recipe.title}
+                                                </Text>
+                                                <View className="w-full flex-row justify-between">
+                                                    <Pressable
+                                                        onPress={() => handleRemoveMeal(meal.key, day)}
+                                                        className="bg-white rounded-full p-1"
                                                     >
-                                                        {recipe.title}
-                                                    </Text>
-                                                    <View className="w-full flex-row justify-between">
-                                                        <Pressable
-                                                            onPress={() => handleRemoveMeal(meal.key, day)}
-                                                            className="bg-white/80 rounded-full p-1"
-                                                        >
-                                                            <FontAwesome6 name="trash-can" size={16} color="#ef4444" />
-                                                        </Pressable>
-                                                        <Pressable
-                                                            onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id })}
-                                                            className="bg-white/80 rounded-full p-1"
-                                                        >
-                                                            <FontAwesome6 name="arrow-up-right-from-square" size={16} color="#f97316" />
-                                                        </Pressable>
-                                                    </View>
+                                                        <FontAwesome6 name="trash-can" size={14} color="#ef4444" />
+                                                    </Pressable>
+                                                    <Pressable
+                                                        onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id })}
+                                                        className="bg-white rounded-full p-1"
+                                                    >
+                                                        <FontAwesome6 name="arrow-up-right-from-square" size={14} color="#f97316" />
+                                                    </Pressable>
                                                 </View>
-
                                             </View>
                                         ) : (
                                             <View className="w-8 h-8 rounded-full border border-dashed border-gray-300 items-center justify-center">

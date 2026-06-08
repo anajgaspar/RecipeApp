@@ -9,11 +9,21 @@ import ActionButton from "@/src/components/ActionButton";
 import InlineError from "@/src/components/InlineError";
 import { firebaseAuth } from "@/src/config/firebase";
 import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { makeRedirectUri } from "expo-auth-session";
+import * as LocalAuthentication from "expo-local-authentication";
 
 WebBrowser.maybeCompleteAuthSession();
 
+const redirectUri = makeRedirectUri({
+    scheme: "receitanamao",
+    path: "auth",
+});
+
 export default function LoginPage({ navigation }: { navigation: any }) {
-    const { signIn, signInWithGoogle } = useAuth();
+    const { signIn, signInWithGoogle, signInWithBiometrics, hasBiometricCredentials } = useAuth();
+    const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+    const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -21,9 +31,9 @@ export default function LoginPage({ navigation }: { navigation: any }) {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [request, response, promptAsync] = Google.useAuthRequest({
-        androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
         iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-        scopes: ["openid", "profile", "email"],
+        redirectUri,
     });
 
     useEffect(() => {
@@ -93,6 +103,30 @@ export default function LoginPage({ navigation }: { navigation: any }) {
         }
     }
 
+    useEffect(() => {
+        async function checkBiometrics() {
+            const compatible = await LocalAuthentication.hasHardwareAsync();
+            const enrolled = await LocalAuthentication.isEnrolledAsync();
+            const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+            const hasFingerprint = types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
+            setIsBiometricAvailable(compatible && enrolled && hasFingerprint);
+        }
+        void checkBiometrics();
+    }, []);
+
+    async function handleBiometricLogin() {
+        setIsBiometricLoading(true);
+        setErrorMessage("");
+        try {
+            await signInWithBiometrics();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Falha na autenticação biométrica.";
+            setErrorMessage(message);
+        } finally {
+            setIsBiometricLoading(false);
+        }
+    }
+
     return (
         <LinearGradient
             colors={["#fff7ed", "#fdfbf7"]}
@@ -157,10 +191,18 @@ export default function LoginPage({ navigation }: { navigation: any }) {
                         <FontAwesome6 name="chrome" size={20} color="black" />
                         <Text className="">{isGoogleLoading ? "Conectando ao Google..." : "Faça login com Google"}</Text>
                     </Pressable>
-                    <Pressable className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md">
-                        <FontAwesome6 name="fingerprint" size={20} color="black" />
-                        <Text className="text-center">Use login biométrico</Text>
-                    </Pressable>
+                    {isBiometricAvailable && hasBiometricCredentials ? (
+                        <Pressable
+                            className="w-full flex flex-row justify-center items-center gap-2 py-3 bg-[#fdfbf7] rounded-md"
+                            disabled={isBiometricLoading}
+                            onPress={() => void handleBiometricLogin()}
+                        >
+                            <FontAwesome6 name="fingerprint" size={20} color="black" />
+                            <Text className="text-center">
+                                {isBiometricLoading ? "Autenticando..." : "Use login biométrico"}
+                            </Text>
+                        </Pressable>
+                    ) : null}
                     <Pressable onPress={() => navigation.replace('Signup')}>
                         <Text className="self-center">Não tem uma conta? <Text className="text-[#f97316]">Registre-se</Text></Text>
                     </Pressable>
