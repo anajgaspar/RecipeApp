@@ -31,9 +31,9 @@ export default function MyFavoritesCard({ recipe, onOpen, onFavorite }: MyFavori
                     <FontAwesome6 name="image" size={18} color="#9ca3af" />
                 </View>
             )}
-            <View className="flex flex-col gap-2">
-                <Text className="font-semibold text-lg">{recipe.title}</Text>
-                <View className="flex flex-row justify-between gap-2">
+            <View className="flex-1 flex-col gap-2">
+                <Text className="font-semibold text-lg" numberOfLines={1}>{recipe.title}</Text>
+                <View className="flex flex-col justify-between gap-2">
                     <View className="flex flex-row items-center gap-1">
                         <FontAwesome6 name="clock" size={16} color="#9ca3af" />
                         <Text className="text-[#9ca3af]">{recipe.prepTimeMinutes}min</Text>

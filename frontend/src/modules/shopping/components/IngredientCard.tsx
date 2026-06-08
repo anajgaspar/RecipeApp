@@ -18,7 +18,7 @@ export default function IngredientCard({ name, quantity, checked, onToggle, onDe
             <View className="flex flex-row justify-between items-center">
                 <View className="flex flex-row items-center flex-1 min-w-0">
                     <View className="flex flex-row items-center gap-3 flex-1 min-w-0">
-                        <Text className={`text-lg font-bold flex-shrink ${checked ? "line-through text-gray-400" : ""}`} numberOfLines={1}>
+                        <Text className={`text-lg font-bold flex-shrink flex-wrap ${checked ? "line-through text-gray-400" : ""}`} numberOfLines={1}>
                             {name}
                         </Text>
                         <Text className={`text-lg font-bold ${checked ? "text-gray-400" : ""}`}>&#8226;</Text>

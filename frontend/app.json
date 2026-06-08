@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "ReceitaNaMao",
+    "name": "Receita Na Mao",
     "slug": "ReceitaNaMao",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/logo.png",
+    "icon": "./src/assets/icon.png",
     "scheme": "receitanamao",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -26,13 +26,8 @@
     },
     "android": {
       "package": "com.receitanamao.app",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./src/assets/logo.png",
-        "backgroundImage": "./src/assets/logo.png",
-        "monochromeImage": "./src/assets/logo.png"
-      },
       "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
@@ -41,14 +36,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./src/assets/logo.png"
+      "favicon": "./src/assets/icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./src/assets/logo.png",
+          "image": "./src/assets/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",

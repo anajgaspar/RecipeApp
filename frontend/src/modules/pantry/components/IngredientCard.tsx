@@ -17,7 +17,7 @@ export default function IngredientCard({ name, quantity, expirationDate, onEdit,
                 <View className="gap-2 flex-1">
                     <View className="flex flex-row">
                         <View className="flex flex-row items-center gap-4">
-                            <Text className="text-lg font-bold">{name}</Text>
+                            <Text className="text-lg font-bold flex-wrap" numberOfLines={1}>{name}</Text>
                             {quantity && (
                                 <>
                                     <Text className="text-lg font-bold">&#8226;</Text>

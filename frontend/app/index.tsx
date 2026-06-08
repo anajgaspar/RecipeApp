@@ -18,7 +18,6 @@ import Notifications from "@/src/modules/social/screens/Notifications";
 import SocialConnections from "@/src/modules/social/screens/SocialConnections";
 import SharedMealPlan from "../src/modules/planning/components/SharedMealPlan";
 import MyReportsChart from "@/src/modules/social/screens/MyReportsScreen";
-
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -47,11 +46,11 @@ export default function App() {
     <NavigationIndependentTree>
       <NavigationContainer linking={linking}>
         <StatusBar barStyle="light-content" />
-        <Stack.Navigator initialRouteName={isAuthenticated ? "Feed" : "Login"}>
-          <Stack.Screen name="SharedMealPlan" component={SharedMealPlan} options={{ headerShown: false }} />
+        <Stack.Navigator>
           {isAuthenticated ? (
             <>
               <Stack.Screen name="Feed" component={Feed} options={{ headerShown: false }} />
+              <Stack.Screen name="SharedMealPlan" component={SharedMealPlan} options={{ headerShown: false }} />
               <Stack.Screen name="RecipeDetails" component={RecipeDetails} options={{ headerShown: false }} />
               <Stack.Screen name="RecipeRegister" component={RecipeRegister} options={{ headerShown: false }} />
               <Stack.Screen name="MyRecipes" component={MyRecipesList} options={{ headerShown: false }} />
@@ -66,6 +65,7 @@ export default function App() {
           ) : (
             <>
               <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
+              <Stack.Screen name="SharedMealPlan" component={SharedMealPlan} options={{ headerShown: false }} />
               <Stack.Screen name="Signup" component={SignupPage} options={{ headerShown: false }} />
               <Stack.Screen name="ConfirmEmail" component={ConfirmEmail} options={{ headerShown: false }} />
             </>

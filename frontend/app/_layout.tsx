@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
 import { useFonts } from "expo-font";
 import { AuthProvider } from "@/src/modules/auth/context/AuthContext";
 import "../src/styles/index.css";
@@ -17,11 +17,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      />
+      <Slot />
     </AuthProvider>
-  )
+  );
 }

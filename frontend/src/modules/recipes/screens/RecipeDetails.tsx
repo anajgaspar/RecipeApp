@@ -348,30 +348,38 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                             </Text>
                         </View>
                     </View>
-                    <View className="flex flex-row">
-                        <Text className="absolute bottom-2 left-6 font-bold text-2xl text-white">{recipe.title}</Text>
+                    <View>
+                        <Text className="absolute bottom-2 left-6 right-6 font-bold text-2xl text-white" numberOfLines={1}>{recipe.title}</Text>
                     </View>
                 </View>
-                <View className="flex flex-row justify-between p-4">
-                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
+                <View className="flex flex-row justify-between p-4 gap-2 w-full">
+                    <View className="flex-1 flex-col items-center justify-center bg-gray-500/10 h-20 rounded-md p-1">
                         <FontAwesome6 name="clock" size={16} color="#f97316" />
-                        <Text>{recipe.prepTimeMinutes}min</Text>
+                        <Text className="text-xs font-medium text-gray-800 text-center mt-1" numberOfLines={1} ellipsizeMode="tail">
+                            {recipe.prepTimeMinutes}min
+                        </Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex-1 flex-col items-center justify-center bg-gray-500/10 h-20 rounded-md p-1">
                         <FontAwesome6 name="arrow-trend-up" size={16} color="#f97316" />
-                        <Text>{recipe.difficulty}</Text>
+                        <Text className="text-xs font-medium text-gray-800 text-center mt-1" numberOfLines={1} ellipsizeMode="tail">
+                            {recipe.difficulty}
+                        </Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex-1 flex-col items-center justify-center bg-gray-500/10 h-20 rounded-md p-1">
                         <Ionicons name="people-outline" size={16} color="#f97316" />
-                        <Text>{recipe.servings ?? "-"} porções</Text>
+                        <Text className="text-xs font-medium text-gray-800 text-center mt-1" numberOfLines={1} ellipsizeMode="tail">
+                            {recipe.servings ?? "-"} porc.
+                        </Text>
                     </View>
-                    <View className="flex flex-col items-center justify-center bg-gray-500/10 w-24 h-20 rounded-md gap-2">
+                    <View className="flex-1 flex-col items-center justify-center bg-gray-500/10 h-20 rounded-md p-1">
                         <Ionicons name="cash-outline" size={16} color="#f97316" />
-                        <Text>{recipeCost ? `R$${recipeCost}` : "-"}</Text>
+                        <Text className="text-xs font-medium text-gray-800 text-center mt-1" numberOfLines={1} ellipsizeMode="tail">
+                            {recipeCost ? `R$${recipeCost}` : "-"}
+                        </Text>
                     </View>
                 </View>
                 <View className="flex flex-row justify-between items-center p-4">
-                    <View className="flex flex-row gap-2">
+                    <View className="flex-1 flex-row gap-2">
                         {authorAvatar ? (
                             <Image source={{ uri: authorAvatar }} className="rounded-full w-14 h-14" />
                         ) : (
@@ -379,8 +387,8 @@ export default function RecipeDetails({ navigation, route }: { navigation: any; 
                                 <FontAwesome6 name="user" size={18} color="#6b7280" />
                             </View>
                         )}
-                        <View className="pt-2">
-                            <Text>{authorName}</Text>
+                        <View className="flex-1 pt-2">
+                            <Text numberOfLines={1}>{authorName}</Text>
                         </View>
                     </View>
                     {recipe.authorId !== user?.id ? (

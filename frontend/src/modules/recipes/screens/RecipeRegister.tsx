@@ -231,7 +231,7 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
     return (
         <KeyboardAvoidingView
             className="flex-1 bg-white"
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
             keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
         >
             <View className="w-full flex-1 gap-6">
@@ -267,8 +267,8 @@ export default function RecipeRegister({ navigation, route }: { navigation: any;
                 </View>
                 <View className="flex flex-row flex-wrap justify-between gap-4">
                     <View className="relative bg-[#fdfbf7] rounded-md px-3 py-2 w-[48%]">
-                        <Text className="absolute -top-2 left-2 bg-white px-1 text-xs">
-                            Tempo de Preparo (min)
+                        <Text className="absolute -top-2 left-2 bg-white px-1 text-xs ">
+                            Tempo (min)
                         </Text>
                         <TextInput
                             className="w-full text-sm py-1"

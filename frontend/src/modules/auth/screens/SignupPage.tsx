@@ -54,7 +54,7 @@ export default function SignupPage({ navigation }: { navigation: any }) {
             end={{ x: 0, y: 1 }}
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-            <Image source={require('@/src/assets/logo.png')} className="w-32 h-32" />
+            <Image source={require('@/src/assets/splash-icon.png')} className="w-32 h-32" />
             <View className="w-96 p-8 m-8 flex flex-col gap-8 bg-white rounded-md">
                 <Text className="font-robotoSemibold text-lg">Crie sua conta</Text>
                 <View className="relative bg-[#fdfbf7] rounded-md px-3 py-2">
