@@ -18,7 +18,8 @@
         "NSSpeechRecognitionUsageDescription": "Permitir acesso ao reconhecimento de fala para buscar por voz",
         "NSMicrophoneUsageDescription": "Permitir acesso ao microfone para buscar por voz",
         "NSPhotoLibraryUsageDescription": "Permitir acesso à galeria para salvar ou compartilhar fotos das receitas concluídas",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "Usado para autenticação biométrica no login."
       },
       "runtimeVersion": {
         "policy": "appVersion"
@@ -83,7 +84,12 @@
       "expo-web-browser",
       "@react-native-community/datetimepicker",
       "expo-font",
-      "expo-local-authentication"
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Usado para autenticação biométrica no login."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
