@@ -10,14 +10,28 @@ import {
     type MealPlan,
     buildMealPlanDeepLink,
     buildSharedMealPlanPayload,
-    shareMealPlanAsImage,
-    shareMealPlanViaLink,
 } from "../utils/mealPlanSharing";
+import { MealPlanExporterRef } from "./MealPlanExporter";
+
+type SlimRecipe = {
+    id: string;
+    title: string;
+    prepTimeMinutes?: number;
+    difficulty?: string;
+};
+
+type SlimMealPlan = {
+    [mealType: string]: {
+        [dateKey: string]: SlimRecipe | null;
+    };
+};
 
 const STORAGE_KEY = "meal_plan_v1";
 
 type MealPlanningProps = {
     onSharePlanningReady?: (handler: () => void) => void;
+    navigation: any;
+    exporterRef: React.RefObject<MealPlanExporterRef | null>;
 };
 
 function getWeekDays(offset: number): Date[] {
@@ -36,7 +50,7 @@ function dateKey(date: Date) {
     return date.toISOString().split("T")[0];
 }
 
-export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps) {
+export default function MealPlanning({ onSharePlanningReady, navigation, exporterRef }: MealPlanningProps) {
     const [weekOffset, setWeekOffset] = useState(0);
     const [plan, setPlan] = useState<MealPlan>({});
     const [modalVisible, setModalVisible] = useState(false);
@@ -52,6 +66,7 @@ export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps
     const monthLabel = monday.toLocaleString("pt-BR", { month: "long", year: "numeric" });
     const rangeLabel = `${DAY_LABELS[0]}, ${monday.toLocaleDateString("pt-BR", { month: "short", day: "numeric" })} - ${DAY_LABELS[6]}, ${sunday.toLocaleDateString("pt-BR", { month: "short", day: "numeric" })}`;
 
+
     useEffect(() => {
         AsyncStorage.getItem(STORAGE_KEY)
             .then((raw) => {
@@ -60,8 +75,27 @@ export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps
             .catch((err) => console.warn("Erro ao carregar plano:", err));
     }, []);
 
+    function slimPlan(plan: MealPlan): SlimMealPlan {
+        return Object.fromEntries(
+            Object.entries(plan).map(([meal, days]) => [
+                meal,
+                Object.fromEntries(
+                    Object.entries(days ?? {}).map(([date, recipe]) => [
+                        date,
+                        recipe ? {
+                            id: recipe.id,
+                            title: recipe.title,
+                            prepTimeMinutes: recipe.prepTimeMinutes,
+                            difficulty: recipe.difficulty,
+                        } : null,
+                    ])
+                ),
+            ])
+        );
+    }
+
     useEffect(() => {
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(plan)).catch((err) =>
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(slimPlan(plan))).catch((err) =>
             console.warn("Erro ao salvar plano:", err)
         );
     }, [plan]);
@@ -100,7 +134,7 @@ export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps
     }
 
     const handleSharePlanning = useCallback(async () => {
-        const payload = buildSharedMealPlanPayload(plan, days);
+        const payload = buildSharedMealPlanPayload(slimPlan(plan), days);
         const deepLink = buildMealPlanDeepLink(payload);
 
         if (deepLink.length > 2200) {
@@ -112,22 +146,16 @@ export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps
             return;
         }
 
-        Alert.alert("Compartilhar planejamento", "Escolha como deseja compartilhar seu planejamento:", [
+        Alert.alert("Compartilhar planejamento", "", [
             { text: "Cancelar", style: "cancel" },
             {
-                text: "Via link",
+                text: "Imagem",
                 onPress: () => {
-                    void shareMealPlanViaLink(payload);
-                },
-            },
-            {
-                text: "Como imagem",
-                onPress: () => {
-                    void shareMealPlanAsImage(payload);
+                    void exporterRef.current?.share(payload);
                 },
             },
         ]);
-    }, [days, plan]);
+    }, [days, plan, exporterRef]);
 
     useEffect(() => {
         onSharePlanningReady?.(handleSharePlanning);
@@ -178,30 +206,34 @@ export default function MealPlanning({ onSharePlanningReady }: MealPlanningProps
                                 return (
                                     <Pressable
                                         key={i}
-                                        onPress={() =>
-                                            recipe
-                                                ? handleRemoveMeal(meal.key, day)
-                                                : handleAddMeal(meal.key, day)
-                                        }
+                                        onPress={() => !recipe && handleAddMeal(meal.key, day)}
                                         className="w-28 h-28 border-l border-gray-100 items-center justify-center p-1 overflow-hidden"
                                     >
                                         {recipe ? (
                                             <View className="w-full h-full rounded-lg overflow-hidden">
-                                                {recipe.imageUrl ? (
-                                                    <Image
-                                                        source={{ uri: recipe.imageUrl }}
-                                                        className="w-full h-16"
-                                                        resizeMode="cover"
-                                                    />
-                                                ) : null}
-                                                <View className="flex-1 px-1 pt-1">
+                                                <View className="flex-1 items-center justify-between p-2">
                                                     <Text
                                                         className="text-xs text-center text-gray-700 font-medium"
                                                         numberOfLines={2}
                                                     >
                                                         {recipe.title}
                                                     </Text>
+                                                    <View className="w-full flex-row justify-between">
+                                                        <Pressable
+                                                            onPress={() => handleRemoveMeal(meal.key, day)}
+                                                            className="bg-white/80 rounded-full p-1"
+                                                        >
+                                                            <FontAwesome6 name="trash-can" size={16} color="#ef4444" />
+                                                        </Pressable>
+                                                        <Pressable
+                                                            onPress={() => navigation.navigate("RecipeDetails", { recipeId: recipe.id })}
+                                                            className="bg-white/80 rounded-full p-1"
+                                                        >
+                                                            <FontAwesome6 name="arrow-up-right-from-square" size={16} color="#f97316" />
+                                                        </Pressable>
+                                                    </View>
                                                 </View>
+
                                             </View>
                                         ) : (
                                             <View className="w-8 h-8 rounded-full border border-dashed border-gray-300 items-center justify-center">

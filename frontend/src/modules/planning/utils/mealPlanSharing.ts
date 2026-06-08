@@ -1,9 +1,8 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Alert, Share } from "react-native";
-import { Recipe } from "@/src/services/recipeService";
 
-export type MealPlan = Record<string, Record<string, Recipe | null>>;
+export type MealPlan = Record<string, Record<string, { id: string; title: string; prepTimeMinutes?: number; difficulty?: string } | null>>;
 
 export type MealType = {
   key: string;
@@ -95,19 +94,25 @@ export function buildSharedMealPlanPayload(plan: MealPlan, days: Date[]): Shared
   const serializedPlan: SharedMealPlanPayload["plan"] = {};
 
   MEAL_TYPES.forEach((meal) => {
-    serializedPlan[meal.key] = {};
+    const slots: Record<string, SharedMealPlanSlot | null> = {};
+    let hasAny = false;
 
     serializedDays.forEach(({ date }) => {
       const recipe = plan[meal.key]?.[date];
-      serializedPlan[meal.key][date] = recipe
-        ? {
-            id: recipe.id,
-            title: recipe.title,
-            prepTimeMinutes: recipe.prepTimeMinutes,
-            difficulty: recipe.difficulty,
-          }
-        : null;
+      if (recipe) {
+        slots[date] = {
+          id: recipe.id,
+          title: recipe.title,
+          prepTimeMinutes: recipe.prepTimeMinutes,
+          difficulty: recipe.difficulty,
+        };
+        hasAny = true;
+      }
     });
+
+    if (hasAny) {
+      serializedPlan[meal.key] = slots;
+    }
   });
 
   return {
@@ -138,7 +143,13 @@ export function decodeSharedMealPlanPayload(encodedPayload?: string | string[]) 
 }
 
 export function buildMealPlanDeepLink(payload: SharedMealPlanPayload) {
-  return `receitanamao://shared-meal-plan?data=${encodeSharedMealPlanPayload(payload)}`;
+  const compact = {
+    v: payload.version,
+    ws: payload.weekStart,
+    we: payload.weekEnd,
+    p: payload.plan,
+  };
+  return `receitanamao://shared-meal-plan?data=${encodeURIComponent(JSON.stringify(compact))}`;
 }
 
 export function buildMealPlanShareMessage(payload: SharedMealPlanPayload) {
