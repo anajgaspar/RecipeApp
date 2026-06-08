@@ -35,12 +35,6 @@ jest.mock("../../src/repositories/followRepository", () => ({
     }
 }));
 
-jest.mock("../../src/services/notificationService", () => ({
-    NotificationService: {
-        notifyFollowersNewRecipe: jest.fn(() => Promise.resolve()),
-    }
-}));
-
 import crypto from "crypto";
 import { RecipeService } from "../../src/services/recipeService";
 import { RecipeRepository } from "../../src/repositories/recipeRepository";

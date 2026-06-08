@@ -8,7 +8,6 @@ import { PantryController } from "../controllers/pantryController";
 import { ShoppingListController } from "../controllers/shoppingListController";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { CommentsController } from "../controllers/commentsController";
-import { FcmTokenController } from "../controllers/fcmTokenController";
 
 const router = Router();
 
@@ -28,9 +27,6 @@ router.post("/recipes/:recipeId/complete", AuthMiddleware.authenticateUser, Reci
 router.post("/recipes", AuthMiddleware.authenticateUser, RecipeController.createRecipe);
 router.put("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.updateRecipe);
 router.delete("/recipes/:recipeId", AuthMiddleware.authenticateUser, RecipeController.deleteRecipe);
-
-router.post("/fcm-token", AuthMiddleware.authenticateUser, FcmTokenController.saveToken);
-router.delete("/fcm-token", AuthMiddleware.authenticateUser, FcmTokenController.removeToken);
 
 router.post("/comments", AuthMiddleware.authenticateUser, CommentsController.addComment);
 router.get("/comments/:recipeId", AuthMiddleware.authenticateUser, CommentsController.getRecipeComments);

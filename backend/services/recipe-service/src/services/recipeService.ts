@@ -6,7 +6,6 @@ import { RecipeRepository } from "../repositories/recipeRepository";
 import { CreateRecipeSchema, RecipeDocumentSchema } from "../schemas/recipeSchema";
 import { FollowRepository } from "../repositories/followRepository";
 import { getSeasonalIngredientNames, normalizeForComparison } from "../utils/seasonalityData";
-import { NotificationService } from "./notificationService";
 
 type RecipeDocument = z.infer<typeof RecipeDocumentSchema>;
 type CreateRecipeInput = z.infer<typeof CreateRecipeSchema>;
@@ -90,24 +89,6 @@ export const RecipeService = {
         if (!createdRecipe) {
             throw new Error("Falha ao criar receita.");
         }
-
-        void (async () => {
-            try {
-                const followers = await FollowRepository.listFollowers(authorId);
-                const followerIds = followers.map((f) => f.followerUserId);
-
-                if (followerIds.length === 0) return;
-
-                await NotificationService.notifyFollowersNewRecipe({
-                    followerUserIds: followerIds,
-                    authorName: createdRecipe.authorName ?? "Um cozinheiro",
-                    recipeTitle: createdRecipe.title,
-                    recipeId: createdRecipe.id,
-                });
-            } catch (err) {
-                console.error("[NotificationService] Erro ao notificar seguidores:", err);
-            }
-        })();
 
         return createdRecipe;
     },
