@@ -68,6 +68,7 @@ Sprint | Previsão | Status | Documentação |
 ### Pré-requisitos
 * Expo
 * Firebase Project
+* Docker Desktop
 
 ### Como executar o projeto
 
@@ -87,7 +88,8 @@ cd frontend
 ```
 npm install
 ```
- Configure o .env utilizando o exemplo.
+ Configure o .env utilizando o .env.example.
+ <br>
  <br>
  Inicie a aplicação:
 ```
@@ -104,7 +106,8 @@ cd backend
 ```
 npm install
 ```
- Configure os .env utilizando o exemplo.
+ Configure os .env utilizando o .env.example.
+ <br>
  <br>
  Acesse a pasta do docker:
 ```
