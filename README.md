@@ -1,5 +1,5 @@
 # Receita na Mão 👐🍲
->⌛ Em desenvolvimento
+>✔️Concluído
 
 O **Receita na Mão** é um aplicativo mobile desenvolvido com foco em simplificar a rotina de quem gosta de cozinhar, permitindo descobrir, organizar e executar receitas de forma prática. A proposta da plataforma é unir planejamento alimentar, gestão de ingredientes e apoio no preparo em uma experiência única e intuitiva.
 
@@ -24,9 +24,9 @@ Entre as funcionalidades principais do produto, destacam-se:
 ## 📊 Sprints:
 Sprint | Previsão | Status | Documentação |
 |------|----------|--------|--------------|
-|01| 16/03/2026 - 12/04/2026 |✅ Concluído| [Ver Documento](./docs/sprint1.md) |
-|02|  13/04/2026 - 10/05/2026 |✅ Concluído| [Ver Documento](./docs/sprint2.md) |
-|03| 11/05/2026 - 07/06/2026 |🚧 Em andamento| [Ver Documento](./docs/sprint3.md) |
+|01| 16/03/2026 - 12/04/2026 |✔️ Concluído| [Ver Documento](./docs/sprint1.md) |
+|02|  13/04/2026 - 10/05/2026 |✔️ Concluído| [Ver Documento](./docs/sprint2.md) |
+|03| 11/05/2026 - 07/06/2026 |✔️ Concluído| [Ver Documento](./docs/sprint3.md) |
 
 ---
 <span id="tecnologias">
@@ -64,5 +64,55 @@ Sprint | Previsão | Status | Documentação |
 <span id="instalacao">
 
 ## 📋 Guia de Instalação:
+
+### Pré-requisitos
+* Expo
+* Firebase Project
+
+### Como executar o projeto
+
+**1. Clone o repositório:**
+```
+git clone https://github.com/anajgaspar/RecipeApp.git
+cd RecipeApp
+```
+
+**2. Configure o front-end:**
+
+ Acesse a pasta do front-end
+```
+cd frontend
+```
+ Instale as dependências:
+```
+npm install
+```
+ Configure o .env utilizando o exemplo.
+ <br>
+ Inicie a aplicação:
+```
+npx expo start -c
+```
+
+**2. Configure o back-end:**
+
+ Acesse a pasta do back-end:
+```
+cd backend
+```
+ Em cada um dos micro-serviços, instale as dependências:
+```
+npm install
+```
+ Configure os .env utilizando o exemplo.
+ <br>
+ Acesse a pasta do docker:
+```
+cd docker
+```
+ Inicie os serviços:
+```
+docker compose up --build
+```
 
 ---
